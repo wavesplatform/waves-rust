@@ -40,13 +40,13 @@ impl Crypto {
         Hash::secure_hash(public_key)[0..20].to_vec()
     }
 
-    pub fn get_address(chain_id: &u8, public_key_hash: &Vec<u8>) -> Vec<u8> {
+    pub fn get_address(chain_id: &u8, public_key_hash: &[u8]) -> Vec<u8> {
         let mut buf = [0u8; ADDRESS_LENGTH];
         buf[0] = ADDRESS_VERSION;
         buf[1] = *chain_id;
         buf[2..22].copy_from_slice(public_key_hash);
         let checksum = &Hash::secure_hash(&buf[..22])[..4];
-        buf[22..].copy_from_slice(&checksum);
+        buf[22..].copy_from_slice(checksum);
         buf.to_vec()
     }
 }

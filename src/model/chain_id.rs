@@ -7,9 +7,9 @@ pub enum ChainId {
 impl ChainId {
     pub fn byte(&self) -> u8 {
         match *self {
-            ChainId::MAINNET => 'W' as u8,
-            ChainId::TESTNET => 'T' as u8,
-            ChainId::STAGENET => 'S' as u8,
+            ChainId::MAINNET => b'W',
+            ChainId::TESTNET => b'T',
+            ChainId::STAGENET => b'S',
         }
     }
 }

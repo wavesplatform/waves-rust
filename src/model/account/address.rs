@@ -11,7 +11,7 @@ impl Address {
     pub fn from_public_key(chain_id: u8, public_key: &PublicKey) -> Address {
         Address {
             chain_id,
-            public_key_hash: Crypto::get_public_key_hash(&public_key.bytes()),
+            public_key_hash: Crypto::get_public_key_hash(public_key.bytes()),
         }
     }
 
