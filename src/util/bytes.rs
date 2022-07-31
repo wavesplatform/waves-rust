@@ -22,6 +22,7 @@ mod tests {
         assert_eq!(vec, Vec::from([0, 0, 0, 127]))
     }
 
+    #[test]
     fn test_concat() {
         let a: [u8; 4] = [0, 0, 0, 127];
         let b: [u8; 3] = [1, 2, 3];

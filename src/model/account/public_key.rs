@@ -1,3 +1,58 @@
-pub struct PublicKey {
+use crate::util::Base58;
 
+pub struct PublicKey {
+    bytes: Vec<u8>,
 }
+
+impl PublicKey {
+    pub fn from_bytes(bytes: &Vec<u8>) -> PublicKey {
+        PublicKey {
+            bytes: bytes.clone()
+        }
+    }
+
+    pub fn encoded(&self) -> String {
+        Base58::encode(&self.bytes, false)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::model::account::{PrivateKey, PublicKey};
+    use crate::util::{Base58, Crypto};
+
+    #[test]
+    fn test_public_key_from_bytes() {
+        let seed_phrase = "blame vacant regret company chase trip grant funny brisk innocent";
+
+        let expected_public_key_from_nonce_0 = "8cj6YzvQPhSHGvnjupNTW8zrADTT8CMAAd2xTuej84gB";
+        let expected_public_key_from_nonce_128 = "DTvCW1nzFr7mHrHkGf1apstRfwPp4yYL19YvjjLEAPBh";
+        let expected_public_key_from_nonce_255 = "esjbpqVWSg8iCaPYQA3SoxZo3oUkdRJSi9tKLoqKQoC";
+
+        assert_eq!(
+            PublicKey::from_bytes(
+                &public_key_bytes(seed_phrase, 0)
+            ).encoded(),
+            expected_public_key_from_nonce_0
+        );
+        assert_eq!(
+            PublicKey::from_bytes(
+                &public_key_bytes(seed_phrase, 128)
+            ).encoded(),
+            expected_public_key_from_nonce_128
+        );
+        assert_eq!(
+            PublicKey::from_bytes(
+                &public_key_bytes(seed_phrase, 255)
+            ).encoded(),
+            expected_public_key_from_nonce_255
+        )
+    }
+
+    fn public_key_bytes(seed_phrase: &str, nonce: u8) -> Vec<u8> {
+        let bytes = PrivateKey::from_seed(seed_phrase, nonce).bytes().clone();
+        println!("{}", Base58::encode(&bytes, false));
+        Crypto::get_public_key(&bytes)
+    }
+}
+
