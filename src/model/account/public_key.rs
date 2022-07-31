@@ -5,9 +5,9 @@ pub struct PublicKey {
 }
 
 impl PublicKey {
-    pub fn from_bytes(bytes: &Vec<u8>) -> PublicKey {
+    pub fn from_bytes(bytes: &[u8]) -> PublicKey {
         PublicKey {
-            bytes: bytes.clone()
+            bytes: Vec::from(bytes)
         }
     }
 

@@ -5,7 +5,7 @@ use crate::util::{Bytes, Hash};
 pub struct Crypto;
 
 impl Crypto {
-    pub fn get_account_seed(seed_phrase: &Vec<u8>, nonce: u8) -> Vec<u8> {
+    pub fn get_account_seed(seed_phrase: &[u8], nonce: u8) -> Vec<u8> {
         Hash::secure_hash(
             &Bytes::concat(
                 vec![

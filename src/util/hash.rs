@@ -6,15 +6,15 @@ use sha2::{Sha256};
 pub struct Hash;
 
 impl Hash {
-    pub fn secure_hash(source: &Vec<u8>) -> Vec<u8> {
-        Self::keccak(&Self::blake(&source))
+    pub fn secure_hash(source: &[u8]) -> Vec<u8> {
+        Self::keccak(&Self::blake(source))
     }
 
     pub fn keccak(source: &Vec<u8>) -> Vec<u8> {
         Keccak256::digest(source).to_vec()
     }
 
-    pub fn blake(source: &Vec<u8>) -> Vec<u8> {
+    pub fn blake(source: &[u8]) -> Vec<u8> {
         let mut blake = Blake2bVar::new(32).unwrap();
         blake.update(source);
         let mut buf = [0u8; 32];

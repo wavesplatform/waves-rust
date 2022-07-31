@@ -14,10 +14,7 @@ impl Base58 {
     }
 
     pub fn is_valid(encoded: &str) -> bool {
-        match bs58::decode(encoded).into_vec() {
-            Ok(_) => true,
-            Err(_) => false
-        }
+        bs58::decode(encoded).into_vec().is_ok()
     }
 }
 

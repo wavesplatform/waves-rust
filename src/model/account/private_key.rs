@@ -9,7 +9,7 @@ pub struct PrivateKey {
 impl PrivateKey {
     pub fn from_seed(seed_phrase: &str, nonce: u8) -> PrivateKey {
         let hash_seed = Crypto::get_account_seed(
-            &seed_phrase.as_bytes().to_vec(),
+            seed_phrase.as_bytes(),
             nonce,
         );
         let private_key = Crypto::get_private_key(
