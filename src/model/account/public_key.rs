@@ -1,3 +1,4 @@
+use crate::model::account::Address;
 use crate::util::Base58;
 
 pub struct PublicKey {
@@ -13,6 +14,14 @@ impl PublicKey {
 
     pub fn encoded(&self) -> String {
         Base58::encode(&self.bytes, false)
+    }
+
+    pub fn bytes(&self) -> &Vec<u8> {
+        &self.bytes
+    }
+
+    pub fn address(&self, chain_id: u8) -> Address {
+        Address::from_public_key(chain_id, self)
     }
 }
 

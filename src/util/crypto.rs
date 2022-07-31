@@ -1,5 +1,7 @@
+use std::io::Read;
 use curve25519_dalek::constants;
 use curve25519_dalek::scalar::Scalar;
+use crate::constants::{ADDRESS_LENGTH, ADDRESS_VERSION};
 use crate::util::{Bytes, Hash};
 
 pub struct Crypto;
@@ -33,11 +35,26 @@ impl Crypto {
         let ed_pk = &Scalar::from_bits(pk) * &constants::ED25519_BASEPOINT_TABLE;
         ed_pk.to_montgomery().to_bytes().to_vec()
     }
+
+    pub fn get_public_key_hash(public_key: &[u8]) -> Vec<u8> {
+        Hash::secure_hash(public_key)[0..20].to_vec()
+    }
+
+    pub fn get_address(chain_id: &u8, public_key_hash: &Vec<u8>) -> Vec<u8> {
+        let mut buf = [0u8; ADDRESS_LENGTH];
+        buf[0] = ADDRESS_VERSION;
+        buf[1] = *chain_id;
+        buf[2..22].copy_from_slice(public_key_hash);
+        let checksum = &Hash::secure_hash(&buf[..22])[..4];
+        buf[22..].copy_from_slice(&checksum);
+        buf.to_vec()
+    }
 }
 
 
 #[cfg(test)]
 mod tests {
+    use crate::model::ChainId;
     use crate::util::{Base58, Crypto};
 
     #[test]
@@ -77,6 +94,21 @@ mod tests {
             ),
             Base58::decode(expected_public_key_from_nonce_255).unwrap()
         );
+    }
+
+    #[test]
+    fn test_get_address() {
+        let seed_phrase = "blame vacant regret company chase trip grant funny brisk innocent";
+
+        let expected_address = "3Ms87NGAAaPWZux233TB9A3TXps4LDkyJWN";
+
+        let public_key = Crypto::get_public_key(&private_key(seed_phrase, 0));
+        let public_key_hash = Crypto::get_public_key_hash(&public_key);
+
+        let address = Crypto::get_address(&ChainId::TESTNET.byte(), &public_key_hash);
+        let encoded_address = Base58::encode(&address, false);
+
+        assert_eq!(encoded_address, expected_address)
     }
 
     fn private_key(seed_phrase: &str, nonce: u8) -> Vec<u8> {
