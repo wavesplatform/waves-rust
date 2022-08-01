@@ -1,8 +1,8 @@
 use std::str::FromStr;
 use reqwest::Url;
 use serde_json::Value;
-use crate::json_serializer::{from_json, TransactionInfo};
-use crate::model::ChainId;
+use crate::json_serializer::from_json;
+use crate::model::{ChainId, TransactionInfo};
 
 pub const MAINNET_URL: &str = "https://nodes.wavesnodes.com";
 pub const TESTNET_URL: &str = "https://nodes-testnet.wavesnodes.com";
@@ -63,7 +63,7 @@ impl Profile {
 
 #[cfg(test)]
 mod tests {
-    use crate::json_serializer::ApplicationStatus;
+    use crate::model::ApplicationStatus;
     use crate::node::{Node, Profile};
 
     #[test]
