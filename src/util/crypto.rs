@@ -1,4 +1,3 @@
-use std::io::Read;
 use curve25519_dalek::constants;
 use curve25519_dalek::scalar::Scalar;
 use crate::constants::{ADDRESS_LENGTH, ADDRESS_VERSION};

@@ -99,7 +99,8 @@ impl Transaction {
 }
 
 pub enum TransactionData {
-    Transfer(TransferTransaction)
+    Transfer(TransferTransaction),
+    Issue()
 }
 
 impl TransactionData {
