@@ -7,7 +7,7 @@ pub struct PrivateKey {
 }
 
 impl PrivateKey {
-    pub fn from_seed(seed_phrase: &str, nonce: u8) -> PrivateKey {
+    pub fn from_seed(seed_phrase: &str, nonce: u8) -> Self {
         let hash_seed = Crypto::get_account_seed(
             seed_phrase.as_bytes(),
             nonce,
@@ -16,7 +16,7 @@ impl PrivateKey {
             &hash_seed
         );
         let public_key = PublicKey::from_bytes(&Crypto::get_public_key(&private_key));
-        PrivateKey {
+        Self {
             bytes: private_key,
             public_key,
         }

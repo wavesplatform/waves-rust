@@ -1,22 +1,24 @@
+use crate::model::account::PublicKey;
 use crate::model::transaction::TransactionData::Transfer;
 use crate::model::transaction::TransferTransaction;
+use crate::node::Profile;
 
 pub struct TransactionInfo {
     id: String,
-    transaction: Transaction,
+    signed_transaction: SignedTransaction,
     status: ApplicationStatus,
     height: u32,
 }
 
 impl TransactionInfo {
     pub fn new(id: String,
-               transaction: Transaction,
+               signed_transaction: SignedTransaction,
                status: ApplicationStatus,
                height: u32,
     ) -> TransactionInfo {
         TransactionInfo {
             id,
-            transaction,
+            signed_transaction,
             status,
             height,
         }
@@ -34,8 +36,8 @@ impl TransactionInfo {
         self.height
     }
 
-    pub fn tx(&self) -> &Transaction {
-        &self.transaction
+    pub fn signed_tx(&self) -> &SignedTransaction {
+        &self.signed_transaction
     }
 }
 
@@ -49,8 +51,9 @@ pub enum ApplicationStatus {
 pub struct Transaction {
     data: TransactionData,
     fee: u64,
+    fee_asset_id: Option<String>,
     timestamp: u64,
-    sender_public_key: String,
+    public_key: PublicKey,
     tx_type: u8,
     version: u8,
 }
@@ -58,16 +61,19 @@ pub struct Transaction {
 impl Transaction {
     pub fn new(
         data: TransactionData,
-        fee: u64, timestamp: u64,
-        sender_public_key: String,
+        fee: u64,
+        fee_asset_id: Option<String>,
+        timestamp: u64,
+        public_key: PublicKey,
         tx_type: u8,
         version: u8,
     ) -> Transaction {
         Transaction {
             data,
             fee,
+            fee_asset_id,
             timestamp,
-            sender_public_key,
+            public_key,
             tx_type,
             version,
         }
@@ -81,12 +87,16 @@ impl Transaction {
         self.fee
     }
 
+    pub fn fee_asset_id(&self) -> Option<String> {
+        self.fee_asset_id.clone()
+    }
+
     pub fn timestamp(&self) -> u64 {
         self.timestamp
     }
 
-    pub fn sender_public_key(&self) -> String {
-        self.sender_public_key.clone()
+    pub fn public_key(&self) -> &PublicKey {
+        &self.public_key
     }
 
     pub fn tx_type(&self) -> u8 {
@@ -100,7 +110,7 @@ impl Transaction {
 
 pub enum TransactionData {
     Transfer(TransferTransaction),
-    Issue()
+    Issue(),
 }
 
 impl TransactionData {
@@ -109,5 +119,27 @@ impl TransactionData {
             Transfer(tx) => Ok(tx),
             _ => Err("failed".into())
         }
+    }
+}
+
+pub struct SignedTransaction {
+    transaction: Transaction,
+    proofs: Vec<Vec<u8>>
+}
+
+impl SignedTransaction {
+    pub fn new(transaction: Transaction, proofs: Vec<Vec<u8>>) -> SignedTransaction {
+        SignedTransaction {
+            transaction,
+            proofs
+        }
+    }
+
+    pub fn tx(&self) -> &Transaction {
+        &self.transaction
+    }
+
+    pub fn proofs(&self) -> &Vec<Vec<u8>> {
+        &self.proofs
     }
 }

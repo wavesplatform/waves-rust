@@ -1,7 +1,7 @@
 use std::str::FromStr;
 use reqwest::Url;
 use serde_json::Value;
-use crate::json_serializer::from_json;
+use crate::json_deserializer::from_json;
 use crate::model::{ChainId, TransactionInfo};
 
 pub const MAINNET_URL: &str = "https://nodes.wavesnodes.com";
@@ -63,7 +63,8 @@ impl Profile {
 
 #[cfg(test)]
 mod tests {
-    use crate::model::ApplicationStatus;
+    use ChainId::MAINNET;
+    use crate::model::{ApplicationStatus, ChainId};
     use crate::node::{Node, Profile};
 
     #[test]
@@ -77,9 +78,21 @@ mod tests {
         assert_eq!(transaction_info.status(), ApplicationStatus::Succeed);
         assert_eq!(transaction_info.height(), 3229634);
 
-        let transaction = transaction_info.tx();
+        let signed_transaction = transaction_info.signed_tx();
+
+        let proof_from_rs = "4NiakymjU9s7mJYTBGbweGrDDwAauEXsuhMCeQJD1S28cEFL7hpjEL2LhaiVyFScq8UGVucpvCBo8PogvHQCdhrZ";
+        assert_eq!(signed_transaction.proofs()[0], proof_from_rs.as_bytes());
+
+        let transaction = signed_transaction.tx();
+
         assert_eq!(transaction.timestamp(), 1659278184707);
-        assert_eq!(transaction.sender_public_key(), "AdZiupVsS9PMbTQK7iePWmD4Y5s8ZF6PoaQFyHKV2anj");
+        assert_eq!(transaction.fee(), 100000);
+        assert_eq!(transaction.fee_asset_id(), None);
+        assert_eq!(
+            transaction.public_key().address(MAINNET.byte()).encoded(),
+            "3P4eeU7v1LMHQFwwT2GW9W99c6vZyytHajj"
+        );
+        assert_eq!(transaction.public_key().encoded(), "AdZiupVsS9PMbTQK7iePWmD4Y5s8ZF6PoaQFyHKV2anj");
         assert_eq!(transaction.tx_type(), 4);
         assert_eq!(transaction.version(), 1);
 

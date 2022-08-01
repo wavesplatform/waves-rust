@@ -12,6 +12,13 @@ impl PublicKey {
         }
     }
 
+    pub fn from_str(base58string: &str) -> PublicKey {
+        let bytes = Base58::decode(base58string).unwrap();
+        PublicKey {
+            bytes
+        }
+    }
+
     pub fn encoded(&self) -> String {
         Base58::encode(&self.bytes, false)
     }
@@ -22,6 +29,12 @@ impl PublicKey {
 
     pub fn address(&self, chain_id: u8) -> Address {
         Address::from_public_key(chain_id, self)
+    }
+}
+
+impl From<&str> for PublicKey {
+    fn from(str: &str) -> Self {
+        PublicKey::from_str(str)
     }
 }
 
