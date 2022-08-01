@@ -2,11 +2,13 @@ use crate::model::account::PublicKey;
 use crate::util::{Base58, Crypto};
 
 pub struct PrivateKey {
+    // todo add https://docs.rs/secrecy/0.8.0/secrecy/ ?
     bytes: Vec<u8>,
     public_key: PublicKey,
 }
 
 impl PrivateKey {
+    // todo add https://docs.rs/secrecy/0.8.0/secrecy/ ?
     pub fn from_seed(seed_phrase: &str, nonce: u8) -> Self {
         let hash_seed = Crypto::get_account_seed(
             seed_phrase.as_bytes(),
