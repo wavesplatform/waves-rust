@@ -2,7 +2,10 @@ use serde_json::Value;
 use crate::model::{ApplicationStatus, SignedTransaction, Transaction, TransactionInfo, TransferTransaction};
 use crate::model::TransactionData::Transfer;
 
+// todo return Result<TransactionInfo, Error>
 pub fn from_json(value: Value) -> TransactionInfo {
+
+    // todo rm unwrap add handler for all reading fields
     let fee = value["fee"].as_i64().unwrap() as u64;
     let fee_asset_id = value["feeAssetId"].as_str().map(|value| value.into());
     let timestamp = value["timestamp"].as_i64().unwrap() as u64;

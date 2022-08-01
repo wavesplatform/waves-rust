@@ -9,6 +9,7 @@ pub struct TransferTransaction {
 }
 
 impl TransferTransaction {
+    // todo return Result<TransferTransaction, Error>
     pub fn from_json(value: Value) -> TransferTransaction {
         let recipient = value["recipient"].as_str().unwrap().into();
         let asset: Option<String> = value["assetId"].as_str().map(|value| value.into());

@@ -26,6 +26,7 @@ impl Node {
         self.url.clone()
     }
 
+    // todo return Result<TransactionInfo, Error>
     pub fn get_transaction_info(&self, transaction_id: String) -> TransactionInfo {
         let get_tx_info_url = format!("{}transactions/info/{}", self.url().as_str(), transaction_id);
         let body: Value = reqwest::blocking::get(get_tx_info_url)
@@ -45,9 +46,9 @@ pub enum Profile {
 impl Profile {
     pub fn url(&self) -> Url {
         let url = match *self {
-            Profile::MAINNET => "https://nodes.wavesnodes.com",
-            Profile::TESTNET => "https://nodes-testnet.wavesnodes.com",
-            Profile::STAGENET => "https://nodes-stagenet.wavesnodes.com",
+            Profile::MAINNET => MAINNET_URL,
+            Profile::TESTNET => TESTNET_URL,
+            Profile::STAGENET => STAGENET_URL,
         };
         Url::from_str(url).unwrap()
     }

@@ -1,7 +1,6 @@
 use crate::model::account::PublicKey;
 use crate::model::transaction::TransactionData::Transfer;
 use crate::model::transaction::TransferTransaction;
-use crate::node::Profile;
 
 pub struct TransactionInfo {
     id: String,
