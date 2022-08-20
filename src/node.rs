@@ -87,11 +87,12 @@ impl Profile {
 mod tests {
     use ChainId::MAINNET;
 
+    use crate::model::data_entry::DataEntry;
     use crate::model::{ApplicationStatus, ChainId};
     use crate::node::{Node, Profile};
 
     #[tokio::test]
-    async fn test_get_transaction_info() {
+    async fn test_get_transfer_transaction_info() {
         let tx_id = "8YsBZSZ3UmWAo8bCj8RN64BvoQUTdLtd567hXqQCYDVo";
 
         let node = Node::from_profile(Profile::MAINNET);
@@ -125,7 +126,7 @@ mod tests {
         assert_eq!(transaction.tx_type(), 4);
         assert_eq!(transaction.version(), 1);
 
-        let transfer_transaction = transaction.data().transfer().unwrap();
+        let transfer_transaction = transaction.data().transfer_tx().unwrap();
         assert_eq!(transfer_transaction.attachment(), Some("".into()));
         assert_eq!(
             transfer_transaction.recipient(),
@@ -133,5 +134,61 @@ mod tests {
         );
         assert_eq!(transfer_transaction.asset(), None);
         assert_eq!(transfer_transaction.amount(), 46095972);
+    }
+
+    #[tokio::test]
+    async fn test_get_data_transaction_info() {
+        let tx_id = "HcPcSma7oWeqy8g3ahhwFDzrq8YK8r739U4WC2ieB5Bs";
+
+        let node = Node::from_profile(Profile::MAINNET);
+        let transaction_info = node.get_transaction_info(tx_id.into()).await;
+
+        assert_eq!(
+            transaction_info.id(),
+            "HcPcSma7oWeqy8g3ahhwFDzrq8YK8r739U4WC2ieB5Bs"
+        );
+        assert_eq!(transaction_info.status(), ApplicationStatus::Succeed);
+        assert_eq!(transaction_info.height(), 3258212);
+
+        let signed_transaction = transaction_info.signed_tx();
+
+        let proof_from_rs = "25KiXB1FS3FaupiPXyEVeRquKLK4FEb3NWF36D1eHw1gpT9Y53MbLsVqnX9rJC8MPg4x9yiUxFkmxF9DDTgQruhi";
+        assert_eq!(signed_transaction.proofs()[0], proof_from_rs.as_bytes());
+
+        let transaction = signed_transaction.tx();
+
+        assert_eq!(transaction.timestamp(), 1660994483097);
+        assert_eq!(transaction.fee(), 500000);
+        assert_eq!(transaction.fee_asset_id(), None);
+        assert_eq!(
+            transaction.public_key().address(MAINNET.byte()).encoded(),
+            "3P4sxdNNPJLQcitAnLqLfSwaenjxFxQvZsE"
+        );
+        assert_eq!(
+            transaction.public_key().encoded(),
+            "GTr2dXt3mxaD8tXGyNauV8YMy1hsSoi63DUuk4uyijqG"
+        );
+        assert_eq!(transaction.tx_type(), 12);
+        assert_eq!(transaction.version(), 1);
+
+        let data_transaction = transaction.data().data_tx().unwrap();
+
+        let data_entries = data_transaction.data();
+
+        match data_entries[0].clone() {
+            DataEntry::IntegerEntry { key, value } => {
+                assert_eq!(key, "price_ausdtlpm_20220820");
+                assert_eq!(value, 1823153 as u64)
+            }
+            _ => panic!("failed"),
+        };
+
+        match data_entries[1].clone() {
+            DataEntry::IntegerEntry { key, value } => {
+                assert_eq!(key, "lastHeight_ausdtlpm");
+                assert_eq!(value, 3258212 as u64)
+            }
+            _ => panic!("failed"),
+        }
     }
 }

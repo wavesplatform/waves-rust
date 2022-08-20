@@ -1,6 +1,8 @@
 use crate::model::account::PublicKey;
+use crate::model::transaction::data_transaction::DataTransaction;
 use crate::model::transaction::TransactionData::Transfer;
 use crate::model::transaction::TransferTransaction;
+use crate::model::TransactionData::Data;
 
 pub struct TransactionInfo {
     id: String,
@@ -110,13 +112,21 @@ impl Transaction {
 
 pub enum TransactionData {
     Transfer(TransferTransaction),
+    Data(DataTransaction),
     Issue(),
 }
 
 impl TransactionData {
-    pub fn transfer(&self) -> Result<&TransferTransaction, String> {
+    pub fn transfer_tx(&self) -> Result<&TransferTransaction, String> {
         match self {
             Transfer(tx) => Ok(tx),
+            _ => Err("failed".into()),
+        }
+    }
+
+    pub fn data_tx(&self) -> Result<&DataTransaction, String> {
+        match self {
+            Data(tx) => Ok(tx),
             _ => Err("failed".into()),
         }
     }
