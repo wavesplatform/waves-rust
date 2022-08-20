@@ -1088,6 +1088,7 @@ checksum = "6598dd0bd3c7d51095ff6531a5b23e02acdc81804e30d8f07afb77b7215a140a"
 name = "waves-rust"
 version = "0.1.0"
 dependencies = [
+ "base64",
  "blake2",
  "bs58",
  "curve25519-dalek",

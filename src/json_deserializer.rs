@@ -1,6 +1,7 @@
-use crate::model::TransactionData::Transfer;
+use crate::model::TransactionData::{Data, Transfer};
 use crate::model::{
-    ApplicationStatus, SignedTransaction, Transaction, TransactionInfo, TransferTransaction,
+    ApplicationStatus, DataTransaction, SignedTransaction, Transaction, TransactionInfo,
+    TransferTransaction,
 };
 use serde_json::Value;
 
@@ -32,7 +33,12 @@ pub fn from_json(value: Value) -> TransactionInfo {
     };
     let height = value["height"].as_i64().unwrap() as u32;
 
-    let transaction_data = Transfer(TransferTransaction::from_json(value));
+    let transaction_data = match tx_type {
+        4 => Transfer(TransferTransaction::from_json(value)),
+        12 => Data(DataTransaction::from_json(value)),
+        _ => panic!("unknown tx type"),
+    };
+
     let transaction = Transaction::new(
         transaction_data,
         fee,
