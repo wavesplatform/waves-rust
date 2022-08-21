@@ -1,5 +1,6 @@
 use serde_json::Value;
 
+#[derive(Clone)]
 pub struct TransferTransaction {
     pub recipient: String,
     pub asset: Option<String>,

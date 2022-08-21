@@ -1,0 +1,213 @@
+syntax = "proto3";
+package waves.events;
+option java_package = "com.wavesplatform.events.protobuf";
+option go_package = "github.com/wavesplatform/gowaves/pkg/grpc/generated/waves/events";
+
+import "waves/block.proto";
+import "waves/amount.proto";
+import "waves/transaction.proto";
+import "waves/invoke_script_result.proto";
+
+message BlockchainUpdated {
+    bytes id = 1;
+    int32 height = 2;
+
+    message Append {
+        message BlockAppend {
+            Block block = 1;
+            int64 updated_waves_amount = 2;
+        }
+
+        message MicroBlockAppend {
+            SignedMicroBlock micro_block = 1;
+            bytes updated_transactions_root = 2;
+        }
+
+        oneof body {
+            BlockAppend block = 1;
+            MicroBlockAppend micro_block = 2;
+        }
+
+        repeated bytes transaction_ids = 3;
+        repeated TransactionMetadata transactions_metadata = 4;
+
+        StateUpdate state_update = 11;
+        repeated StateUpdate transaction_state_updates = 12;
+    }
+
+    message Rollback {
+        enum RollbackType {
+            BLOCK = 0;
+            MICROBLOCK = 1;
+        }
+
+        RollbackType type = 1;
+        repeated bytes removed_transaction_ids = 2;
+        repeated Block removed_blocks = 3;
+        StateUpdate rollback_state_update = 4;
+    }
+
+    oneof update {
+        Append append = 11;
+        Rollback rollback = 12;
+    }
+
+    repeated StateUpdate.AssetInfo referenced_assets = 21;
+}
+
+message StateUpdate {
+    repeated BalanceUpdate balances = 1;
+    repeated LeasingUpdate leasing_for_address = 2;
+    repeated DataEntryUpdate data_entries = 3;
+    repeated AssetStateUpdate assets = 4;
+    repeated LeaseUpdate individual_leases = 5;
+
+    message BalanceUpdate {
+        bytes address = 1;
+        Amount amount_after = 2;
+        int64 amount_before = 3;
+    }
+
+    message LeasingUpdate {
+        bytes address = 1;
+        int64 in_after = 2;
+        int64 out_after = 3;
+        int64 in_before = 4;
+        int64 out_before = 5;
+    }
+
+    message LeaseUpdate {
+        enum LeaseStatus {
+            INACTIVE = 0;
+            ACTIVE = 1;
+        }
+
+        bytes lease_id = 1;
+        LeaseStatus status_after = 2;
+        int64 amount = 10;
+        bytes sender = 11;
+        bytes recipient = 12;
+        bytes origin_transaction_id = 13;
+    }
+
+    message DataEntryUpdate {
+        bytes address = 1;
+        DataTransactionData.DataEntry data_entry = 2;
+        DataTransactionData.DataEntry data_entry_before = 10;
+    }
+
+    message AssetStateUpdate {
+        AssetDetails before = 1;
+        AssetDetails after = 2;
+    }
+
+    message AssetDetails {
+        message AssetScriptInfo {
+            bytes script = 1;
+            int64 complexity = 2;
+        }
+
+        bytes asset_id = 1;
+        bytes issuer = 2;
+        int32 decimals = 3;
+        string name = 4;
+        string description = 5;
+        bool reissuable = 6;
+        int64 volume = 7;
+        AssetScriptInfo script_info = 8;
+        int64 sponsorship = 9;
+        bool nft = 10;
+        int32 last_updated = 11;
+
+        /*
+        Related to a past behavior in the blockchain when it was possible to reissue
+        assets so that the total volume became more then int64 max value.
+        This field represents accurate volume even for those assets.
+        Can be ignored if the target system does not need such accuracy.
+        Encoding: like Java BigInteger, https://docs.oracle.com/javase/7/docs/api/java/math/BigInteger.html#toByteArray()
+        */
+        bytes safe_volume = 20;
+    }
+
+    message AssetInfo {
+        bytes id = 1;
+        int32 decimals = 2;
+        string name = 3;
+    }
+}
+
+message TransactionMetadata {
+    bytes sender_address = 1;
+    oneof metadata {
+        TransferMetadata transfer = 104;
+        ExchangeMetadata exchange = 107;
+        MassTransferMetadata mass_transfer = 111;
+        InvokeScriptMetadata invoke_script = 116;
+        LeaseMetadata lease = 117;
+        EthereumMetadata ethereum = 301;
+    };
+
+    message TransferMetadata {
+        bytes recipient_address = 1;
+    }
+
+    message MassTransferMetadata {
+        repeated bytes recipients_addresses = 1;
+    }
+
+    message ExchangeMetadata {
+        /*
+        Fields starting with `order_*` represent order metadata.
+        Each of them is a collection of exactly 2 elements.
+        Element indexes correspond to their parent order indexes in the exchange transaction.
+        */
+        repeated bytes order_ids = 1;
+        repeated bytes order_sender_addresses = 2;
+        repeated bytes order_sender_public_keys = 3;
+    }
+
+    message InvokeScriptMetadata {
+        bytes d_app_address = 1;
+        string function_name = 2;
+        repeated InvokeScriptResult.Call.Argument arguments = 3;
+        repeated Amount payments = 4;
+        InvokeScriptResult result = 5;
+
+        // bytes sender_address = 6;
+
+        message Argument {
+            message List {
+                repeated Argument items = 1;
+            }
+
+            oneof value {
+                int64 integer_value = 1;
+                bytes binary_value = 2;
+                string string_value = 3;
+                bool boolean_value = 4;
+                List list = 10;
+            }
+        }
+    }
+
+    message LeaseMetadata {
+        bytes recipient_address = 1;
+    }
+
+    message EthereumTransferMetadata {
+        bytes recipient_address = 1;
+        Amount amount = 2;
+    }
+
+    message EthereumMetadata {
+        // bytes sender_address = 1;
+        int64 timestamp = 2;
+        int64 fee = 3;
+        bytes sender_public_key = 4;
+
+        oneof Action {
+            EthereumTransferMetadata transfer = 10;
+            InvokeScriptMetadata invoke = 11;
+        }
+    }
+}

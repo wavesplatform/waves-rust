@@ -1,5 +1,8 @@
+use crate::constants::SIGNATURE_LENGTH;
 use crate::model::account::PublicKey;
 use crate::util::{Base58, Crypto};
+use curve25519_dalek::montgomery::MontgomeryPoint;
+use ed25519_dalek::{PublicKey as EdPublicKey, Signature, Verifier};
 
 pub struct PrivateKey {
     // todo add https://docs.rs/secrecy/0.8.0/secrecy/ ?
@@ -27,8 +30,35 @@ impl PrivateKey {
         &self.bytes
     }
 
-    pub fn public_key(&self) -> &PublicKey {
-        &self.public_key
+    pub fn public_key(&self) -> PublicKey {
+        self.public_key.clone()
+    }
+
+    pub fn sign(&self, message: &[u8]) -> Vec<u8> {
+        let private_key: [u8; 32] = self.bytes.clone().try_into().unwrap();
+        Crypto::sign(&private_key, message)
+    }
+
+    pub fn is_signature_valid(&self, message: &[u8], signature: &[u8]) -> bool {
+        let sig_arr = <[u8; SIGNATURE_LENGTH]>::try_from(signature.to_owned()).unwrap();
+        let sign = sig_arr[63] & 0x80;
+        let mut sig = [0u8; SIGNATURE_LENGTH];
+        sig.copy_from_slice(signature);
+        sig[63] &= 0x7f;
+
+        let public_key_bytes = self.public_key.bytes().clone();
+        let mut ed_public_key = MontgomeryPoint(<[u8; 32]>::try_from(public_key_bytes).unwrap())
+            .to_edwards(sign)
+            .unwrap()
+            .compress()
+            .to_bytes();
+        ed_public_key[31] &= 0x7F;
+        ed_public_key[31] |= sign;
+
+        EdPublicKey::from_bytes(&ed_public_key)
+            .unwrap()
+            .verify(message, &Signature::from_bytes(&sig).unwrap())
+            .is_ok()
     }
 }
 
