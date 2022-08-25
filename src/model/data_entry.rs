@@ -1,15 +1,23 @@
-use crate::model::data_entry::DataEntry::{
-    BinaryEntry, BooleanEntry, DeleteEntry, IntegerEntry, StringEntry,
-};
+use crate::model::data_entry::DataEntry::{BinaryEntry, BooleanEntry, IntegerEntry, StringEntry};
 use serde_json::Value;
 
 #[derive(Clone)]
 pub enum DataEntry {
-    IntegerEntry { key: String, value: u64 },
+    IntegerEntry { key: String, value: i64 },
     BooleanEntry { key: String, value: bool },
     BinaryEntry { key: String, value: Vec<u8> },
     StringEntry { key: String, value: String },
-    DeleteEntry { key: String },
+}
+
+impl DataEntry {
+    pub fn key(&self) -> String {
+        match self {
+            IntegerEntry { key, .. } => key.clone(),
+            BooleanEntry { key, .. } => key.clone(),
+            BinaryEntry { key, .. } => key.clone(),
+            StringEntry { key, .. } => key.clone(),
+        }
+    }
 }
 
 impl From<&Value> for DataEntry {
@@ -17,7 +25,6 @@ impl From<&Value> for DataEntry {
         let key_field = value["key"].as_str().unwrap().into();
         let value_field = &value["value"];
         match value["type"].as_str().unwrap() {
-            "" => DeleteEntry { key: key_field },
             "binary" => BinaryEntry {
                 key: key_field,
                 value: base64::decode(value_field.as_str().unwrap()).unwrap(),
@@ -28,7 +35,7 @@ impl From<&Value> for DataEntry {
             },
             "integer" => IntegerEntry {
                 key: key_field,
-                value: value_field.as_u64().unwrap(),
+                value: value_field.as_i64().unwrap(),
             },
             "string" => StringEntry {
                 key: key_field,

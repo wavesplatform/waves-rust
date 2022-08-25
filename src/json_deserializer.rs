@@ -1,12 +1,12 @@
 use crate::model::TransactionData::{Data, Transfer};
 use crate::model::{
-    ApplicationStatus, DataTransaction, SignedTransaction, Transaction, TransactionInfo,
+    Amount, ApplicationStatus, DataTransaction, SignedTransaction, Transaction, TransactionInfo,
     TransferTransaction,
 };
 use serde_json::Value;
 
 // todo return Result<TransactionInfo, Error>
-pub fn from_json(value: Value) -> TransactionInfo {
+pub fn from_json(value: Value, chain_id: u8) -> TransactionInfo {
     // todo rm unwrap add handler for all reading fields
     let fee = value["fee"].as_i64().unwrap() as u64;
     let fee_asset_id = value["feeAssetId"].as_str().map(|value| value.into());
@@ -41,12 +41,12 @@ pub fn from_json(value: Value) -> TransactionInfo {
 
     let transaction = Transaction::new(
         transaction_data,
-        fee,
-        fee_asset_id,
+        Amount::new(fee, fee_asset_id),
         timestamp,
         public_key,
         tx_type,
         version,
+        chain_id,
     );
 
     let signed_transaction = SignedTransaction::new(transaction, proofs);

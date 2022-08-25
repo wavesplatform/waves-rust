@@ -1,7 +1,10 @@
-use crate::constants::{ADDRESS_LENGTH, ADDRESS_VERSION};
+use crate::constants::{ADDRESS_LENGTH, ADDRESS_VERSION, SIGNATURE_LENGTH};
 use crate::util::{Bytes, Hash};
 use curve25519_dalek::constants;
 use curve25519_dalek::scalar::Scalar;
+use rand::Rng;
+use sha2::digest::Update;
+use sha2::Sha512;
 
 pub struct Crypto;
 
@@ -43,6 +46,43 @@ impl Crypto {
         let checksum = &Hash::secure_hash(&buf[..22])[..4];
         buf[22..].copy_from_slice(checksum);
         buf.to_vec()
+    }
+
+    pub fn sign(private_key: &[u8; 32], message: &[u8]) -> Vec<u8> {
+        let mut hash = Sha512::default();
+
+        hash.update(&INITBUF);
+
+        hash.update(private_key);
+        hash.update(message);
+
+        let mut rand = rand::thread_rng();
+        let mut rndbuf: Vec<u8> = vec![0; 64];
+        (0..63).for_each(|i| rndbuf[i] = rand.gen::<u8>());
+
+        hash.update(&rndbuf);
+
+        let rsc = Scalar::from_hash(hash);
+        let r = (&rsc * &constants::ED25519_BASEPOINT_TABLE)
+            .compress()
+            .to_bytes();
+
+        let ed_public_key = constants::ED25519_BASEPOINT_POINT * Scalar::from_bits(*private_key);
+        let public_key = ed_public_key.compress().to_bytes();
+
+        hash = Sha512::default();
+        hash.update(&r);
+        hash.update(&public_key);
+        hash.update(message);
+        let s = (Scalar::from_hash(hash) * Scalar::from_bits(*private_key)) + rsc;
+
+        let sign = public_key[31] & 0x80;
+        let mut result = [0; SIGNATURE_LENGTH];
+        result[..32].copy_from_slice(&r);
+        result[32..].copy_from_slice(&s.to_bytes());
+        result[63] &= 0x7F;
+        result[63] |= sign;
+        result.to_vec()
     }
 }
 
@@ -104,3 +144,8 @@ mod tests {
         Crypto::get_private_key(&account_seed)
     }
 }
+
+static INITBUF: [u8; 32] = [
+    0xfe, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+];

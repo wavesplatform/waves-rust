@@ -1,0 +1,98 @@
+syntax = "proto3";
+package waves;
+
+option java_package = "com.wavesplatform.protobuf.transaction";
+option csharp_namespace = "Waves";
+option go_package = "github.com/wavesplatform/gowaves/pkg/grpc/generated/waves";
+
+import "waves/transaction.proto";
+import "waves/amount.proto";
+import "waves/recipient.proto";
+
+message InvokeScriptResult {
+    message Payment {
+        bytes address = 1;
+        Amount amount = 2;
+    }
+
+    message Issue {
+        bytes asset_id = 1;
+        string name = 2;
+        string description = 3;
+        int64 amount = 4;
+        int32 decimals = 5;
+        bool reissuable = 6;
+        bytes script = 7;
+        int64 nonce = 8;
+    }
+
+    message Reissue {
+        bytes asset_id = 1;
+        int64 amount = 2;
+        bool is_reissuable = 3;
+    }
+
+    message Burn {
+        bytes asset_id = 1;
+        int64 amount = 2;
+    }
+
+    message SponsorFee {
+        Amount min_fee = 1;
+    }
+
+    message Lease {
+        Recipient recipient = 1;
+        int64 amount = 2;
+        int64 nonce = 3;
+        bytes lease_id = 4;
+    }
+
+    message LeaseCancel {
+        bytes lease_id = 1;
+    }
+
+    message ErrorMessage {
+        int32 code = 1;
+        string text = 2;
+    }
+
+    message Call {
+        message Argument {
+            message List {
+                repeated Argument items = 1;
+            }
+
+            oneof value {
+                int64 integer_value = 1;
+                bytes binary_value = 2;
+                string string_value = 3;
+                bool boolean_value = 4;
+                bytes case_obj = 5;
+                List list = 10;
+            }
+        }
+
+        string function = 1;
+        repeated bytes args_bytes = 2 [deprecated = true];
+        repeated Argument args = 3;
+    }
+
+    message Invocation {
+        bytes dApp = 1;
+        Call call = 2;
+        repeated Amount payments = 3;
+        InvokeScriptResult stateChanges = 4;
+    }
+
+    repeated DataTransactionData.DataEntry data = 1;
+    repeated Payment transfers = 2;
+    repeated Issue issues = 3;
+    repeated Reissue reissues = 4;
+    repeated Burn burns = 5;
+    ErrorMessage error_message = 6;
+    repeated SponsorFee sponsor_fees = 7;
+    repeated Lease leases = 8;
+    repeated LeaseCancel lease_cancels = 9;
+    repeated Invocation invokes = 10;
+}

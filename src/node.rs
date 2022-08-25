@@ -54,7 +54,7 @@ impl Node {
             .json()
             .await
             .unwrap();
-        from_json(body)
+        from_json(body, self.chain_id)
     }
 }
 
@@ -113,8 +113,8 @@ mod tests {
         let transaction = signed_transaction.tx();
 
         assert_eq!(transaction.timestamp(), 1659278184707);
-        assert_eq!(transaction.fee(), 100000);
-        assert_eq!(transaction.fee_asset_id(), None);
+        assert_eq!(transaction.fee().fee(), 100000);
+        assert_eq!(transaction.fee().fee_asset_id(), None);
         assert_eq!(
             transaction.public_key().address(MAINNET.byte()).encoded(),
             "3P4eeU7v1LMHQFwwT2GW9W99c6vZyytHajj"
@@ -158,8 +158,8 @@ mod tests {
         let transaction = signed_transaction.tx();
 
         assert_eq!(transaction.timestamp(), 1660994483097);
-        assert_eq!(transaction.fee(), 500000);
-        assert_eq!(transaction.fee_asset_id(), None);
+        assert_eq!(transaction.fee().fee(), 500000);
+        assert_eq!(transaction.fee().fee_asset_id(), None);
         assert_eq!(
             transaction.public_key().address(MAINNET.byte()).encoded(),
             "3P4sxdNNPJLQcitAnLqLfSwaenjxFxQvZsE"
@@ -178,7 +178,7 @@ mod tests {
         match data_entries[0].clone() {
             DataEntry::IntegerEntry { key, value } => {
                 assert_eq!(key, "price_ausdtlpm_20220820");
-                assert_eq!(value, 1823153 as u64)
+                assert_eq!(value, 1823153 as i64)
             }
             _ => panic!("failed"),
         };
@@ -186,7 +186,7 @@ mod tests {
         match data_entries[1].clone() {
             DataEntry::IntegerEntry { key, value } => {
                 assert_eq!(key, "lastHeight_ausdtlpm");
-                assert_eq!(value, 3258212 as u64)
+                assert_eq!(value, 3258212 as i64)
             }
             _ => panic!("failed"),
         }
