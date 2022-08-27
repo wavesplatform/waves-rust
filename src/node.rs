@@ -4,7 +4,7 @@ use std::time::Duration;
 use reqwest::{Client, Url};
 use serde_json::Value;
 
-use crate::model::{ChainId, TransactionInfo};
+use crate::model::{ChainId, SignedTransaction, TransactionInfo};
 use crate::util::JsonDeserializer;
 
 pub const MAINNET_URL: &str = "https://nodes.wavesnodes.com";
@@ -39,22 +39,29 @@ impl Node {
     }
 
     // todo return Result<TransactionInfo, Error>
-    pub async fn get_transaction_info(&self, transaction_id: String) -> TransactionInfo {
+    pub async fn get_transaction_info(&self, transaction_id: &str) -> TransactionInfo {
         let get_tx_info_url = format!(
             "{}transactions/info/{}",
             self.url().as_str(),
             transaction_id
         );
-        let body: Value = self
-            .http_client
-            .get(get_tx_info_url)
-            .send()
-            .await
-            .unwrap()
-            .json()
-            .await
-            .unwrap();
-        JsonDeserializer::deserialize_tx_info(body, self.chain_id)
+        JsonDeserializer::deserialize_tx_info(self.get(&get_tx_info_url).await, self.chain_id)
+    }
+
+    pub async fn broadcast(&self, signed_tx: &SignedTransaction) -> SignedTransaction {
+        let broadcast_tx_url = format!("{}transactions/broadcast", self.url().as_str());
+        let rs = self.post(&broadcast_tx_url, &signed_tx.to_json()).await;
+        JsonDeserializer::deserialize_signed_tx(&rs, signed_tx.tx().chain_id())
+    }
+
+    async fn get(&self, url: &str) -> Value {
+        let response = self.http_client.get(url).send().await.unwrap();
+        response.json().await.unwrap()
+    }
+
+    async fn post(&self, url: &str, body: &Value) -> Value {
+        let response = self.http_client.post(url).json(body).send().await.unwrap();
+        response.json().await.unwrap()
     }
 }
 
