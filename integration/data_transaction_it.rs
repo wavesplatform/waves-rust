@@ -1,33 +1,55 @@
 use waves_rust::model::account::PrivateKey;
 use waves_rust::model::data_entry::DataEntry;
-use waves_rust::model::{Amount, DataTransaction, Transaction, TransactionData};
+use waves_rust::model::{Amount, ChainId, DataTransaction, Transaction, TransactionData};
+use waves_rust::node::{Node, Profile};
 use waves_rust::util::get_current_epoch_millis;
 
 const SEED_PHRASE: &str = "dwarf chimney miss category orchard organ neck income prevent \
 trigger used census";
 
-#[test]
-pub fn broadcast_and_read_test() {
+//todo add docker private node
+
+#[tokio::test]
+async fn broadcast_and_read_test() {
     let private_key = PrivateKey::from_seed(SEED_PHRASE, 0);
+
+    let binary_value: [u8; 12] = [0; 12];
 
     let transaction_data = TransactionData::Data(DataTransaction::new(vec![
         DataEntry::IntegerEntry {
-            key: "12".to_string(),
+            key: "int".to_string(),
             value: 12,
         },
+        DataEntry::BooleanEntry {
+            key: "bool".to_string(),
+            value: false,
+        },
+        DataEntry::BinaryEntry {
+            key: "binary".to_string(),
+            value: binary_value.to_vec(),
+        },
         DataEntry::StringEntry {
-            key: "string_entry".to_string(),
+            key: "str".to_string(),
             value: "value".to_string(),
         },
     ]));
 
-    let _transaction = Transaction::new(
+    let timestamp = get_current_epoch_millis();
+    let signed_tx = Transaction::new(
         transaction_data,
-        Amount::new(1000000, None),
-        get_current_epoch_millis(),
+        Amount::new(100000, None),
+        timestamp,
         private_key.public_key(),
         DataTransaction::tx_type(),
-        1,
-        1,
-    );
+        2,
+        ChainId::TESTNET.byte(),
+    )
+    .sign(&private_key);
+
+    let node = Node::from_profile(Profile::TESTNET);
+    let tx_info = node.broadcast(&signed_tx).await;
+
+    println!("{}", signed_tx.id().encoded());
+
+    println!("{:?}", tx_info);
 }

@@ -23,7 +23,13 @@ fn add_default_fields(sign_tx: &SignedTransaction, json_props: &mut Map<String, 
         "senderPublicKey".to_string(),
         tx.public_key().encoded().into(),
     );
-    json_props.insert("sender".to_string(), tx.public_key().encoded().into());
+    json_props.insert(
+        "sender".to_string(),
+        tx.public_key()
+            .address(sign_tx.tx().chain_id())
+            .encoded()
+            .into(),
+    );
     json_props.insert("fee".to_string(), tx.fee().fee().into());
     json_props.insert("feeAssetId".to_string(), tx.fee().fee_asset_id().into());
     json_props.insert("timestamp".to_string(), tx.timestamp().into());

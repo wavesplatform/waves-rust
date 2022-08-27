@@ -2,9 +2,12 @@ use crate::model::account::{PrivateKey, PublicKey};
 use crate::model::transaction::data_transaction::DataTransaction;
 use crate::model::transaction::TransactionData::Transfer;
 use crate::model::transaction::TransferTransaction;
+use crate::model::Id;
 use crate::model::TransactionData::Data;
-use crate::util::{sign, BinarySerializer};
+use crate::util::{sign, BinarySerializer, Hash, JsonSerializer};
+use serde_json::Value;
 
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub struct TransactionInfo {
     id: String,
     signed_transaction: SignedTransaction,
@@ -138,6 +141,11 @@ impl Transaction {
     pub fn bytes(&self) -> Vec<u8> {
         BinarySerializer::body_bytes(self)
     }
+
+    // todo change to Id struct
+    pub fn id(&self) -> Id {
+        Id::from_bytes(&Hash::blake(&self.bytes()))
+    }
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]
@@ -163,7 +171,7 @@ impl TransactionData {
     }
 }
 
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub struct SignedTransaction {
     transaction: Transaction,
     proofs: Vec<Vec<u8>>,
@@ -181,7 +189,15 @@ impl SignedTransaction {
         &self.transaction
     }
 
+    pub fn id(&self) -> Id {
+        self.tx().id()
+    }
+
     pub fn proofs(&self) -> Vec<Vec<u8>> {
         self.proofs.clone()
+    }
+
+    pub fn to_json(&self) -> Value {
+        JsonSerializer::serialize_signed_tx(self)
     }
 }

@@ -3,6 +3,7 @@ use serde_json::Value;
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct TransferTransaction {
     pub recipient: String,
+    //todo change to struct see WavesJ
     pub asset: Option<String>,
     pub amount: u64,
     pub fee_asset: Option<String>,
