@@ -47,9 +47,12 @@ async fn broadcast_and_read_test() {
     .sign(&private_key);
 
     let node = Node::from_profile(Profile::TESTNET);
-    let tx_info = node.broadcast(&signed_tx).await;
+    let signed_tx_from_rs = node.broadcast(&signed_tx).await;
 
-    println!("{}", signed_tx.id().encoded());
-
-    println!("{:?}", tx_info);
+    if let Ok(signed_tx_from_rs) = signed_tx_from_rs {
+        assert_eq!(signed_tx_from_rs.id().encoded(), signed_tx.id().encoded());
+    } else {
+        let node_error = signed_tx_from_rs.err().expect("No error");
+        println!("{}", node_error);
+    }
 }

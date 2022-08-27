@@ -1,3 +1,4 @@
+use crate::errors::FieldNotFoundError;
 use crate::model::TransactionData::{Data, Transfer};
 use crate::model::{
     Amount, ApplicationStatus, DataTransaction, SignedTransaction, Transaction, TransactionInfo,
@@ -10,53 +11,84 @@ pub struct JsonDeserializer;
 
 // todo return Result<TransactionInfo, Error>
 impl JsonDeserializer {
-    pub fn deserialize_tx_info(value: Value, chain_id: u8) -> TransactionInfo {
-        // todo rm unwrap add handler for all reading fields
-        let id = value["id"].as_str().unwrap().into();
+    pub fn deserialize_tx_info(
+        value: Value,
+        chain_id: u8,
+    ) -> Result<TransactionInfo, FieldNotFoundError> {
+        let id = Self::safe_to_str(&value, "id")?;
 
-        let application_status = match value["applicationStatus"].as_str().unwrap() {
+        let application_status = match Self::safe_to_str(&value, "applicationStatus")?.as_str() {
             "succeeded" => ApplicationStatus::Succeed,
-            //todo check status
+            //todo check statuses
             "scriptExecutionFailed" => ApplicationStatus::ScriptExecutionFailed,
             &_ => ApplicationStatus::Unknown,
         };
-        let height = value["height"].as_i64().unwrap() as u32;
-        let signed_transaction = Self::deserialize_signed_tx(&value, chain_id);
+        let height = Self::safe_to_int(&value, "height")? as u32;
+        let signed_transaction = Self::deserialize_signed_tx(&value, chain_id)?;
 
-        TransactionInfo::new(id, signed_transaction, application_status, height)
+        Ok(TransactionInfo::new(
+            id,
+            signed_transaction,
+            application_status,
+            height,
+        ))
     }
 
-    pub fn deserialize_tx(value: &Value, chain_id: u8) -> Transaction {
-        let tx_type = value["type"].as_i64().unwrap() as u8;
-        let fee = value["fee"].as_i64().unwrap() as u64;
+    pub fn deserialize_signed_tx(
+        value: &Value,
+        chain_id: u8,
+    ) -> Result<SignedTransaction, FieldNotFoundError> {
+        let transaction = Self::deserialize_tx(value, chain_id)?;
+        let proofs_array = Self::safe_to_array(value, "proofs")?;
+        let proofs = proofs_array
+            .iter()
+            // todo remove unwrap
+            .map(|v| Base58::decode(v.as_str().unwrap()).unwrap())
+            .collect::<Vec<Vec<u8>>>();
+        Ok(SignedTransaction::new(transaction, proofs))
+    }
+
+    pub fn deserialize_tx(value: &Value, chain_id: u8) -> Result<Transaction, FieldNotFoundError> {
+        let tx_type = Self::safe_to_int(value, "type")? as u8;
+        let fee = Self::safe_to_int(value, "fee")? as u64;
         let fee_asset_id = value["feeAssetId"].as_str().map(|value| value.into());
         let transaction_data = match tx_type {
             4 => Transfer(TransferTransaction::from_json(value)),
             12 => Data(DataTransaction::from_json(value)),
             _ => panic!("unknown tx type"),
         };
-        let timestamp = value["timestamp"].as_i64().unwrap() as u64;
-        let public_key = value["senderPublicKey"].as_str().unwrap().into();
-        let version = value["version"].as_i64().unwrap() as u8;
-        Transaction::new(
+        let timestamp = Self::safe_to_int(value, "timestamp")? as u64;
+        let public_key = Self::safe_to_str(value, "senderPublicKey")?.try_into();
+        let version = Self::safe_to_int(value, "version")? as u8;
+        Ok(Transaction::new(
             transaction_data,
             Amount::new(fee, fee_asset_id),
             timestamp,
-            public_key,
+            public_key.unwrap(),
             tx_type,
             version,
             chain_id,
-        )
+        ))
     }
 
-    pub fn deserialize_signed_tx(value: &Value, chain_id: u8) -> SignedTransaction {
-        let transaction = Self::deserialize_tx(value, chain_id);
-        let proofs = value["proofs"]
+    pub fn safe_to_str(json: &Value, field_name: &str) -> Result<String, FieldNotFoundError> {
+        let string = json[field_name]
+            .as_str()
+            .ok_or_else(|| FieldNotFoundError::new(json, field_name.to_owned()))?;
+        Ok(string.into())
+    }
+
+    pub fn safe_to_int(json: &Value, field_name: &str) -> Result<i64, FieldNotFoundError> {
+        let int = json[field_name]
+            .as_i64()
+            .ok_or_else(|| FieldNotFoundError::new(json, field_name.to_owned()))?;
+        Ok(int)
+    }
+
+    pub fn safe_to_array(json: &Value, field_name: &str) -> Result<Vec<Value>, FieldNotFoundError> {
+        let array = json[field_name]
             .as_array()
-            .unwrap()
-            .iter()
-            .map(|v| Base58::decode(v.as_str().unwrap()).unwrap())
-            .collect::<Vec<Vec<u8>>>();
-        SignedTransaction::new(transaction, proofs)
+            .ok_or_else(|| FieldNotFoundError::new(json, field_name.to_owned()))?;
+        Ok(array.to_owned())
     }
 }
