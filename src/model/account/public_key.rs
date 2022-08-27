@@ -1,7 +1,7 @@
 use crate::model::account::Address;
 use crate::util::Base58;
 
-#[derive(Clone)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub struct PublicKey {
     bytes: Vec<u8>,
 }
