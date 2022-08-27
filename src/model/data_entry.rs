@@ -1,7 +1,8 @@
 use crate::model::data_entry::DataEntry::{BinaryEntry, BooleanEntry, IntegerEntry, StringEntry};
+use crate::util::Base64;
 use serde_json::Value;
 
-#[derive(Clone)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub enum DataEntry {
     IntegerEntry { key: String, value: i64 },
     BooleanEntry { key: String, value: bool },
@@ -27,7 +28,7 @@ impl From<&Value> for DataEntry {
         match value["type"].as_str().unwrap() {
             "binary" => BinaryEntry {
                 key: key_field,
-                value: base64::decode(value_field.as_str().unwrap()).unwrap(),
+                value: Base64::decode(value_field.as_str().unwrap()).unwrap(),
             },
             "boolean" => BooleanEntry {
                 key: key_field,

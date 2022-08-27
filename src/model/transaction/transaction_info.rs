@@ -51,7 +51,7 @@ pub enum ApplicationStatus {
     Unknown,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Transaction {
     data: TransactionData,
     fee: Amount,
@@ -62,7 +62,7 @@ pub struct Transaction {
     chain_id: u8,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Amount {
     fee: u64,
     fee_asset_id: Option<String>,
@@ -140,7 +140,7 @@ impl Transaction {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub enum TransactionData {
     Transfer(TransferTransaction),
     Data(DataTransaction),
@@ -163,6 +163,7 @@ impl TransactionData {
     }
 }
 
+#[derive(Eq, PartialEq, Debug)]
 pub struct SignedTransaction {
     transaction: Transaction,
     proofs: Vec<Vec<u8>>,

@@ -1,6 +1,6 @@
 use serde_json::Value;
 
-#[derive(Clone)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub struct TransferTransaction {
     pub recipient: String,
     pub asset: Option<String>,
@@ -11,7 +11,7 @@ pub struct TransferTransaction {
 
 impl TransferTransaction {
     // todo return Result<TransferTransaction, Error>
-    pub fn from_json(value: Value) -> TransferTransaction {
+    pub fn from_json(value: &Value) -> TransferTransaction {
         let recipient = value["recipient"].as_str().unwrap().into();
         let asset: Option<String> = value["assetId"].as_str().map(|value| value.into());
         let amount = value["amount"].as_i64().unwrap() as u64;

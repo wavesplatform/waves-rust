@@ -12,7 +12,7 @@ mod tests {
     use crate::model::account::PrivateKey;
     use crate::model::data_entry::DataEntry;
     use crate::model::{Amount, ChainId, DataTransaction, Transaction, TransactionData};
-    use crate::util::sign;
+    use crate::util::{sign, Base58};
 
     const SEED_PHRASE: &str = "dwarf chimney miss category orchard organ neck income prevent \
     trigger used census";
@@ -21,7 +21,7 @@ mod tests {
     fn test_sign_data_transaction() {
         let private_key = PrivateKey::from_seed(SEED_PHRASE, 0);
 
-        let binary_value: [u8; 32767] = [0; 32767];
+        let binary_value: [u8; 12] = [0; 12];
 
         let transaction_data = TransactionData::Data(DataTransaction::new(vec![
             DataEntry::IntegerEntry {
@@ -44,8 +44,8 @@ mod tests {
 
         let transaction = Transaction::new(
             transaction_data,
-            Amount::new(3300000, None),
-            1661111587962,
+            Amount::new(100000, None),
+            1661456063029,
             private_key.public_key(),
             DataTransaction::tx_type(),
             2,
@@ -55,6 +55,7 @@ mod tests {
         let signed_tx = sign(&transaction, &private_key);
 
         let signature = signed_tx.proofs()[0].to_owned();
+        println!("signature {}", Base58::encode(&signature, false));
 
         let is_signature_valid = private_key.is_signature_valid(&transaction.bytes(), &signature);
 

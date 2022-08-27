@@ -4,8 +4,8 @@ use std::time::Duration;
 use reqwest::{Client, Url};
 use serde_json::Value;
 
-use crate::json_deserializer::from_json;
 use crate::model::{ChainId, TransactionInfo};
+use crate::util::JsonDeserializer;
 
 pub const MAINNET_URL: &str = "https://nodes.wavesnodes.com";
 pub const TESTNET_URL: &str = "https://nodes-testnet.wavesnodes.com";
@@ -54,7 +54,7 @@ impl Node {
             .json()
             .await
             .unwrap();
-        from_json(body, self.chain_id)
+        JsonDeserializer::deserialize_tx_info(body, self.chain_id)
     }
 }
 
@@ -90,6 +90,7 @@ mod tests {
     use crate::model::data_entry::DataEntry;
     use crate::model::{ApplicationStatus, ChainId};
     use crate::node::{Node, Profile};
+    use crate::util::Base58;
 
     #[tokio::test]
     async fn test_get_transfer_transaction_info() {
@@ -108,7 +109,10 @@ mod tests {
         let signed_transaction = transaction_info.signed_tx();
 
         let proof_from_rs = "4NiakymjU9s7mJYTBGbweGrDDwAauEXsuhMCeQJD1S28cEFL7hpjEL2LhaiVyFScq8UGVucpvCBo8PogvHQCdhrZ";
-        assert_eq!(signed_transaction.proofs()[0], proof_from_rs.as_bytes());
+        assert_eq!(
+            signed_transaction.proofs()[0],
+            Base58::decode(proof_from_rs).unwrap()
+        );
 
         let transaction = signed_transaction.tx();
 
@@ -153,7 +157,10 @@ mod tests {
         let signed_transaction = transaction_info.signed_tx();
 
         let proof_from_rs = "25KiXB1FS3FaupiPXyEVeRquKLK4FEb3NWF36D1eHw1gpT9Y53MbLsVqnX9rJC8MPg4x9yiUxFkmxF9DDTgQruhi";
-        assert_eq!(signed_transaction.proofs()[0], proof_from_rs.as_bytes());
+        assert_eq!(
+            signed_transaction.proofs()[0],
+            Base58::decode(proof_from_rs).unwrap()
+        );
 
         let transaction = signed_transaction.tx();
 
