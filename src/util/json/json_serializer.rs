@@ -100,7 +100,7 @@ mod tests {
                 transaction_data,
                 Amount::new(100000, None),
                 1661456063029,
-                PublicKey::from_string("8jDzNuHZwuTTo6WvZMdSoNc8ydY6a7UnxvwHZ8kooMuS"),
+                PublicKey::from_string("8jDzNuHZwuTTo6WvZMdSoNc8ydY6a7UnxvwHZ8kooMuS").unwrap(),
                 DataTransaction::tx_type(),
                 2,
                 ChainId::TESTNET.byte(),
@@ -108,13 +108,14 @@ mod tests {
             vec![
                 Base58::decode(
                 "4nDUCnVw9j9D5bTBSLfFCHR9CtvS32mSdxctccChRAohfLwz3ng3ps5ffUiy4NtRmXG7vDHRMW57ABxzkMW64tzC"
-            ).unwrap()
+            ).expect("Failed to decode base58 string")
             ]
         );
 
         let json = JsonSerializer::serialize_signed_tx(&signed_transaction);
         let signed_tx_from_json =
-            JsonDeserializer::deserialize_signed_tx(&json, ChainId::TESTNET.byte());
+            JsonDeserializer::deserialize_signed_tx(&json, ChainId::TESTNET.byte())
+                .expect("Failed to deserialize signed tx");
         assert_eq!(signed_transaction, signed_tx_from_json);
     }
 }

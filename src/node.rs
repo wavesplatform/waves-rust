@@ -1,6 +1,7 @@
 use std::str::FromStr;
 use std::time::Duration;
 
+use crate::errors::NodeError;
 use reqwest::{Client, Url};
 use serde_json::Value;
 
@@ -26,7 +27,18 @@ impl Node {
             http_client: Client::builder()
                 .timeout(Duration::from_secs(60))
                 .build()
-                .unwrap(),
+                .expect("Failed to create http client for struct Node"),
+        }
+    }
+
+    pub fn from_url(url: &str, chain_id: u8) -> Node {
+        Node {
+            url: Url::from_str(url).unwrap(),
+            chain_id,
+            http_client: Client::builder()
+                .timeout(Duration::from_secs(60))
+                .build()
+                .expect("Failed to create http client for struct Node"),
         }
     }
 
@@ -39,29 +51,49 @@ impl Node {
     }
 
     // todo return Result<TransactionInfo, Error>
-    pub async fn get_transaction_info(&self, transaction_id: &str) -> TransactionInfo {
+    pub async fn get_transaction_info(
+        &self,
+        transaction_id: &str,
+    ) -> Result<TransactionInfo, NodeError> {
         let get_tx_info_url = format!(
             "{}transactions/info/{}",
             self.url().as_str(),
             transaction_id
         );
-        JsonDeserializer::deserialize_tx_info(self.get(&get_tx_info_url).await, self.chain_id)
+        let rs = self.get(&get_tx_info_url).await?;
+        Ok(JsonDeserializer::deserialize_tx_info(rs, self.chain_id).unwrap())
     }
 
-    pub async fn broadcast(&self, signed_tx: &SignedTransaction) -> SignedTransaction {
+    pub async fn broadcast(
+        &self,
+        signed_tx: &SignedTransaction,
+    ) -> Result<SignedTransaction, NodeError> {
         let broadcast_tx_url = format!("{}transactions/broadcast", self.url().as_str());
-        let rs = self.post(&broadcast_tx_url, &signed_tx.to_json()).await;
-        JsonDeserializer::deserialize_signed_tx(&rs, signed_tx.tx().chain_id())
+        let rs = self.post(&broadcast_tx_url, &signed_tx.to_json()).await?;
+        Ok(JsonDeserializer::deserialize_signed_tx(&rs, signed_tx.tx().chain_id()).unwrap())
     }
 
-    async fn get(&self, url: &str) -> Value {
+    async fn get(&self, url: &str) -> Result<Value, NodeError> {
         let response = self.http_client.get(url).send().await.unwrap();
-        response.json().await.unwrap()
+        let rs = response.json().await.unwrap();
+        Self::error_check(&rs)?;
+        Ok(rs)
     }
 
-    async fn post(&self, url: &str, body: &Value) -> Value {
+    async fn post(&self, url: &str, body: &Value) -> Result<Value, NodeError> {
         let response = self.http_client.post(url).json(body).send().await.unwrap();
-        response.json().await.unwrap()
+        let rs = response.json().await.unwrap();
+        Self::error_check(&rs)?;
+        Ok(rs)
+    }
+
+    fn error_check(rs: &Value) -> Result<(), NodeError> {
+        let error = rs["error"].as_i64();
+        if let Some(err) = error {
+            let message = rs["message"].as_str().unwrap_or("");
+            return Err(NodeError::new(err as u32, message.to_owned()));
+        }
+        Ok(())
     }
 }
 
@@ -78,7 +110,7 @@ impl Profile {
             Profile::TESTNET => TESTNET_URL,
             Profile::STAGENET => STAGENET_URL,
         };
-        Url::from_str(url).unwrap()
+        Url::from_str(url).expect("Invalid url")
     }
 
     pub fn chain_id(&self) -> u8 {
@@ -104,7 +136,7 @@ mod tests {
         let tx_id = "8YsBZSZ3UmWAo8bCj8RN64BvoQUTdLtd567hXqQCYDVo";
 
         let node = Node::from_profile(Profile::MAINNET);
-        let transaction_info = node.get_transaction_info(tx_id.into()).await;
+        let transaction_info = node.get_transaction_info(tx_id.into()).await.unwrap();
 
         assert_eq!(
             transaction_info.id(),
@@ -152,7 +184,7 @@ mod tests {
         let tx_id = "HcPcSma7oWeqy8g3ahhwFDzrq8YK8r739U4WC2ieB5Bs";
 
         let node = Node::from_profile(Profile::MAINNET);
-        let transaction_info = node.get_transaction_info(tx_id.into()).await;
+        let transaction_info = node.get_transaction_info(tx_id.into()).await.unwrap();
 
         assert_eq!(
             transaction_info.id(),

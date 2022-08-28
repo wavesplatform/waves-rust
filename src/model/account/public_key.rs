@@ -1,5 +1,6 @@
 use crate::model::account::Address;
 use crate::util::Base58;
+use bs58::decode::Error;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct PublicKey {
@@ -13,9 +14,9 @@ impl PublicKey {
         }
     }
 
-    pub fn from_string(base58string: &str) -> PublicKey {
-        let bytes = Base58::decode(base58string).unwrap();
-        PublicKey { bytes }
+    pub fn from_string(base58string: &str) -> Result<PublicKey, Error> {
+        let bytes = Base58::decode(base58string)?;
+        Ok(PublicKey { bytes })
     }
 
     pub fn encoded(&self) -> String {
@@ -31,9 +32,19 @@ impl PublicKey {
     }
 }
 
-impl From<&str> for PublicKey {
-    fn from(str: &str) -> Self {
-        PublicKey::from_string(str)
+impl TryFrom<&str> for PublicKey {
+    type Error = Error;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        PublicKey::from_string(value)
+    }
+}
+
+impl TryFrom<String> for PublicKey {
+    type Error = Error;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        PublicKey::from_string(&value)
     }
 }
 

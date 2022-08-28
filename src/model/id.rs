@@ -1,4 +1,5 @@
 use crate::util::Base58;
+use bs58::decode::Error;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Id {
@@ -6,10 +7,10 @@ pub struct Id {
 }
 
 impl Id {
-    pub fn from_string(id: &str) -> Id {
-        Id {
-            bytes: Base58::decode(id).unwrap(),
-        }
+    pub fn from_string(id: &str) -> Result<Id, Error> {
+        Ok(Id {
+            bytes: Base58::decode(id)?,
+        })
     }
 
     pub fn from_bytes(id: &[u8]) -> Id {

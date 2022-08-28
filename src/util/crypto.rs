@@ -112,15 +112,15 @@ mod tests {
         let expected_public_key_from_nonce_255 = "esjbpqVWSg8iCaPYQA3SoxZo3oUkdRJSi9tKLoqKQoC";
         assert_eq!(
             Crypto::get_public_key(&private_key(seed_phrase, 0)),
-            Base58::decode(expected_public_key_from_nonce_0).unwrap()
+            Base58::decode(expected_public_key_from_nonce_0).expect("Failed to decode str")
         );
         assert_eq!(
             Crypto::get_public_key(&private_key(seed_phrase, 128)),
-            Base58::decode(expected_public_key_from_nonce_128).unwrap()
+            Base58::decode(expected_public_key_from_nonce_128).expect("Failed to decode str")
         );
         assert_eq!(
             Crypto::get_public_key(&private_key(seed_phrase, 255)),
-            Base58::decode(expected_public_key_from_nonce_255).unwrap()
+            Base58::decode(expected_public_key_from_nonce_255).expect("Failed to decode str")
         );
     }
 

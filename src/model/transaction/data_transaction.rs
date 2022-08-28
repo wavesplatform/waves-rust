@@ -12,9 +12,8 @@ pub struct DataTransaction {
 impl DataTransaction {
     // todo return Result<DataTransaction, Error>
     pub fn from_json(value: &Value) -> DataTransaction {
-        let data = value["data"]
-            .as_array()
-            .unwrap()
+        let data_array = value["data"].as_array().unwrap();
+        let data = data_array
             .iter()
             .map(|entry| entry.into())
             .collect::<Vec<DataEntry>>();

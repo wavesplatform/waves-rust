@@ -13,7 +13,7 @@ impl Base58 {
         base58string
     }
 
-    pub fn is_valid(encoded: &str) -> bool {
+    pub fn string_is_valid(encoded: &str) -> bool {
         bs58::decode(encoded).into_vec().is_ok()
     }
 }
@@ -25,15 +25,15 @@ mod tests {
     #[test]
     fn test_valid_base58string() {
         let base58string = "7LBopaBdBzQbgqrnwgmgCDhcSTb32MYhE96SnSHcqZC2";
-        assert_eq!(Base58::is_valid(base58string), true);
+        assert_eq!(Base58::string_is_valid(base58string), true);
     }
 
     #[test]
     fn test_invalid_base58string() {
         let empty_string = "";
         let invalid_string = "0LBopaBdBzQbgqrnwgmgCDhcSTb32MYhE96SnSHcqZC2";
-        assert_eq!(Base58::is_valid(empty_string.into()), true);
-        assert_eq!(Base58::is_valid(invalid_string.into()), false);
+        assert_eq!(Base58::string_is_valid(empty_string.into()), true);
+        assert_eq!(Base58::string_is_valid(invalid_string.into()), false);
     }
 
     #[test]
