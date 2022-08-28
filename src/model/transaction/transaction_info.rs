@@ -142,7 +142,6 @@ impl Transaction {
         BinarySerializer::body_bytes(self)
     }
 
-    // todo change to Id struct
     pub fn id(&self) -> Id {
         Id::from_bytes(&Hash::blake(&self.bytes()))
     }

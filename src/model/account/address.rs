@@ -1,30 +1,39 @@
 use crate::model::account::PublicKey;
 use crate::util::{Base58, Crypto};
 
+#[derive(Eq, PartialEq, Clone, Debug)]
 pub struct Address {
     chain_id: u8,
-    public_key_hash: Vec<u8>,
+    bytes: Vec<u8>,
 }
 
 impl Address {
     pub fn from_public_key(chain_id: u8, public_key: &PublicKey) -> Address {
         Address {
             chain_id,
-            public_key_hash: Crypto::get_public_key_hash(public_key.bytes()),
+            bytes: Crypto::get_address(&chain_id, &Crypto::get_public_key_hash(public_key.bytes())),
         }
     }
 
     pub fn encoded(&self) -> String {
-        Base58::encode(
-            &Crypto::get_address(&self.chain_id, &self.public_key_hash),
-            false,
-        )
+        Base58::encode(&self.bytes, false)
+    }
+
+    pub fn from_string(address: &str, chain_id: u8) -> Address {
+        Address {
+            chain_id,
+            bytes: Base58::decode(address).unwrap(),
+        }
+    }
+
+    pub fn chain_id(&self) -> u8 {
+        self.chain_id
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::model::account::PrivateKey;
+    use crate::model::account::{Address, PrivateKey};
     use crate::model::ChainId;
 
     #[test]
@@ -37,5 +46,12 @@ mod tests {
         let address = public_key.address(ChainId::TESTNET.byte()).encoded();
 
         assert_eq!(address, expected_address)
+    }
+
+    #[test]
+    fn test_address_from_string() {
+        let expected_address = "3MtQQX9NwYH5URGGcS2e6ptEgV7wTFesaRW";
+        let address = Address::from_string(expected_address, ChainId::TESTNET.byte());
+        assert_eq!(expected_address, address.encoded())
     }
 }
