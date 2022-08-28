@@ -9,7 +9,7 @@ use serde_json::{Map, Value};
 
 use crate::model::account::{Address, Balance, BalanceDetails};
 use crate::model::data_entry::DataEntry;
-use crate::model::{ChainId, SignedTransaction, TransactionInfo};
+use crate::model::{ChainId, ScriptInfo, ScriptMeta, SignedTransaction, TransactionInfo};
 use crate::util::JsonDeserializer;
 
 pub const MAINNET_URL: &str = "https://nodes.wavesnodes.com";
@@ -211,6 +211,26 @@ impl Node {
         );
         let rs = &self.get(&get_data_by_key_url).await?;
         Ok(rs.into())
+    }
+
+    pub async fn get_script_info(&self, address: &Address) -> Result<ScriptInfo, NodeError> {
+        let get_script_info_url = format!(
+            "{}addresses/scriptInfo/{}",
+            self.url().as_str(),
+            address.encoded()
+        );
+        let rs = &self.get(&get_script_info_url).await?;
+        Ok(JsonDeserializer::deserialize_script_info(rs).unwrap())
+    }
+
+    pub async fn get_script_meta(&self, address: &Address) -> Result<ScriptMeta, NodeError> {
+        let get_script_meta_url = format!(
+            "{}addresses/scriptInfo/{}/meta",
+            self.url().as_str(),
+            address.encoded()
+        );
+        let rs = &self.get(&get_script_meta_url).await?;
+        Ok(JsonDeserializer::deserialize_script_meta(rs).unwrap())
     }
 
     pub async fn get_transaction_info(

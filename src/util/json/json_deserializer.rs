@@ -3,11 +3,12 @@ use crate::model::account::{Address, Balance, BalanceDetails};
 use crate::model::data_entry::DataEntry;
 use crate::model::TransactionData::{Data, Transfer};
 use crate::model::{
-    Amount, ApplicationStatus, DataTransaction, SignedTransaction, Transaction, TransactionInfo,
-    TransferTransaction,
+    Amount, ApplicationStatus, ArgMeta, Base64String, DataTransaction, ScriptInfo, ScriptMeta,
+    SignedTransaction, Transaction, TransactionInfo, TransferTransaction,
 };
 use crate::util::Base58;
 use serde_json::Value;
+use std::collections::HashMap;
 
 pub struct JsonDeserializer;
 
@@ -123,6 +124,62 @@ impl JsonDeserializer {
             .collect::<Vec<DataEntry>>())
     }
 
+    pub fn deserialize_script_info(value: &Value) -> Result<ScriptInfo, ParseError> {
+        let script = Base64String::from_string(
+            &Self::safe_to_string_from_field(value, "script").unwrap_or_else(|_| "".to_owned()),
+        );
+        let complexity = Self::safe_to_int_from_field(value, "complexity")? as u32;
+        let verifier_complexity = Self::safe_to_int_from_field(value, "verifierComplexity")? as u32;
+        let callable_complexities: HashMap<String, u32> = value["callableComplexities"]
+            .as_object()
+            .unwrap()
+            .into_iter()
+            .map(|entry| (entry.0.to_owned(), entry.1.as_i64().unwrap() as u32))
+            .collect();
+        let extra_fee = Self::safe_to_int_from_field(value, "extraFee")? as u64;
+        let script_text =
+            Self::safe_to_string_from_field(value, "scriptText").unwrap_or_else(|_| "".to_owned());
+        Ok(ScriptInfo::new(
+            script,
+            complexity,
+            verifier_complexity,
+            callable_complexities,
+            extra_fee,
+            script_text,
+        ))
+    }
+
+    pub fn deserialize_script_meta(value: &Value) -> Result<ScriptMeta, ParseError> {
+        let meta_version: u32 = Self::safe_to_string_from_field(&value["meta"], "version")
+            .unwrap_or_else(|_| "0".to_string())
+            .parse()
+            .unwrap_or(0);
+        if meta_version == 0 {
+            return Ok(ScriptMeta::new(meta_version, HashMap::new()));
+        }
+        let callable_func_types =
+            Self::safe_to_map_from_field(&value["meta"], "callableFuncTypes")?;
+
+        let callable_functions: HashMap<String, Vec<ArgMeta>> = callable_func_types
+            .into_iter()
+            .map(|entry| {
+                let arg_meta = Self::safe_to_array(&entry.1)
+                    .unwrap_or_default()
+                    .iter()
+                    .map(|arg| {
+                        let arg_name = Self::safe_to_string_from_field(arg, "name")
+                            .unwrap_or_else(|_| "".to_owned());
+                        let arg_type = Self::safe_to_string_from_field(arg, "type")
+                            .unwrap_or_else(|_| "".to_owned());
+                        ArgMeta::new(arg_name, arg_type)
+                    })
+                    .collect();
+                (entry.0, arg_meta)
+            })
+            .collect();
+        Ok(ScriptMeta::new(meta_version, callable_functions))
+    }
+
     pub fn safe_to_string_from_field(json: &Value, field_name: &str) -> Result<String, ParseError> {
         let string = json[field_name]
             .as_str()
@@ -154,6 +211,19 @@ impl JsonDeserializer {
                 field_name: field_name.to_owned(),
             })?;
         Ok(array.to_owned())
+    }
+
+    pub fn safe_to_map_from_field(
+        json: &Value,
+        field_name: &str,
+    ) -> Result<serde_json::Map<String, Value>, ParseError> {
+        let map = json[field_name]
+            .as_object()
+            .ok_or_else(|| ParseError::FieldNotFoundError {
+                json: json.to_string(),
+                field_name: field_name.to_owned(),
+            })?;
+        Ok(map.to_owned())
     }
 
     pub fn safe_to_string(json: &Value) -> Result<String, ParseError> {

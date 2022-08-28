@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter};
 
-trait ByteString {
+pub trait ByteString {
     fn bytes(&self) -> &Vec<u8>;
     fn encoded(&self) -> String;
     fn encoded_with_prefix(&self) -> String;
