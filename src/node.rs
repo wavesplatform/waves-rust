@@ -3,8 +3,10 @@ use std::time::Duration;
 
 use crate::errors::NodeError;
 use reqwest::{Client, Url};
-use serde_json::Value;
+use serde_json::Value::Array;
+use serde_json::{Map, Value};
 
+use crate::model::account::{Address, Balance, BalanceDetails};
 use crate::model::{ChainId, SignedTransaction, TransactionInfo};
 use crate::util::JsonDeserializer;
 
@@ -50,7 +52,109 @@ impl Node {
         self.chain_id
     }
 
-    // todo return Result<TransactionInfo, Error>
+    pub async fn get_addresses(&self, chain_id: u8) -> Result<Vec<Address>, NodeError> {
+        let get_addresses_url = format!("{}addresses", self.url().as_str());
+        let rs = self.get(&get_addresses_url).await?;
+        Ok(JsonDeserializer::deserialize_addresses(&rs, chain_id).unwrap())
+    }
+
+    pub async fn get_addresses_seq(
+        &self,
+        from_index: u64,
+        to_index: u64,
+        chain_id: u8,
+    ) -> Result<Vec<Address>, NodeError> {
+        let get_addresses_seq_url = format!(
+            "{}addresses/seq/{}/{}",
+            self.url().as_str(),
+            from_index,
+            to_index
+        );
+        let rs = self.get(&get_addresses_seq_url).await?;
+        Ok(JsonDeserializer::deserialize_addresses(&rs, chain_id).unwrap())
+    }
+
+    pub async fn get_balance(&self, address: &Address) -> Result<u64, NodeError> {
+        let get_balance_url = format!(
+            "{}addresses/balance/{}",
+            self.url().as_str(),
+            address.encoded(),
+        );
+        let rs = self.get(&get_balance_url).await?;
+        Ok(JsonDeserializer::safe_to_int_from_field(&rs, "balance").unwrap() as u64)
+    }
+
+    pub async fn get_balance_with_confirmations(
+        &self,
+        address: &Address,
+        confirmations: u32,
+    ) -> Result<u64, NodeError> {
+        let get_balance_url = format!(
+            "{}addresses/balance/{}/{}",
+            self.url().as_str(),
+            address.encoded(),
+            confirmations
+        );
+        let rs = self.get(&get_balance_url).await?;
+        Ok(JsonDeserializer::safe_to_int_from_field(&rs, "balance").unwrap() as u64)
+    }
+
+    pub async fn get_balances(
+        &self,
+        addresses: &[Address],
+        chain_id: u8,
+    ) -> Result<Vec<Balance>, NodeError> {
+        let get_balances_url = format!("{}addresses/balance", self.url().as_str(),);
+        let mut json_addresses: Map<String, Value> = Map::new();
+        json_addresses.insert(
+            "addresses".to_owned(),
+            Array(
+                addresses
+                    .iter()
+                    .map(|address| Value::String(address.encoded()))
+                    .collect(),
+            ),
+        );
+        let rs = self.post(&get_balances_url, &json_addresses.into()).await?;
+        Ok(JsonDeserializer::deserialize_balances(&rs, chain_id).unwrap())
+    }
+
+    pub async fn get_balances_at_height(
+        &self,
+        addresses: &[Address],
+        height: u32,
+        chain_id: u8,
+    ) -> Result<Vec<Balance>, NodeError> {
+        let get_balances_url = format!("{}addresses/balance", self.url().as_str());
+        let mut json_addresses: Map<String, Value> = Map::new();
+        json_addresses.insert(
+            "addresses".to_owned(),
+            Array(
+                addresses
+                    .iter()
+                    .map(|address| Value::String(address.encoded()))
+                    .collect(),
+            ),
+        );
+        json_addresses.insert("height".to_owned(), height.into());
+        let rs = self.post(&get_balances_url, &json_addresses.into()).await?;
+        Ok(JsonDeserializer::deserialize_balances(&rs, chain_id).unwrap())
+    }
+
+    pub async fn get_balance_details(
+        &self,
+        address: &Address,
+    ) -> Result<BalanceDetails, NodeError> {
+        let get_balance_details_url = format!(
+            "{}addresses/balance/details/{}",
+            self.url().as_str(),
+            address.encoded()
+        );
+        println!("url: {}", get_balance_details_url);
+        let rs = self.get(&get_balance_details_url).await?;
+        Ok(JsonDeserializer::deserialize_balance_details(&rs, address.chain_id()).unwrap())
+    }
+
     pub async fn get_transaction_info(
         &self,
         transaction_id: &str,
@@ -61,7 +165,7 @@ impl Node {
             transaction_id
         );
         let rs = self.get(&get_tx_info_url).await?;
-        Ok(JsonDeserializer::deserialize_tx_info(rs, self.chain_id).unwrap())
+        Ok(JsonDeserializer::deserialize_tx_info(&rs, self.chain_id).unwrap())
     }
 
     pub async fn broadcast(
