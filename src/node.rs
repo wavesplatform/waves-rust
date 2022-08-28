@@ -1,3 +1,4 @@
+use regex::Regex;
 use std::str::FromStr;
 use std::time::Duration;
 
@@ -7,6 +8,7 @@ use serde_json::Value::Array;
 use serde_json::{Map, Value};
 
 use crate::model::account::{Address, Balance, BalanceDetails};
+use crate::model::data_entry::DataEntry;
 use crate::model::{ChainId, SignedTransaction, TransactionInfo};
 use crate::util::JsonDeserializer;
 
@@ -150,9 +152,65 @@ impl Node {
             self.url().as_str(),
             address.encoded()
         );
-        println!("url: {}", get_balance_details_url);
         let rs = self.get(&get_balance_details_url).await?;
         Ok(JsonDeserializer::deserialize_balance_details(&rs, address.chain_id()).unwrap())
+    }
+
+    pub async fn get_data(&self, address: &Address) -> Result<Vec<DataEntry>, NodeError> {
+        let get_data_url = format!(
+            "{}addresses/data/{}",
+            self.url().as_str(),
+            address.encoded()
+        );
+        let rs = self.get(&get_data_url).await?;
+
+        Ok(JsonDeserializer::deserialize_data_array(&rs).unwrap())
+    }
+
+    pub async fn get_data_by_keys(
+        &self,
+        address: &Address,
+        keys: &[String],
+    ) -> Result<Vec<DataEntry>, NodeError> {
+        let get_data_url = format!(
+            "{}addresses/data/{}",
+            self.url().as_str(),
+            address.encoded()
+        );
+        let mut json_keys: Map<String, Value> = Map::new();
+        json_keys.insert("keys".to_owned(), keys.into());
+        let rs = self.post(&get_data_url, &json_keys.into()).await?;
+        Ok(JsonDeserializer::deserialize_data_array(&rs).unwrap())
+    }
+
+    pub async fn get_data_by_regex(
+        &self,
+        address: &Address,
+        regex: &Regex,
+    ) -> Result<Vec<DataEntry>, NodeError> {
+        let get_data_url = format!(
+            "{}addresses/data/{}?matches={}",
+            self.url().as_str(),
+            address.encoded(),
+            urlencoding::encode(regex.as_str())
+        );
+        let rs = self.get(&get_data_url).await?;
+        Ok(JsonDeserializer::deserialize_data_array(&rs).unwrap())
+    }
+
+    pub async fn get_data_by_key(
+        &self,
+        address: &Address,
+        key: &str,
+    ) -> Result<DataEntry, NodeError> {
+        let get_data_by_key_url = format!(
+            "{}addresses/data/{}/{}",
+            self.url().as_str(),
+            address.encoded(),
+            key
+        );
+        let rs = &self.get(&get_data_by_key_url).await?;
+        Ok(rs.into())
     }
 
     pub async fn get_transaction_info(

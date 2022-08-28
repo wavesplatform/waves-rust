@@ -1,5 +1,6 @@
 use crate::errors::ParseError;
 use crate::model::account::{Address, Balance, BalanceDetails};
+use crate::model::data_entry::DataEntry;
 use crate::model::TransactionData::{Data, Transfer};
 use crate::model::{
     Amount, ApplicationStatus, DataTransaction, SignedTransaction, Transaction, TransactionInfo,
@@ -112,6 +113,14 @@ impl JsonDeserializer {
         Ok(BalanceDetails::new(
             address, available, regular, generating, effective,
         ))
+    }
+
+    pub fn deserialize_data_array(value: &Value) -> Result<Vec<DataEntry>, ParseError> {
+        let data_array = Self::safe_to_array(value)?;
+        Ok(data_array
+            .iter()
+            .map(|entry| entry.into())
+            .collect::<Vec<DataEntry>>())
     }
 
     pub fn safe_to_string_from_field(json: &Value, field_name: &str) -> Result<String, ParseError> {
