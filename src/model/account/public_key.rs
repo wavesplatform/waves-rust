@@ -1,6 +1,6 @@
+use crate::error::{Error, Result};
 use crate::model::account::Address;
 use crate::util::Base58;
-use bs58::decode::Error;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct PublicKey {
@@ -14,7 +14,7 @@ impl PublicKey {
         }
     }
 
-    pub fn from_string(base58string: &str) -> Result<PublicKey, Error> {
+    pub fn from_string(base58string: &str) -> Result<PublicKey> {
         let bytes = Base58::decode(base58string)?;
         Ok(PublicKey { bytes })
     }
@@ -27,7 +27,7 @@ impl PublicKey {
         &self.bytes
     }
 
-    pub fn address(&self, chain_id: u8) -> Address {
+    pub fn address(&self, chain_id: u8) -> Result<Address> {
         Address::from_public_key(chain_id, self)
     }
 }
@@ -35,7 +35,7 @@ impl PublicKey {
 impl TryFrom<&str> for PublicKey {
     type Error = Error;
 
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
+    fn try_from(value: &str) -> Result<Self> {
         PublicKey::from_string(value)
     }
 }
@@ -43,7 +43,7 @@ impl TryFrom<&str> for PublicKey {
 impl TryFrom<String> for PublicKey {
     type Error = Error;
 
-    fn try_from(value: String) -> Result<Self, Self::Error> {
+    fn try_from(value: String) -> Result<Self> {
         PublicKey::from_string(&value)
     }
 }
@@ -76,7 +76,10 @@ mod tests {
     }
 
     fn public_key_bytes(seed_phrase: &str, nonce: u8) -> Vec<u8> {
-        let bytes = PrivateKey::from_seed(seed_phrase, nonce).bytes().clone();
+        let bytes = PrivateKey::from_seed(seed_phrase, nonce)
+            .expect("failed to get private ket from seed phrase")
+            .bytes()
+            .clone();
         println!("{}", Base58::encode(&bytes, false));
         Crypto::get_public_key(&bytes)
     }

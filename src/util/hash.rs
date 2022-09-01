@@ -1,3 +1,5 @@
+use crate::error::Error::BlakeError;
+use crate::error::{InvalidSizeError, Result};
 use blake2::digest::{Update, VariableOutput};
 use blake2::Blake2bVar;
 use sha2::Sha256;
@@ -6,20 +8,23 @@ use sha3::{Digest, Keccak256};
 pub struct Hash;
 
 impl Hash {
-    pub fn secure_hash(source: &[u8]) -> Vec<u8> {
-        Self::keccak(&Self::blake(source))
+    pub fn secure_hash(source: &[u8]) -> Result<Vec<u8>> {
+        Ok(Self::keccak(&Self::blake(source)?))
     }
 
     pub fn keccak(source: &Vec<u8>) -> Vec<u8> {
         Keccak256::digest(source).to_vec()
     }
 
-    pub fn blake(source: &[u8]) -> Vec<u8> {
-        let mut blake = Blake2bVar::new(32).unwrap();
+    pub fn blake(source: &[u8]) -> Result<Vec<u8>> {
+        let mut blake =
+            Blake2bVar::new(32).map_err(|e| BlakeError(InvalidSizeError::InvalidOutputSize(e)))?;
         blake.update(source);
         let mut buf = [0u8; 32];
-        blake.finalize_variable(&mut buf).unwrap();
-        buf.to_vec()
+        blake
+            .finalize_variable(&mut buf)
+            .map_err(|e| BlakeError(InvalidSizeError::InvalidBufferSize(e)))?;
+        Ok(buf.to_vec())
     }
 
     pub fn sha256(source: &Vec<u8>) -> Vec<u8> {
@@ -35,15 +40,19 @@ mod tests {
     #[test]
     fn test_secure_hash() {
         let source = "test".as_bytes().to_vec();
-        let expected_secure =
-            Base58::decode("JDJkZrg24XwvBgBUi6PgpHzrAFgeefb7nU8LJPRR58ga").unwrap();
-        assert_eq!(Hash::secure_hash(&source), expected_secure)
+        let expected_secure = Base58::decode("JDJkZrg24XwvBgBUi6PgpHzrAFgeefb7nU8LJPRR58ga")
+            .expect("failed to decode base58 string");
+        match Hash::secure_hash(&source) {
+            Ok(success) => assert_eq!(success, expected_secure),
+            Err(error) => println!("{:?}", error),
+        };
     }
 
     #[test]
     fn test_sha256() {
         let source = "test".as_bytes().to_vec();
-        let expected_sha = Base58::decode("Bjj4AWTNrjQVHqgWbP2XaxXz4DYH1WZMyERHxsad7b2w").unwrap();
+        let expected_sha = Base58::decode("Bjj4AWTNrjQVHqgWbP2XaxXz4DYH1WZMyERHxsad7b2w")
+            .expect("failed to decode base58 string");
 
         assert_eq!(Hash::sha256(&source), expected_sha)
     }

@@ -1,6 +1,7 @@
+use crate::error::Result;
 use crate::model::data_entry::DataEntry;
+use crate::model::Transaction;
 use crate::model::TransactionData::{Data, Transfer};
-use crate::model::{Transaction, TransactionData};
 use crate::util::Base58;
 use crate::waves_proto::data_transaction_data::data_entry::Value::{
     BinaryValue, BoolValue, IntValue, StringValue,
@@ -15,16 +16,15 @@ use prost::Message;
 pub struct BinarySerializer;
 
 impl BinarySerializer {
-    pub fn body_bytes(transaction: &Transaction) -> Vec<u8> {
+    pub fn body_bytes(transaction: &Transaction) -> Result<Vec<u8>> {
         let proto_data = match transaction.data() {
             Transfer(_) => todo!(),
-            Data(_) => data_transaction_to_proto(transaction),
-            TransactionData::Issue() => todo!(),
+            Data(_) => data_transaction_to_proto(transaction)?,
         };
 
         let fee_asset_id = match transaction.fee().fee_asset_id() {
             None => vec![],
-            Some(asset_id) => Base58::decode(&asset_id).unwrap(),
+            Some(asset_id) => Base58::decode(&asset_id)?,
         };
 
         let amount = ProtoAmount {
@@ -42,14 +42,14 @@ impl BinarySerializer {
         };
 
         let mut buf = vec![];
-        proto_tx.encode(&mut buf).unwrap();
-        buf
+        proto_tx.encode(&mut buf)?;
+        Ok(buf)
     }
 }
 
-pub fn data_transaction_to_proto(transaction: &Transaction) -> ProtoData {
+pub fn data_transaction_to_proto(transaction: &Transaction) -> Result<ProtoData> {
     let mut proto_data_entries: Vec<ProtoDataEntry> = vec![];
-    let data_entries = transaction.data().data_tx().unwrap().data();
+    let data_entries = transaction.data().data_tx()?.data();
     for data_entry in data_entries {
         let key = data_entry.key();
         let value = match data_entry {
@@ -64,5 +64,5 @@ pub fn data_transaction_to_proto(transaction: &Transaction) -> ProtoData {
         data: proto_data_entries,
     };
 
-    ProtoData::DataTransaction(data_transaction)
+    Ok(ProtoData::DataTransaction(data_transaction))
 }

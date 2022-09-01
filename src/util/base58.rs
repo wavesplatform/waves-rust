@@ -1,8 +1,10 @@
+use crate::error::Result;
+
 pub struct Base58;
 
 impl Base58 {
-    pub fn decode(source: &str) -> bs58::decode::Result<Vec<u8>> {
-        bs58::decode(source).into_vec()
+    pub fn decode(source: &str) -> Result<Vec<u8>> {
+        Ok(bs58::decode(source).into_vec()?)
     }
 
     pub fn encode(bytes: &Vec<u8>, with_prefix: bool) -> String {
@@ -39,7 +41,7 @@ mod tests {
     #[test]
     fn test_decode_string() {
         let test_string = "1LBopaBdBzQbgqrnwgmgCDhcSTb32MYhE96SnSHcqZC2";
-        let bytes = Base58::decode(test_string).unwrap();
+        let bytes = Base58::decode(test_string).expect("failed to decode base58 from string");
         let base58string = Base58::encode(&bytes, false);
         let base58string_with_prefix = Base58::encode(&bytes, true);
         assert_eq!(test_string, base58string);

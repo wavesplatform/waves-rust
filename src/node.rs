@@ -2,7 +2,7 @@ use regex::Regex;
 use std::str::FromStr;
 use std::time::Duration;
 
-use crate::errors::NodeError;
+use crate::error::{Error, Result};
 use reqwest::{Client, Url};
 use serde_json::Value::Array;
 use serde_json::{Map, Value};
@@ -35,15 +35,15 @@ impl Node {
         }
     }
 
-    pub fn from_url(url: &str, chain_id: u8) -> Node {
-        Node {
-            url: Url::from_str(url).unwrap(),
+    pub fn from_url(url: &str, chain_id: u8) -> Result<Node> {
+        Ok(Node {
+            url: Url::from_str(url)?,
             chain_id,
             http_client: Client::builder()
                 .timeout(Duration::from_secs(60))
                 .build()
                 .expect("Failed to create http client for struct Node"),
-        }
+        })
     }
 
     pub fn url(&self) -> Url {
@@ -54,10 +54,10 @@ impl Node {
         self.chain_id
     }
 
-    pub async fn get_addresses(&self, chain_id: u8) -> Result<Vec<Address>, NodeError> {
+    pub async fn get_addresses(&self, chain_id: u8) -> Result<Vec<Address>> {
         let get_addresses_url = format!("{}addresses", self.url().as_str());
         let rs = self.get(&get_addresses_url).await?;
-        Ok(JsonDeserializer::deserialize_addresses(&rs, chain_id).unwrap())
+        JsonDeserializer::deserialize_addresses(&rs, chain_id)
     }
 
     pub async fn get_addresses_seq(
@@ -65,7 +65,7 @@ impl Node {
         from_index: u64,
         to_index: u64,
         chain_id: u8,
-    ) -> Result<Vec<Address>, NodeError> {
+    ) -> Result<Vec<Address>> {
         let get_addresses_seq_url = format!(
             "{}addresses/seq/{}/{}",
             self.url().as_str(),
@@ -73,24 +73,24 @@ impl Node {
             to_index
         );
         let rs = self.get(&get_addresses_seq_url).await?;
-        Ok(JsonDeserializer::deserialize_addresses(&rs, chain_id).unwrap())
+        JsonDeserializer::deserialize_addresses(&rs, chain_id)
     }
 
-    pub async fn get_balance(&self, address: &Address) -> Result<u64, NodeError> {
+    pub async fn get_balance(&self, address: &Address) -> Result<u64> {
         let get_balance_url = format!(
             "{}addresses/balance/{}",
             self.url().as_str(),
             address.encoded(),
         );
         let rs = self.get(&get_balance_url).await?;
-        Ok(JsonDeserializer::safe_to_int_from_field(&rs, "balance").unwrap() as u64)
+        Ok(JsonDeserializer::safe_to_int_from_field(&rs, "balance")? as u64)
     }
 
     pub async fn get_balance_with_confirmations(
         &self,
         address: &Address,
         confirmations: u32,
-    ) -> Result<u64, NodeError> {
+    ) -> Result<u64> {
         let get_balance_url = format!(
             "{}addresses/balance/{}/{}",
             self.url().as_str(),
@@ -98,14 +98,10 @@ impl Node {
             confirmations
         );
         let rs = self.get(&get_balance_url).await?;
-        Ok(JsonDeserializer::safe_to_int_from_field(&rs, "balance").unwrap() as u64)
+        Ok(JsonDeserializer::safe_to_int_from_field(&rs, "balance")? as u64)
     }
 
-    pub async fn get_balances(
-        &self,
-        addresses: &[Address],
-        chain_id: u8,
-    ) -> Result<Vec<Balance>, NodeError> {
+    pub async fn get_balances(&self, addresses: &[Address], chain_id: u8) -> Result<Vec<Balance>> {
         let get_balances_url = format!("{}addresses/balance", self.url().as_str(),);
         let mut json_addresses: Map<String, Value> = Map::new();
         json_addresses.insert(
@@ -118,7 +114,7 @@ impl Node {
             ),
         );
         let rs = self.post(&get_balances_url, &json_addresses.into()).await?;
-        Ok(JsonDeserializer::deserialize_balances(&rs, chain_id).unwrap())
+        JsonDeserializer::deserialize_balances(&rs, chain_id)
     }
 
     pub async fn get_balances_at_height(
@@ -126,7 +122,7 @@ impl Node {
         addresses: &[Address],
         height: u32,
         chain_id: u8,
-    ) -> Result<Vec<Balance>, NodeError> {
+    ) -> Result<Vec<Balance>> {
         let get_balances_url = format!("{}addresses/balance", self.url().as_str());
         let mut json_addresses: Map<String, Value> = Map::new();
         json_addresses.insert(
@@ -140,23 +136,20 @@ impl Node {
         );
         json_addresses.insert("height".to_owned(), height.into());
         let rs = self.post(&get_balances_url, &json_addresses.into()).await?;
-        Ok(JsonDeserializer::deserialize_balances(&rs, chain_id).unwrap())
+        JsonDeserializer::deserialize_balances(&rs, chain_id)
     }
 
-    pub async fn get_balance_details(
-        &self,
-        address: &Address,
-    ) -> Result<BalanceDetails, NodeError> {
+    pub async fn get_balance_details(&self, address: &Address) -> Result<BalanceDetails> {
         let get_balance_details_url = format!(
             "{}addresses/balance/details/{}",
             self.url().as_str(),
             address.encoded()
         );
         let rs = self.get(&get_balance_details_url).await?;
-        Ok(JsonDeserializer::deserialize_balance_details(&rs, address.chain_id()).unwrap())
+        JsonDeserializer::deserialize_balance_details(&rs, address.chain_id())
     }
 
-    pub async fn get_data(&self, address: &Address) -> Result<Vec<DataEntry>, NodeError> {
+    pub async fn get_data(&self, address: &Address) -> Result<Vec<DataEntry>> {
         let get_data_url = format!(
             "{}addresses/data/{}",
             self.url().as_str(),
@@ -164,14 +157,14 @@ impl Node {
         );
         let rs = self.get(&get_data_url).await?;
 
-        Ok(JsonDeserializer::deserialize_data_array(&rs).unwrap())
+        JsonDeserializer::deserialize_data_array(&rs)
     }
 
     pub async fn get_data_by_keys(
         &self,
         address: &Address,
         keys: &[String],
-    ) -> Result<Vec<DataEntry>, NodeError> {
+    ) -> Result<Vec<DataEntry>> {
         let get_data_url = format!(
             "{}addresses/data/{}",
             self.url().as_str(),
@@ -180,14 +173,14 @@ impl Node {
         let mut json_keys: Map<String, Value> = Map::new();
         json_keys.insert("keys".to_owned(), keys.into());
         let rs = self.post(&get_data_url, &json_keys.into()).await?;
-        Ok(JsonDeserializer::deserialize_data_array(&rs).unwrap())
+        JsonDeserializer::deserialize_data_array(&rs)
     }
 
     pub async fn get_data_by_regex(
         &self,
         address: &Address,
         regex: &Regex,
-    ) -> Result<Vec<DataEntry>, NodeError> {
+    ) -> Result<Vec<DataEntry>> {
         let get_data_url = format!(
             "{}addresses/data/{}?matches={}",
             self.url().as_str(),
@@ -195,14 +188,10 @@ impl Node {
             urlencoding::encode(regex.as_str())
         );
         let rs = self.get(&get_data_url).await?;
-        Ok(JsonDeserializer::deserialize_data_array(&rs).unwrap())
+        JsonDeserializer::deserialize_data_array(&rs)
     }
 
-    pub async fn get_data_by_key(
-        &self,
-        address: &Address,
-        key: &str,
-    ) -> Result<DataEntry, NodeError> {
+    pub async fn get_data_by_key(&self, address: &Address, key: &str) -> Result<DataEntry> {
         let get_data_by_key_url = format!(
             "{}addresses/data/{}/{}",
             self.url().as_str(),
@@ -210,70 +199,67 @@ impl Node {
             key
         );
         let rs = &self.get(&get_data_by_key_url).await?;
-        Ok(rs.into())
+        rs.try_into()
     }
 
-    pub async fn get_script_info(&self, address: &Address) -> Result<ScriptInfo, NodeError> {
+    pub async fn get_script_info(&self, address: &Address) -> Result<ScriptInfo> {
         let get_script_info_url = format!(
             "{}addresses/scriptInfo/{}",
             self.url().as_str(),
             address.encoded()
         );
         let rs = &self.get(&get_script_info_url).await?;
-        Ok(JsonDeserializer::deserialize_script_info(rs).unwrap())
+        JsonDeserializer::deserialize_script_info(rs)
     }
 
-    pub async fn get_script_meta(&self, address: &Address) -> Result<ScriptMeta, NodeError> {
+    pub async fn get_script_meta(&self, address: &Address) -> Result<ScriptMeta> {
         let get_script_meta_url = format!(
             "{}addresses/scriptInfo/{}/meta",
             self.url().as_str(),
             address.encoded()
         );
         let rs = &self.get(&get_script_meta_url).await?;
-        Ok(JsonDeserializer::deserialize_script_meta(rs).unwrap())
+        JsonDeserializer::deserialize_script_meta(rs)
     }
 
-    pub async fn get_transaction_info(
-        &self,
-        transaction_id: &str,
-    ) -> Result<TransactionInfo, NodeError> {
+    pub async fn get_transaction_info(&self, transaction_id: &str) -> Result<TransactionInfo> {
         let get_tx_info_url = format!(
             "{}transactions/info/{}",
             self.url().as_str(),
             transaction_id
         );
         let rs = self.get(&get_tx_info_url).await?;
-        Ok(JsonDeserializer::deserialize_tx_info(&rs, self.chain_id).unwrap())
+        JsonDeserializer::deserialize_tx_info(&rs, self.chain_id)
     }
 
-    pub async fn broadcast(
-        &self,
-        signed_tx: &SignedTransaction,
-    ) -> Result<SignedTransaction, NodeError> {
+    pub async fn broadcast(&self, signed_tx: &SignedTransaction) -> Result<SignedTransaction> {
         let broadcast_tx_url = format!("{}transactions/broadcast", self.url().as_str());
         let rs = self.post(&broadcast_tx_url, &signed_tx.to_json()).await?;
-        Ok(JsonDeserializer::deserialize_signed_tx(&rs, signed_tx.tx().chain_id()).unwrap())
+        JsonDeserializer::deserialize_signed_tx(&rs, signed_tx.tx().chain_id())
     }
 
-    async fn get(&self, url: &str) -> Result<Value, NodeError> {
-        let response = self.http_client.get(url).send().await.unwrap();
-        let rs = response.json().await.unwrap();
+    async fn get(&self, url: &str) -> Result<Value> {
+        let response = self.http_client.get(url).send().await?;
+        let rs = response.json().await?;
         Self::error_check(&rs)?;
         Ok(rs)
     }
 
-    async fn post(&self, url: &str, body: &Value) -> Result<Value, NodeError> {
-        let response = self.http_client.post(url).json(body).send().await.unwrap();
-        let rs = response.json().await.unwrap();
+    async fn post(&self, url: &str, body: &Value) -> Result<Value> {
+        let response = self.http_client.post(url).json(body).send().await?;
+        let rs = response.json().await?;
         Self::error_check(&rs)?;
         Ok(rs)
     }
 
-    fn error_check(rs: &Value) -> Result<(), NodeError> {
+    fn error_check(rs: &Value) -> Result<()> {
         let error = rs["error"].as_i64();
         if let Some(err) = error {
             let message = rs["message"].as_str().unwrap_or("");
-            return Err(NodeError::new(err as u32, message.to_owned()));
+            return Err(Error::NodeError {
+                error: err as u32,
+                message: message.to_owned(),
+            });
         }
         Ok(())
     }
@@ -318,7 +304,10 @@ mod tests {
         let tx_id = "8YsBZSZ3UmWAo8bCj8RN64BvoQUTdLtd567hXqQCYDVo";
 
         let node = Node::from_profile(Profile::MAINNET);
-        let transaction_info = node.get_transaction_info(tx_id.into()).await.unwrap();
+        let transaction_info = node
+            .get_transaction_info(tx_id.into())
+            .await
+            .expect("failed to get transaction info");
 
         assert_eq!(
             transaction_info.id(),
@@ -332,7 +321,7 @@ mod tests {
         let proof_from_rs = "4NiakymjU9s7mJYTBGbweGrDDwAauEXsuhMCeQJD1S28cEFL7hpjEL2LhaiVyFScq8UGVucpvCBo8PogvHQCdhrZ";
         assert_eq!(
             signed_transaction.proofs()[0],
-            Base58::decode(proof_from_rs).unwrap()
+            Base58::decode(proof_from_rs).expect("failed to decode base58 from string")
         );
 
         let transaction = signed_transaction.tx();
@@ -341,7 +330,11 @@ mod tests {
         assert_eq!(transaction.fee().fee(), 100000);
         assert_eq!(transaction.fee().fee_asset_id(), None);
         assert_eq!(
-            transaction.public_key().address(MAINNET.byte()).encoded(),
+            transaction
+                .public_key()
+                .address(MAINNET.byte())
+                .expect("failed to get address from public key")
+                .encoded(),
             "3P4eeU7v1LMHQFwwT2GW9W99c6vZyytHajj"
         );
         assert_eq!(
@@ -351,7 +344,10 @@ mod tests {
         assert_eq!(transaction.tx_type(), 4);
         assert_eq!(transaction.version(), 1);
 
-        let transfer_transaction = transaction.data().transfer_tx().unwrap();
+        let transfer_transaction = transaction
+            .data()
+            .transfer_tx()
+            .expect("failed to get transfer transaction");
         assert_eq!(transfer_transaction.attachment(), Some("".into()));
         assert_eq!(
             transfer_transaction.recipient(),
@@ -366,7 +362,10 @@ mod tests {
         let tx_id = "HcPcSma7oWeqy8g3ahhwFDzrq8YK8r739U4WC2ieB5Bs";
 
         let node = Node::from_profile(Profile::MAINNET);
-        let transaction_info = node.get_transaction_info(tx_id.into()).await.unwrap();
+        let transaction_info = node
+            .get_transaction_info(tx_id.into())
+            .await
+            .expect("failed to get transaction info");
 
         assert_eq!(
             transaction_info.id(),
@@ -380,7 +379,7 @@ mod tests {
         let proof_from_rs = "25KiXB1FS3FaupiPXyEVeRquKLK4FEb3NWF36D1eHw1gpT9Y53MbLsVqnX9rJC8MPg4x9yiUxFkmxF9DDTgQruhi";
         assert_eq!(
             signed_transaction.proofs()[0],
-            Base58::decode(proof_from_rs).unwrap()
+            Base58::decode(proof_from_rs).expect("failed to decode base58 from string")
         );
 
         let transaction = signed_transaction.tx();
@@ -389,7 +388,11 @@ mod tests {
         assert_eq!(transaction.fee().fee(), 500000);
         assert_eq!(transaction.fee().fee_asset_id(), None);
         assert_eq!(
-            transaction.public_key().address(MAINNET.byte()).encoded(),
+            transaction
+                .public_key()
+                .address(MAINNET.byte())
+                .expect("failed to get address from public key")
+                .encoded(),
             "3P4sxdNNPJLQcitAnLqLfSwaenjxFxQvZsE"
         );
         assert_eq!(
@@ -399,7 +402,10 @@ mod tests {
         assert_eq!(transaction.tx_type(), 12);
         assert_eq!(transaction.version(), 1);
 
-        let data_transaction = transaction.data().data_tx().unwrap();
+        let data_transaction = transaction
+            .data()
+            .data_tx()
+            .expect("failed to get data transaction from string");
 
         let data_entries = data_transaction.data();
 

@@ -1,10 +1,14 @@
+use crate::error::Result;
 use crate::model::account::PrivateKey;
 use crate::model::{SignedTransaction, Transaction};
 use crate::util::BinarySerializer;
 
-pub fn sign(transaction: &Transaction, private_key: &PrivateKey) -> SignedTransaction {
+pub fn sign(transaction: &Transaction, private_key: &PrivateKey) -> Result<SignedTransaction> {
     let bytes = BinarySerializer::body_bytes(transaction);
-    SignedTransaction::new(transaction.clone(), vec![private_key.sign(&bytes)])
+    Ok(SignedTransaction::new(
+        transaction.clone(),
+        vec![private_key.sign(&bytes?)?],
+    ))
 }
 
 #[cfg(test)]
@@ -19,7 +23,8 @@ mod tests {
 
     #[test]
     fn test_sign_data_transaction() {
-        let private_key = PrivateKey::from_seed(SEED_PHRASE, 0);
+        let private_key =
+            PrivateKey::from_seed(SEED_PHRASE, 0).expect("failed to get private key from seed");
 
         let binary_value: [u8; 12] = [0; 12];
 
@@ -54,11 +59,21 @@ mod tests {
 
         let signed_tx = sign(&transaction, &private_key);
 
-        let signature = signed_tx.proofs()[0].to_owned();
-        println!("signature {}", Base58::encode(&signature, false));
+        match signed_tx {
+            Ok(success) => {
+                let signature = success.proofs()[0].to_owned();
+                println!("signature {}", Base58::encode(&signature, false));
 
-        let is_signature_valid = private_key.is_signature_valid(&transaction.bytes(), &signature);
+                let is_signature_valid = private_key
+                    .is_signature_valid(
+                        &transaction.bytes().expect("failed to get body bytes"),
+                        &signature,
+                    )
+                    .expect("failed to validate signature");
 
-        assert_eq!(true, is_signature_valid);
+                assert_eq!(true, is_signature_valid);
+            }
+            Err(err) => println!("{:?}", err),
+        }
     }
 }

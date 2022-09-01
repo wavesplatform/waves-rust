@@ -1,3 +1,5 @@
+use crate::error::Error::WrongTransactionType;
+use crate::error::Result;
 use crate::model::account::{PrivateKey, PublicKey};
 use crate::model::transaction::data_transaction::DataTransaction;
 use crate::model::transaction::TransactionData::Transfer;
@@ -59,6 +61,7 @@ pub struct Transaction {
     data: TransactionData,
     fee: Amount,
     timestamp: u64,
+    // todo check flatten for serde_json
     public_key: PublicKey,
     tx_type: u8,
     version: u8,
@@ -134,16 +137,16 @@ impl Transaction {
         self.chain_id
     }
 
-    pub fn sign(&self, private_key: &PrivateKey) -> SignedTransaction {
+    pub fn sign(&self, private_key: &PrivateKey) -> Result<SignedTransaction> {
         sign(self, private_key)
     }
 
-    pub fn bytes(&self) -> Vec<u8> {
+    pub fn bytes(&self) -> Result<Vec<u8>> {
         BinarySerializer::body_bytes(self)
     }
 
-    pub fn id(&self) -> Id {
-        Id::from_bytes(&Hash::blake(&self.bytes()))
+    pub fn id(&self) -> Result<Id> {
+        Ok(Id::from_bytes(&Hash::blake(&self.bytes()?)?))
     }
 }
 
@@ -151,21 +154,33 @@ impl Transaction {
 pub enum TransactionData {
     Transfer(TransferTransaction),
     Data(DataTransaction),
-    Issue(),
 }
 
 impl TransactionData {
-    pub fn transfer_tx(&self) -> Result<&TransferTransaction, String> {
+    pub fn transfer_tx(&self) -> Result<&TransferTransaction> {
         match self {
             Transfer(tx) => Ok(tx),
-            _ => Err("failed".into()),
+            tx => Err(WrongTransactionType {
+                expected_type: TransferTransaction::tx_type(),
+                actual_type: tx.tx_type(),
+            }),
         }
     }
 
-    pub fn data_tx(&self) -> Result<&DataTransaction, String> {
+    pub fn data_tx(&self) -> Result<&DataTransaction> {
         match self {
             Data(tx) => Ok(tx),
-            _ => Err("failed".into()),
+            tx => Err(WrongTransactionType {
+                expected_type: DataTransaction::tx_type(),
+                actual_type: tx.tx_type(),
+            }),
+        }
+    }
+
+    pub fn tx_type(&self) -> u8 {
+        match self {
+            Transfer(_) => TransferTransaction::tx_type(),
+            Data(_) => DataTransaction::tx_type(),
         }
     }
 }
@@ -188,7 +203,7 @@ impl SignedTransaction {
         &self.transaction
     }
 
-    pub fn id(&self) -> Id {
+    pub fn id(&self) -> Result<Id> {
         self.tx().id()
     }
 
@@ -199,4 +214,6 @@ impl SignedTransaction {
     pub fn to_json(&self) -> Value {
         JsonSerializer::serialize_signed_tx(self)
     }
+
+    //todo sign
 }
