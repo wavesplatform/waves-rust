@@ -1,20 +1,25 @@
 use serde_json::{Map, Value};
 
+use crate::error::Result;
 use crate::model::{DataTransaction, SignedTransaction, Transaction, TransactionData};
 use crate::util::Base58;
 
 pub struct JsonSerializer;
 
 impl JsonSerializer {
-    pub fn serialize_signed_tx(sign_tx: &SignedTransaction) -> Value {
+    pub fn serialize_signed_tx(sign_tx: &SignedTransaction) -> Result<Value> {
         let mut json_props: Map<String, Value> = Map::new();
-        add_default_fields(sign_tx, &mut json_props);
-        add_additional_fields(sign_tx.tx().data(), &mut json_props);
-        json_props.into()
+        let mut json_props_with_default_values = add_default_fields(sign_tx, &mut json_props)?;
+        let json_props_with_additional_fields =
+            add_additional_fields(sign_tx.tx().data(), &mut json_props_with_default_values)?;
+        Ok(json_props_with_additional_fields.into())
     }
 }
 
-fn add_default_fields(sign_tx: &SignedTransaction, json_props: &mut Map<String, Value>) {
+fn add_default_fields(
+    sign_tx: &SignedTransaction,
+    json_props: &mut Map<String, Value>,
+) -> Result<Map<String, Value>> {
     let tx = sign_tx.tx();
     json_props.insert("type".to_string(), tx_type(tx).into());
     json_props.insert("version".to_string(), tx.version().into());
@@ -26,8 +31,7 @@ fn add_default_fields(sign_tx: &SignedTransaction, json_props: &mut Map<String, 
     json_props.insert(
         "sender".to_string(),
         tx.public_key()
-            .address(sign_tx.tx().chain_id())
-            .expect("failed to get address from public key")
+            .address(sign_tx.tx().chain_id())?
             .encoded()
             .into(),
     );
@@ -35,15 +39,20 @@ fn add_default_fields(sign_tx: &SignedTransaction, json_props: &mut Map<String, 
     json_props.insert("feeAssetId".to_string(), tx.fee().fee_asset_id().into());
     json_props.insert("timestamp".to_string(), tx.timestamp().into());
     json_props.insert("proofs".to_string(), proofs(sign_tx).into());
+    Ok(json_props.clone())
 }
 
-fn add_additional_fields(tx_data: &TransactionData, json_props: &mut Map<String, Value>) {
+fn add_additional_fields(
+    tx_data: &TransactionData,
+    json_props: &mut Map<String, Value>,
+) -> Result<Map<String, Value>> {
     match tx_data {
         TransactionData::Transfer(_) => todo!(),
         TransactionData::Data(data_tx) => {
             json_props.insert("data".to_string(), data_tx.data().into())
         }
     };
+    Ok(json_props.clone())
 }
 
 fn tx_type(tx: &Transaction) -> u8 {
@@ -113,7 +122,8 @@ mod tests {
             ]
         );
 
-        let json = JsonSerializer::serialize_signed_tx(&signed_transaction);
+        let json = JsonSerializer::serialize_signed_tx(&signed_transaction)
+            .expect("failed to serialize signed transaction");
         let signed_tx_from_json =
             JsonDeserializer::deserialize_signed_tx(&json, ChainId::TESTNET.byte())
                 .expect("Failed to deserialize signed tx");
