@@ -35,15 +35,15 @@ impl Node {
         }
     }
 
-    pub fn from_url(url: &str, chain_id: u8) -> Result<Node> {
-        Ok(Node {
-            url: Url::from_str(url)?,
+    pub fn from_url(url: &str, chain_id: u8) -> Node {
+        Node {
+            url: Url::from_str(url).expect("failed to parse url"),
             chain_id,
             http_client: Client::builder()
                 .timeout(Duration::from_secs(60))
                 .build()
                 .expect("Failed to create http client for struct Node"),
-        })
+        }
     }
 
     pub fn url(&self) -> Url {
@@ -234,7 +234,7 @@ impl Node {
 
     pub async fn broadcast(&self, signed_tx: &SignedTransaction) -> Result<SignedTransaction> {
         let broadcast_tx_url = format!("{}transactions/broadcast", self.url().as_str());
-        let rs = self.post(&broadcast_tx_url, &signed_tx.to_json()).await?;
+        let rs = self.post(&broadcast_tx_url, &signed_tx.to_json()?).await?;
         JsonDeserializer::deserialize_signed_tx(&rs, signed_tx.tx().chain_id())
     }
 

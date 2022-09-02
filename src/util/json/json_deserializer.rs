@@ -121,7 +121,7 @@ impl JsonDeserializer {
     pub fn deserialize_script_info(value: &Value) -> Result<ScriptInfo> {
         let script = Base64String::from_string(
             &Self::safe_to_string_from_field(value, "script").unwrap_or_else(|_| "".to_owned()),
-        );
+        )?;
         let complexity = Self::safe_to_int_from_field(value, "complexity")? as u32;
         let verifier_complexity = Self::safe_to_int_from_field(value, "verifierComplexity")? as u32;
         let callable_complexities: HashMap<String, u32> =

@@ -211,7 +211,7 @@ impl SignedTransaction {
         self.proofs.clone()
     }
 
-    pub fn to_json(&self) -> Value {
+    pub fn to_json(&self) -> Result<Value> {
         JsonSerializer::serialize_signed_tx(self)
     }
 

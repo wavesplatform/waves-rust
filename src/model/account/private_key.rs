@@ -59,7 +59,7 @@ impl PrivateKey {
         sig.copy_from_slice(signature);
         sig[63] &= 0x7f;
 
-        let public_key_bytes = self.public_key.bytes().clone();
+        let public_key_bytes = self.public_key.bytes();
         let mut ed_public_key =
             MontgomeryPoint(<[u8; 32]>::try_from(public_key_bytes.clone()).map_err(|_| {
                 Error::InvalidBytesLength {
@@ -68,15 +68,14 @@ impl PrivateKey {
                 }
             })?)
             .to_edwards(sign)
-            .unwrap()
+            .ok_or(Error::MontgomeryPointConversionError)?
             .compress()
             .to_bytes();
         ed_public_key[31] &= 0x7F;
         ed_public_key[31] |= sign;
 
-        Ok(EdPublicKey::from_bytes(&ed_public_key)
-            .unwrap()
-            .verify(message, &Signature::from_bytes(&sig).unwrap())
+        Ok(EdPublicKey::from_bytes(&ed_public_key)?
+            .verify(message, &Signature::from_bytes(&sig)?)
             .is_ok())
     }
 }

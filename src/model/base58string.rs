@@ -1,3 +1,4 @@
+use crate::error::Result;
 use std::fmt::{Display, Formatter};
 
 pub trait ByteString {
@@ -16,12 +17,9 @@ impl Base58String {
         Base58String { bytes }
     }
 
-    pub fn from_string(encoded: String) -> Base58String {
-        let bytes: Vec<u8> = bs58::decode(encoded)
-            .into_vec()
-            // todo return result
-            .expect("Failed to parse base58 string");
-        Base58String { bytes }
+    pub fn from_string(encoded: String) -> Result<Base58String> {
+        let bytes: Vec<u8> = bs58::decode(encoded).into_vec()?;
+        Ok(Base58String { bytes })
     }
 }
 
@@ -53,7 +51,8 @@ mod tests {
     #[test]
     fn test_base58string_from_string() {
         let base58string =
-            Base58String::from_string("7LBopaBdBzQbgqrnwgmgCDhcSTb32MYhE96SnSHcqZC2".to_string());
+            Base58String::from_string("7LBopaBdBzQbgqrnwgmgCDhcSTb32MYhE96SnSHcqZC2".to_string())
+                .expect("failed to get base58string from string");
 
         assert_eq!(
             base58string.encoded(),
@@ -91,10 +90,12 @@ mod tests {
         let base58string1 = Base58String::from_bytes(bytes);
 
         let base58string2 =
-            Base58String::from_string("7LBopaBdBzQbgqrnwgmgCDhcSTb32MYhE96SnSHcqZC2".to_string());
+            Base58String::from_string("7LBopaBdBzQbgqrnwgmgCDhcSTb32MYhE96SnSHcqZC2".to_string())
+                .expect("failed to get base58string from string");
 
         let base58string3 =
-            Base58String::from_string("8LBopaBdBzQbgqrnwgmgCDhcSTb32MYhE96SnSHcqZC2".to_string());
+            Base58String::from_string("8LBopaBdBzQbgqrnwgmgCDhcSTb32MYhE96SnSHcqZC2".to_string())
+                .expect("failed to get base58string from string");
 
         assert_eq!(base58string1 == base58string2, true);
         assert_eq!(base58string2 == base58string3, false)
@@ -103,7 +104,8 @@ mod tests {
     #[test]
     fn test_pretty_print() {
         let base58string =
-            Base58String::from_string("7LBopaBdBzQbgqrnwgmgCDhcSTb32MYhE96SnSHcqZC2".to_string());
+            Base58String::from_string("7LBopaBdBzQbgqrnwgmgCDhcSTb32MYhE96SnSHcqZC2".to_string())
+                .expect("failed to get base58string from string");
         let formatted_string = format!("{}", base58string);
         assert_eq!(
             "7LBopaBdBzQbgqrnwgmgCDhcSTb32MYhE96SnSHcqZC2",

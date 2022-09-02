@@ -28,12 +28,14 @@ pub enum Error {
     #[error("failed to encode protobuf {0}")]
     ProtobufEncodeError(#[from] EncodeError),
     #[error("signature error {0}")]
-    SignatureError(SignatureError),
+    SignatureError(#[from] SignatureError),
     #[error("invalid bytes length expected {expected_len:?} actual {actual_len:?}")]
     InvalidBytesLength {
         expected_len: usize,
         actual_len: usize,
     },
+    #[error("failed to convert Montgomery Point to Edwards Point")]
+    MontgomeryPointConversionError,
 }
 
 #[derive(Debug, thiserror::Error)]

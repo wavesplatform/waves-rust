@@ -1,3 +1,4 @@
+use crate::error::Result;
 use crate::model::ByteString;
 
 #[derive(Eq, PartialEq, Clone, Debug)]
@@ -10,15 +11,15 @@ impl Base64String {
         Base64String { bytes }
     }
 
-    pub fn from_string(encoded: &str) -> Base64String {
+    pub fn from_string(encoded: &str) -> Result<Base64String> {
         let base64str = if encoded.starts_with("base64:") {
             encoded.replace("base64:", "")
         } else {
             encoded.to_owned()
         };
-        Base64String {
-            bytes: base64::decode(base64str).expect("Failed to parse base64 string"),
-        }
+        Ok(Base64String {
+            bytes: base64::decode(base64str)?,
+        })
     }
 }
 
