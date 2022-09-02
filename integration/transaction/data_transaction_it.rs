@@ -11,7 +11,8 @@ trigger used census";
 
 //#[tokio::test]
 async fn broadcast_and_read_test() {
-    let private_key = PrivateKey::from_seed(SEED_PHRASE, 0);
+    let private_key =
+        PrivateKey::from_seed(SEED_PHRASE, 0).expect("failed to get private ket from seed phrase");
 
     let binary_value: [u8; 12] = [0; 12];
 
@@ -44,15 +45,22 @@ async fn broadcast_and_read_test() {
         2,
         ChainId::TESTNET.byte(),
     )
-    .sign(&private_key);
+    .sign(&private_key)
+    .expect("failed to sign transaction");
 
     let node = Node::from_profile(Profile::TESTNET);
     let signed_tx_from_rs = node.broadcast(&signed_tx).await;
 
-    if let Ok(signed_tx_from_rs) = signed_tx_from_rs {
-        assert_eq!(signed_tx_from_rs.id().encoded(), signed_tx.id().encoded());
-    } else {
-        let node_error = signed_tx_from_rs.err().expect("No error");
-        println!("{}", node_error);
+    match signed_tx_from_rs {
+        Ok(signed_tx_from_rs) => {
+            assert_eq!(
+                signed_tx_from_rs
+                    .id()
+                    .expect("failed to calculate id")
+                    .encoded(),
+                signed_tx.id().expect("failed to calculate id").encoded()
+            )
+        }
+        Err(err) => println!("{:?}", err),
     }
 }

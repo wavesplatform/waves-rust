@@ -27,6 +27,7 @@ fn add_default_fields(sign_tx: &SignedTransaction, json_props: &mut Map<String, 
         "sender".to_string(),
         tx.public_key()
             .address(sign_tx.tx().chain_id())
+            .expect("failed to get address from public key")
             .encoded()
             .into(),
     );
@@ -42,7 +43,6 @@ fn add_additional_fields(tx_data: &TransactionData, json_props: &mut Map<String,
         TransactionData::Data(data_tx) => {
             json_props.insert("data".to_string(), data_tx.data().into())
         }
-        TransactionData::Issue() => todo!(),
     };
 }
 
@@ -50,7 +50,6 @@ fn tx_type(tx: &Transaction) -> u8 {
     match tx.data() {
         TransactionData::Transfer(_) => todo!(),
         TransactionData::Data(_) => DataTransaction::tx_type(),
-        TransactionData::Issue() => todo!(),
     }
 }
 
@@ -95,12 +94,14 @@ mod tests {
             },
         ]));
 
+        let public_key = PublicKey::from_string("8jDzNuHZwuTTo6WvZMdSoNc8ydY6a7UnxvwHZ8kooMuS")
+            .expect("failed to get public key from string");
         let signed_transaction = SignedTransaction::new(
             Transaction::new(
                 transaction_data,
                 Amount::new(100000, None),
                 1661456063029,
-                PublicKey::from_string("8jDzNuHZwuTTo6WvZMdSoNc8ydY6a7UnxvwHZ8kooMuS").unwrap(),
+                public_key,
                 DataTransaction::tx_type(),
                 2,
                 ChainId::TESTNET.byte(),

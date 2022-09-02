@@ -1,5 +1,6 @@
+use crate::error::Result;
 use crate::model::data_entry::DataEntry;
-use crate::util::Base64;
+use crate::util::{Base64, JsonDeserializer};
 use serde_json::{Map, Value};
 
 const TYPE: u8 = 12;
@@ -10,15 +11,14 @@ pub struct DataTransaction {
 }
 
 impl DataTransaction {
-    // todo return Result<DataTransaction, Error>
-    pub fn from_json(value: &Value) -> DataTransaction {
-        let data_array = value["data"].as_array().unwrap();
+    pub fn from_json(value: &Value) -> Result<DataTransaction> {
+        let data_array = JsonDeserializer::safe_to_array_from_field(value, "data")?;
         let data = data_array
             .iter()
-            .map(|entry| entry.into())
-            .collect::<Vec<DataEntry>>();
+            .map(|entry| entry.try_into())
+            .collect::<Result<Vec<DataEntry>>>()?;
 
-        DataTransaction { data }
+        Ok(DataTransaction { data })
     }
 
     pub fn new(data: Vec<DataEntry>) -> Self {

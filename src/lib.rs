@@ -1,7 +1,7 @@
 extern crate core;
 
 pub mod constants;
-pub mod errors;
+pub mod error;
 pub mod model;
 pub mod node;
 pub mod util;

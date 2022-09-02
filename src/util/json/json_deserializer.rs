@@ -1,4 +1,4 @@
-use crate::errors::ParseError;
+use crate::error::{Error, Result};
 use crate::model::account::{Address, Balance, BalanceDetails};
 use crate::model::data_entry::DataEntry;
 use crate::model::TransactionData::{Data, Transfer};
@@ -13,13 +13,13 @@ use std::collections::HashMap;
 pub struct JsonDeserializer;
 
 impl JsonDeserializer {
-    pub fn deserialize_tx_info(value: &Value, chain_id: u8) -> Result<TransactionInfo, ParseError> {
+    pub fn deserialize_tx_info(value: &Value, chain_id: u8) -> Result<TransactionInfo> {
         let id = Self::safe_to_string_from_field(value, "id")?;
 
         let application_status =
             match Self::safe_to_string_from_field(value, "applicationStatus")?.as_str() {
                 "succeeded" => ApplicationStatus::Succeed,
-                //todo check statuses
+                //todo check statuses in wavesJ
                 "scriptExecutionFailed" => ApplicationStatus::ScriptExecutionFailed,
                 &_ => ApplicationStatus::Unknown,
             };
@@ -34,44 +34,41 @@ impl JsonDeserializer {
         ))
     }
 
-    pub fn deserialize_signed_tx(
-        value: &Value,
-        chain_id: u8,
-    ) -> Result<SignedTransaction, ParseError> {
+    pub fn deserialize_signed_tx(value: &Value, chain_id: u8) -> Result<SignedTransaction> {
         let transaction = Self::deserialize_tx(value, chain_id)?;
         let proofs_array = Self::safe_to_array_from_field(value, "proofs")?;
+
         let proofs = proofs_array
             .iter()
-            // todo remove unwrap
-            .map(|v| Base58::decode(v.as_str().unwrap()).unwrap())
-            .collect::<Vec<Vec<u8>>>();
+            .map(|v| Base58::decode(&Self::safe_to_string(v)?))
+            .collect::<Result<Vec<Vec<u8>>>>()?;
         Ok(SignedTransaction::new(transaction, proofs))
     }
 
-    pub fn deserialize_tx(value: &Value, chain_id: u8) -> Result<Transaction, ParseError> {
+    pub fn deserialize_tx(value: &Value, chain_id: u8) -> Result<Transaction> {
         let tx_type = Self::safe_to_int_from_field(value, "type")? as u8;
         let fee = Self::safe_to_int_from_field(value, "fee")? as u64;
         let fee_asset_id = value["feeAssetId"].as_str().map(|value| value.into());
         let transaction_data = match tx_type {
-            4 => Transfer(TransferTransaction::from_json(value)),
-            12 => Data(DataTransaction::from_json(value)),
+            4 => Transfer(TransferTransaction::from_json(value)?),
+            12 => Data(DataTransaction::from_json(value)?),
             _ => panic!("unknown tx type"),
         };
         let timestamp = Self::safe_to_int_from_field(value, "timestamp")? as u64;
-        let public_key = Self::safe_to_string_from_field(value, "senderPublicKey")?.try_into();
+        let public_key = Self::safe_to_string_from_field(value, "senderPublicKey")?.try_into()?;
         let version = Self::safe_to_int_from_field(value, "version")? as u8;
         Ok(Transaction::new(
             transaction_data,
             Amount::new(fee, fee_asset_id),
             timestamp,
-            public_key.unwrap(),
+            public_key,
             tx_type,
             version,
             chain_id,
         ))
     }
 
-    pub fn deserialize_addresses(value: &Value, chain_id: u8) -> Result<Vec<Address>, ParseError> {
+    pub fn deserialize_addresses(value: &Value, chain_id: u8) -> Result<Vec<Address>> {
         let array = Self::safe_to_array(value)?;
         array
             .iter()
@@ -79,12 +76,12 @@ impl JsonDeserializer {
             .collect()
     }
 
-    pub fn deserialize_address(value: &Value, chain_id: u8) -> Result<Address, ParseError> {
+    pub fn deserialize_address(value: &Value, chain_id: u8) -> Result<Address> {
         let string = Self::safe_to_string(value)?;
-        Ok(Address::from_string(&string, chain_id))
+        Address::from_string(&string, chain_id)
     }
 
-    pub fn deserialize_balances(value: &Value, chain_id: u8) -> Result<Vec<Balance>, ParseError> {
+    pub fn deserialize_balances(value: &Value, chain_id: u8) -> Result<Vec<Balance>> {
         let array = Self::safe_to_array(value)?;
         array
             .iter()
@@ -92,21 +89,18 @@ impl JsonDeserializer {
             .collect()
     }
 
-    pub fn deserialize_balance(value: &Value, chain_id: u8) -> Result<Balance, ParseError> {
+    pub fn deserialize_balance(value: &Value, chain_id: u8) -> Result<Balance> {
         let address =
-            Address::from_string(&Self::safe_to_string_from_field(value, "id")?, chain_id);
+            Address::from_string(&Self::safe_to_string_from_field(value, "id")?, chain_id)?;
         let balance = Self::safe_to_int_from_field(value, "balance")?;
         Ok(Balance::new(address, balance as u64))
     }
 
-    pub fn deserialize_balance_details(
-        value: &Value,
-        chain_id: u8,
-    ) -> Result<BalanceDetails, ParseError> {
+    pub fn deserialize_balance_details(value: &Value, chain_id: u8) -> Result<BalanceDetails> {
         let address = Address::from_string(
             &Self::safe_to_string_from_field(value, "address")?,
             chain_id,
-        );
+        )?;
         let available = Self::safe_to_int_from_field(value, "available")? as u64;
         let regular = Self::safe_to_int_from_field(value, "regular")? as u64;
         let generating = Self::safe_to_int_from_field(value, "generating")? as u64;
@@ -116,26 +110,30 @@ impl JsonDeserializer {
         ))
     }
 
-    pub fn deserialize_data_array(value: &Value) -> Result<Vec<DataEntry>, ParseError> {
+    pub fn deserialize_data_array(value: &Value) -> Result<Vec<DataEntry>> {
         let data_array = Self::safe_to_array(value)?;
-        Ok(data_array
+        data_array
             .iter()
-            .map(|entry| entry.into())
-            .collect::<Vec<DataEntry>>())
+            .map(|entry| entry.try_into())
+            .collect::<Result<Vec<DataEntry>>>()
     }
 
-    pub fn deserialize_script_info(value: &Value) -> Result<ScriptInfo, ParseError> {
+    pub fn deserialize_script_info(value: &Value) -> Result<ScriptInfo> {
         let script = Base64String::from_string(
             &Self::safe_to_string_from_field(value, "script").unwrap_or_else(|_| "".to_owned()),
         );
         let complexity = Self::safe_to_int_from_field(value, "complexity")? as u32;
         let verifier_complexity = Self::safe_to_int_from_field(value, "verifierComplexity")? as u32;
-        let callable_complexities: HashMap<String, u32> = value["callableComplexities"]
-            .as_object()
-            .unwrap()
-            .into_iter()
-            .map(|entry| (entry.0.to_owned(), entry.1.as_i64().unwrap() as u32))
-            .collect();
+        let callable_complexities: HashMap<String, u32> =
+            Self::safe_to_map_from_field(value, "callableComplexities")?
+                .into_iter()
+                .map(|entry| {
+                    Ok((
+                        entry.0.to_owned(),
+                        JsonDeserializer::safe_to_int(&entry.1)? as u32,
+                    ))
+                })
+                .collect::<Result<HashMap<String, u32>>>()?;
         let extra_fee = Self::safe_to_int_from_field(value, "extraFee")? as u64;
         let script_text =
             Self::safe_to_string_from_field(value, "scriptText").unwrap_or_else(|_| "".to_owned());
@@ -149,7 +147,7 @@ impl JsonDeserializer {
         ))
     }
 
-    pub fn deserialize_script_meta(value: &Value) -> Result<ScriptMeta, ParseError> {
+    pub fn deserialize_script_meta(value: &Value) -> Result<ScriptMeta> {
         let meta_version: u32 = Self::safe_to_string_from_field(&value["meta"], "version")
             .unwrap_or_else(|_| "0".to_string())
             .parse()
@@ -180,35 +178,32 @@ impl JsonDeserializer {
         Ok(ScriptMeta::new(meta_version, callable_functions))
     }
 
-    pub fn safe_to_string_from_field(json: &Value, field_name: &str) -> Result<String, ParseError> {
+    pub fn safe_to_string_from_field(json: &Value, field_name: &str) -> Result<String> {
         let string = json[field_name]
             .as_str()
-            .ok_or_else(|| ParseError::FieldNotFoundError {
+            .ok_or_else(|| Error::JsonParseError {
                 json: json.to_string(),
-                field_name: field_name.to_owned(),
+                field: field_name.to_owned(),
             })?;
         Ok(string.into())
     }
 
-    pub fn safe_to_int_from_field(json: &Value, field_name: &str) -> Result<i64, ParseError> {
+    pub fn safe_to_int_from_field(json: &Value, field_name: &str) -> Result<i64> {
         let int = json[field_name]
             .as_i64()
-            .ok_or_else(|| ParseError::FieldNotFoundError {
+            .ok_or_else(|| Error::JsonParseError {
                 json: json.to_string(),
-                field_name: field_name.to_owned(),
+                field: field_name.to_owned(),
             })?;
         Ok(int)
     }
 
-    pub fn safe_to_array_from_field(
-        json: &Value,
-        field_name: &str,
-    ) -> Result<Vec<Value>, ParseError> {
+    pub fn safe_to_array_from_field(json: &Value, field_name: &str) -> Result<Vec<Value>> {
         let array = json[field_name]
             .as_array()
-            .ok_or_else(|| ParseError::FieldNotFoundError {
+            .ok_or_else(|| Error::JsonParseError {
                 json: json.to_string(),
-                field_name: field_name.to_owned(),
+                field: field_name.to_owned(),
             })?;
         Ok(array.to_owned())
     }
@@ -216,39 +211,45 @@ impl JsonDeserializer {
     pub fn safe_to_map_from_field(
         json: &Value,
         field_name: &str,
-    ) -> Result<serde_json::Map<String, Value>, ParseError> {
+    ) -> Result<serde_json::Map<String, Value>> {
         let map = json[field_name]
             .as_object()
-            .ok_or_else(|| ParseError::FieldNotFoundError {
+            .ok_or_else(|| Error::JsonParseError {
                 json: json.to_string(),
-                field_name: field_name.to_owned(),
+                field: field_name.to_owned(),
             })?;
         Ok(map.to_owned())
     }
 
-    pub fn safe_to_string(json: &Value) -> Result<String, ParseError> {
-        let string = json.as_str().ok_or_else(|| ParseError::InvalidTypeError {
+    pub fn safe_to_string(json: &Value) -> Result<String> {
+        let string = json.as_str().ok_or_else(|| Error::JsonParseError {
             json: json.to_string(),
-            json_type: "String".to_string(),
+            field: "String".to_owned(),
         })?;
         Ok(string.to_owned())
     }
 
-    pub fn safe_to_int(json: &Value) -> Result<i64, ParseError> {
-        let int = json.as_i64().ok_or_else(|| ParseError::InvalidTypeError {
+    pub fn safe_to_int(json: &Value) -> Result<i64> {
+        let int = json.as_i64().ok_or_else(|| Error::JsonParseError {
             json: json.to_string(),
-            json_type: "i64".to_string(),
+            field: "i64".to_owned(),
         })?;
         Ok(int.to_owned())
     }
 
-    pub fn safe_to_array(json: &Value) -> Result<Vec<Value>, ParseError> {
-        let array = json
-            .as_array()
-            .ok_or_else(|| ParseError::InvalidTypeError {
-                json: json.to_string(),
-                json_type: "Vec<Value>".to_string(),
-            })?;
+    pub fn safe_to_boolean(json: &Value) -> Result<bool> {
+        let bool = json.as_bool().ok_or_else(|| Error::JsonParseError {
+            json: json.to_string(),
+            field: "bool".to_owned(),
+        })?;
+        Ok(bool)
+    }
+
+    pub fn safe_to_array(json: &Value) -> Result<Vec<Value>> {
+        let array = json.as_array().ok_or_else(|| Error::JsonParseError {
+            json: json.to_string(),
+            field: "Vec<Value>".to_owned(),
+        })?;
         Ok(array.to_owned())
     }
 }
