@@ -1,54 +1,62 @@
 use crate::error::Result;
-use crate::util::JsonDeserializer;
+use crate::model::{Address, Amount, AssetId, Base58String};
+use crate::util::{Base58, JsonDeserializer};
 use serde_json::Value;
 
 const TYPE: u8 = 4;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct TransferTransaction {
-    pub recipient: String,
-    //todo change to struct see WavesJ
-    pub asset: Option<String>,
-    pub amount: u64,
-    pub fee_asset: Option<String>,
-    pub attachment: Option<String>,
+    recipient: Address,
+    amount: Amount,
+    attachment: Base58String,
 }
 
 impl TransferTransaction {
     // todo return Result<TransferTransaction, Error>
     pub fn from_json(value: &Value) -> Result<TransferTransaction> {
         let recipient = JsonDeserializer::safe_to_string_from_field(value, "recipient")?;
-        let asset: Option<String> = value["assetId"].as_str().map(|value| value.into());
+        let asset: Option<AssetId> = match value["assetId"].as_str() {
+            Some(value) => {
+                let vec = Base58::decode(value)?;
+                Some(AssetId::from_bytes(vec))
+            }
+            None => None,
+        };
         let amount = JsonDeserializer::safe_to_int_from_field(value, "amount")? as u64;
-        let fee_asset = value["feeAssetId"].as_str().map(|value| value.into());
-        let attachment = value["attachment"].as_str().map(|value| value.into());
+        let attachment = match value["attachment"].as_str().map(|value| value.into()) {
+            Some(value) => Base58String::from_string(value)?,
+            None => Base58String::empty(),
+        };
 
         Ok(TransferTransaction {
-            recipient,
-            asset,
-            amount,
-            fee_asset,
+            recipient: Address::from_string(&recipient)?,
+            amount: Amount::new(amount, asset),
             attachment,
         })
     }
 
-    pub fn recipient(&self) -> String {
+    pub fn new(
+        recipient: Address,
+        amount: Amount,
+        attachment: Base58String,
+    ) -> TransferTransaction {
+        TransferTransaction {
+            recipient,
+            amount,
+            attachment,
+        }
+    }
+
+    pub fn recipient(&self) -> Address {
         self.recipient.clone()
     }
 
-    pub fn asset(&self) -> Option<String> {
-        self.asset.clone()
+    pub fn amount(&self) -> Amount {
+        self.amount.clone()
     }
 
-    pub fn amount(&self) -> u64 {
-        self.amount
-    }
-
-    pub fn fee_asset(&self) -> Option<String> {
-        self.fee_asset.clone()
-    }
-
-    pub fn attachment(&self) -> Option<String> {
+    pub fn attachment(&self) -> Base58String {
         self.attachment.clone()
     }
 

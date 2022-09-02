@@ -4,8 +4,8 @@ use crate::model::account::{PrivateKey, PublicKey};
 use crate::model::transaction::data_transaction::DataTransaction;
 use crate::model::transaction::TransactionData::Transfer;
 use crate::model::transaction::TransferTransaction;
-use crate::model::Id;
 use crate::model::TransactionData::Data;
+use crate::model::{AssetId, Id};
 use crate::util::{sign, BinarySerializer, Hash, JsonSerializer};
 use serde_json::Value;
 
@@ -70,21 +70,21 @@ pub struct Transaction {
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Amount {
-    fee: u64,
-    fee_asset_id: Option<String>,
+    value: u64,
+    asset_id: Option<AssetId>,
 }
 
 impl Amount {
-    pub fn new(fee: u64, fee_asset_id: Option<String>) -> Amount {
-        Amount { fee, fee_asset_id }
+    pub fn new(value: u64, asset_id: Option<AssetId>) -> Amount {
+        Amount { value, asset_id }
     }
 
-    pub fn fee(&self) -> u64 {
-        self.fee
+    pub fn value(&self) -> u64 {
+        self.value
     }
 
-    pub fn fee_asset_id(&self) -> Option<String> {
-        self.fee_asset_id.clone()
+    pub fn asset_id(&self) -> Option<AssetId> {
+        self.asset_id.clone()
     }
 }
 

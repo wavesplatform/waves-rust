@@ -5,7 +5,7 @@ use waves_rust::node::{Node, Profile};
 #[tokio::test]
 async fn get_addresses_test() {
     let node = Node::from_profile(Profile::TESTNET);
-    let addresses = node.get_addresses(ChainId::TESTNET.byte()).await.unwrap();
+    let addresses = node.get_addresses().await.unwrap();
     let address = addresses.first().unwrap();
     println!("{}", address.encoded());
 }
@@ -13,10 +13,7 @@ async fn get_addresses_test() {
 #[tokio::test]
 async fn get_addresses_seq_test() {
     let node = Node::from_profile(Profile::TESTNET);
-    let addresses = node
-        .get_addresses_seq(0, 1, ChainId::TESTNET.byte())
-        .await
-        .unwrap();
+    let addresses = node.get_addresses_seq(0, 1).await.unwrap();
     let address = addresses.first().unwrap();
     println!("{}", address.encoded());
 }
@@ -25,13 +22,7 @@ async fn get_addresses_seq_test() {
 async fn get_balance_test() {
     let node = Node::from_profile(Profile::TESTNET);
     let balance = node
-        .get_balance(
-            &Address::from_string(
-                "3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q",
-                ChainId::TESTNET.byte(),
-            )
-            .unwrap(),
-        )
+        .get_balance(&Address::from_string("3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q").unwrap())
         .await
         .unwrap();
     assert_eq!(true, balance > 0)
@@ -42,11 +33,7 @@ async fn get_balance_with_confirmation_test() {
     let node = Node::from_profile(Profile::TESTNET);
     let balance = node
         .get_balance_with_confirmations(
-            &Address::from_string(
-                "3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q",
-                ChainId::TESTNET.byte(),
-            )
-            .unwrap(),
+            &Address::from_string("3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q").unwrap(),
             100,
         )
         .await;
@@ -61,21 +48,10 @@ async fn get_balance_with_confirmation_test() {
 async fn get_balances_test() {
     let node = Node::from_profile(Profile::TESTNET);
     let balances = node
-        .get_balances(
-            &vec![
-                Address::from_string(
-                    "3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q",
-                    ChainId::TESTNET.byte(),
-                )
-                .unwrap(),
-                Address::from_string(
-                    "3MtQQX9NwYH5URGGcS2e6ptEgV7wTFesaRW",
-                    ChainId::TESTNET.byte(),
-                )
-                .unwrap(),
-            ],
-            ChainId::TESTNET.byte(),
-        )
+        .get_balances(&vec![
+            Address::from_string("3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q").unwrap(),
+            Address::from_string("3MtQQX9NwYH5URGGcS2e6ptEgV7wTFesaRW").unwrap(),
+        ])
         .await;
 
     match balances {
@@ -94,19 +70,10 @@ async fn get_balances_at_height_test() {
     let balances = node
         .get_balances_at_height(
             &vec![
-                Address::from_string(
-                    "3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q",
-                    ChainId::TESTNET.byte(),
-                )
-                .unwrap(),
-                Address::from_string(
-                    "3MtQQX9NwYH5URGGcS2e6ptEgV7wTFesaRW",
-                    ChainId::TESTNET.byte(),
-                )
-                .unwrap(),
+                Address::from_string("3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q").unwrap(),
+                Address::from_string("3MtQQX9NwYH5URGGcS2e6ptEgV7wTFesaRW").unwrap(),
             ],
             2202560,
-            ChainId::TESTNET.byte(),
         )
         .await;
     match balances {
@@ -123,13 +90,7 @@ async fn get_balances_at_height_test() {
 async fn get_balance_details_test() {
     let node = Node::from_profile(Profile::TESTNET);
     let balance_details = node
-        .get_balance_details(
-            &Address::from_string(
-                "3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q",
-                ChainId::TESTNET.byte(),
-            )
-            .unwrap(),
-        )
+        .get_balance_details(&Address::from_string("3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q").unwrap())
         .await;
     match balance_details {
         Ok(result) => {
@@ -147,13 +108,7 @@ async fn get_balance_details_test() {
 async fn get_address_data_test() {
     let node = Node::from_profile(Profile::TESTNET);
     let data_entries = node
-        .get_data(
-            &Address::from_string(
-                "3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q",
-                ChainId::TESTNET.byte(),
-            )
-            .unwrap(),
-        )
+        .get_data(&Address::from_string("3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q").unwrap())
         .await;
 
     match data_entries {
@@ -167,11 +122,7 @@ async fn get_address_data_test() {
 #[tokio::test]
 async fn get_address_data_by_keys_test() {
     let node = Node::from_profile(Profile::TESTNET);
-    let address = Address::from_string(
-        "3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q",
-        ChainId::TESTNET.byte(),
-    )
-    .unwrap();
+    let address = Address::from_string("3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q").unwrap();
     let data_entries = node
         .get_data_by_keys(&address, &vec!["binary".to_owned(), "bool".to_owned()])
         .await;
@@ -187,11 +138,7 @@ async fn get_address_data_by_keys_test() {
 #[tokio::test]
 async fn get_address_data_by_regex_test() {
     let node = Node::from_profile(Profile::TESTNET);
-    let address = Address::from_string(
-        "3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q",
-        ChainId::TESTNET.byte(),
-    )
-    .unwrap();
+    let address = Address::from_string("3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q").unwrap();
     let regex = Regex::new(r"b\w+").unwrap();
     let data_entries = node.get_data_by_regex(&address, &regex).await;
 
@@ -206,11 +153,7 @@ async fn get_address_data_by_regex_test() {
 #[tokio::test]
 async fn get_address_data_by_key_test() {
     let node = Node::from_profile(Profile::TESTNET);
-    let address = Address::from_string(
-        "3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q",
-        ChainId::TESTNET.byte(),
-    )
-    .unwrap();
+    let address = Address::from_string("3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q").unwrap();
     let data_entrie = node.get_data_by_key(&address, "bool").await;
 
     match data_entrie {
@@ -224,11 +167,7 @@ async fn get_address_data_by_key_test() {
 #[tokio::test]
 async fn get_script_info_test() {
     let node = Node::from_profile(Profile::TESTNET);
-    let address = Address::from_string(
-        "3Mv1HwsRtMjyGKSe5DSDnbT2AoTsXAjtwZS",
-        ChainId::TESTNET.byte(),
-    )
-    .unwrap();
+    let address = Address::from_string("3Mv1HwsRtMjyGKSe5DSDnbT2AoTsXAjtwZS").unwrap();
     let script_info = node.get_script_info(&address).await;
     match script_info {
         Ok(result) => {
@@ -246,11 +185,7 @@ async fn get_script_info_test() {
 #[tokio::test]
 async fn get_script_meta_test() {
     let node = Node::from_profile(Profile::TESTNET);
-    let address = Address::from_string(
-        "3Mv1HwsRtMjyGKSe5DSDnbT2AoTsXAjtwZS",
-        ChainId::TESTNET.byte(),
-    )
-    .unwrap();
+    let address = Address::from_string("3Mv1HwsRtMjyGKSe5DSDnbT2AoTsXAjtwZS").unwrap();
     let script_meta = node.get_script_meta(&address).await;
     match script_meta {
         Ok(result) => {

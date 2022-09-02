@@ -1,16 +1,17 @@
 use crate::error::Result;
 use crate::model::data_entry::DataEntry;
-use crate::model::Transaction;
 use crate::model::TransactionData::{Data, Transfer};
-use crate::util::Base58;
+use crate::model::{ByteString, Transaction};
 use crate::waves_proto::data_transaction_data::data_entry::Value::{
     BinaryValue, BoolValue, IntValue, StringValue,
 };
 use crate::waves_proto::data_transaction_data::DataEntry as ProtoDataEntry;
 use crate::waves_proto::transaction::Data as ProtoData;
-use crate::waves_proto::Amount as ProtoAmount;
 use crate::waves_proto::DataTransactionData;
 use crate::waves_proto::Transaction as ProtoTransaction;
+use crate::waves_proto::{
+    recipient, Amount as ProtoAmount, Amount, Recipient, TransferTransactionData,
+};
 use prost::Message;
 
 pub struct BinarySerializer;
@@ -18,17 +19,17 @@ pub struct BinarySerializer;
 impl BinarySerializer {
     pub fn body_bytes(transaction: &Transaction) -> Result<Vec<u8>> {
         let proto_data = match transaction.data() {
-            Transfer(_) => todo!(),
+            Transfer(_) => transfer_transaction_to_proto(transaction)?,
             Data(_) => data_transaction_to_proto(transaction)?,
         };
 
-        let fee_asset_id = match transaction.fee().fee_asset_id() {
+        let fee_asset_id = match transaction.fee().asset_id() {
             None => vec![],
-            Some(asset_id) => Base58::decode(&asset_id)?,
+            Some(asset_id) => asset_id.bytes(),
         };
 
         let amount = ProtoAmount {
-            amount: transaction.fee().fee() as i64,
+            amount: transaction.fee().value() as i64,
             asset_id: fee_asset_id,
         };
 
@@ -45,6 +46,28 @@ impl BinarySerializer {
         proto_tx.encode(&mut buf)?;
         Ok(buf)
     }
+}
+
+pub fn transfer_transaction_to_proto(transaction: &Transaction) -> Result<ProtoData> {
+    let transfer_tx = transaction.data().transfer_tx()?;
+    let recipient = Some(Recipient {
+        recipient: Some(recipient::Recipient::PublicKeyHash(
+            transfer_tx.recipient().public_key_hash(),
+        )),
+    });
+    let asset_id = match transfer_tx.amount().asset_id() {
+        Some(value) => value.bytes(),
+        None => vec![],
+    };
+    let amount = Some(Amount {
+        asset_id,
+        amount: transfer_tx.amount().value() as i64,
+    });
+    Ok(ProtoData::Transfer(TransferTransactionData {
+        recipient,
+        amount,
+        attachment: transfer_tx.attachment().bytes().clone(),
+    }))
 }
 
 pub fn data_transaction_to_proto(transaction: &Transaction) -> Result<ProtoData> {

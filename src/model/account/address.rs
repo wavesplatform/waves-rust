@@ -4,14 +4,12 @@ use crate::util::{Base58, Crypto};
 
 #[derive(Eq, PartialEq, Clone, Debug)]
 pub struct Address {
-    chain_id: u8,
     bytes: Vec<u8>,
 }
 
 impl Address {
     pub fn from_public_key(chain_id: u8, public_key: &PublicKey) -> Result<Address> {
         Ok(Address {
-            chain_id,
             bytes: Crypto::get_address(
                 &chain_id,
                 &Crypto::get_public_key_hash(public_key.bytes())?,
@@ -23,15 +21,22 @@ impl Address {
         Base58::encode(&self.bytes, false)
     }
 
-    pub fn from_string(address: &str, chain_id: u8) -> Result<Address> {
+    pub fn from_string(address: &str) -> Result<Address> {
         Ok(Address {
-            chain_id,
             bytes: Base58::decode(address)?,
         })
     }
 
+    pub fn bytes(&self) -> Vec<u8> {
+        self.bytes.clone()
+    }
+
     pub fn chain_id(&self) -> u8 {
-        self.chain_id
+        self.bytes[1]
+    }
+
+    pub fn public_key_hash(&self) -> Vec<u8> {
+        self.bytes[2..22].to_vec()
     }
 }
 
@@ -59,8 +64,8 @@ mod tests {
     #[test]
     fn test_address_from_string() {
         let expected_address = "3MtQQX9NwYH5URGGcS2e6ptEgV7wTFesaRW";
-        let address = Address::from_string(expected_address, ChainId::TESTNET.byte())
-            .expect("failed to get address from string");
+        let address =
+            Address::from_string(expected_address).expect("failed to get address from string");
         assert_eq!(expected_address, address.encoded())
     }
 }

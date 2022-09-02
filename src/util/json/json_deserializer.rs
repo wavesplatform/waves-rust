@@ -3,8 +3,8 @@ use crate::model::account::{Address, Balance, BalanceDetails};
 use crate::model::data_entry::DataEntry;
 use crate::model::TransactionData::{Data, Transfer};
 use crate::model::{
-    Amount, ApplicationStatus, ArgMeta, Base64String, DataTransaction, ScriptInfo, ScriptMeta,
-    SignedTransaction, Transaction, TransactionInfo, TransferTransaction,
+    Amount, ApplicationStatus, ArgMeta, AssetId, Base64String, DataTransaction, ScriptInfo,
+    ScriptMeta, SignedTransaction, Transaction, TransactionInfo, TransferTransaction,
 };
 use crate::util::Base58;
 use serde_json::Value;
@@ -48,7 +48,10 @@ impl JsonDeserializer {
     pub fn deserialize_tx(value: &Value, chain_id: u8) -> Result<Transaction> {
         let tx_type = Self::safe_to_int_from_field(value, "type")? as u8;
         let fee = Self::safe_to_int_from_field(value, "fee")? as u64;
-        let fee_asset_id = value["feeAssetId"].as_str().map(|value| value.into());
+        let fee_asset_id = match value["feeAssetId"].as_str() {
+            Some(val) => Some(AssetId::from_string(val)?),
+            None => None,
+        };
         let transaction_data = match tx_type {
             4 => Transfer(TransferTransaction::from_json(value)?),
             12 => Data(DataTransaction::from_json(value)?),
@@ -68,39 +71,29 @@ impl JsonDeserializer {
         ))
     }
 
-    pub fn deserialize_addresses(value: &Value, chain_id: u8) -> Result<Vec<Address>> {
+    pub fn deserialize_addresses(value: &Value) -> Result<Vec<Address>> {
         let array = Self::safe_to_array(value)?;
-        array
-            .iter()
-            .map(|address| Self::deserialize_address(address, chain_id))
-            .collect()
+        array.iter().map(Self::deserialize_address).collect()
     }
 
-    pub fn deserialize_address(value: &Value, chain_id: u8) -> Result<Address> {
+    pub fn deserialize_address(value: &Value) -> Result<Address> {
         let string = Self::safe_to_string(value)?;
-        Address::from_string(&string, chain_id)
+        Address::from_string(&string)
     }
 
-    pub fn deserialize_balances(value: &Value, chain_id: u8) -> Result<Vec<Balance>> {
+    pub fn deserialize_balances(value: &Value) -> Result<Vec<Balance>> {
         let array = Self::safe_to_array(value)?;
-        array
-            .iter()
-            .map(|balance| Self::deserialize_balance(balance, chain_id))
-            .collect()
+        array.iter().map(Self::deserialize_balance).collect()
     }
 
-    pub fn deserialize_balance(value: &Value, chain_id: u8) -> Result<Balance> {
-        let address =
-            Address::from_string(&Self::safe_to_string_from_field(value, "id")?, chain_id)?;
+    pub fn deserialize_balance(value: &Value) -> Result<Balance> {
+        let address = Address::from_string(&Self::safe_to_string_from_field(value, "id")?)?;
         let balance = Self::safe_to_int_from_field(value, "balance")?;
         Ok(Balance::new(address, balance as u64))
     }
 
-    pub fn deserialize_balance_details(value: &Value, chain_id: u8) -> Result<BalanceDetails> {
-        let address = Address::from_string(
-            &Self::safe_to_string_from_field(value, "address")?,
-            chain_id,
-        )?;
+    pub fn deserialize_balance_details(value: &Value) -> Result<BalanceDetails> {
+        let address = Address::from_string(&Self::safe_to_string_from_field(value, "address")?)?;
         let available = Self::safe_to_int_from_field(value, "available")? as u64;
         let regular = Self::safe_to_int_from_field(value, "regular")? as u64;
         let generating = Self::safe_to_int_from_field(value, "generating")? as u64;

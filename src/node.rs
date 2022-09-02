@@ -54,18 +54,13 @@ impl Node {
         self.chain_id
     }
 
-    pub async fn get_addresses(&self, chain_id: u8) -> Result<Vec<Address>> {
+    pub async fn get_addresses(&self) -> Result<Vec<Address>> {
         let get_addresses_url = format!("{}addresses", self.url().as_str());
         let rs = self.get(&get_addresses_url).await?;
-        JsonDeserializer::deserialize_addresses(&rs, chain_id)
+        JsonDeserializer::deserialize_addresses(&rs)
     }
 
-    pub async fn get_addresses_seq(
-        &self,
-        from_index: u64,
-        to_index: u64,
-        chain_id: u8,
-    ) -> Result<Vec<Address>> {
+    pub async fn get_addresses_seq(&self, from_index: u64, to_index: u64) -> Result<Vec<Address>> {
         let get_addresses_seq_url = format!(
             "{}addresses/seq/{}/{}",
             self.url().as_str(),
@@ -73,7 +68,7 @@ impl Node {
             to_index
         );
         let rs = self.get(&get_addresses_seq_url).await?;
-        JsonDeserializer::deserialize_addresses(&rs, chain_id)
+        JsonDeserializer::deserialize_addresses(&rs)
     }
 
     pub async fn get_balance(&self, address: &Address) -> Result<u64> {
@@ -101,7 +96,7 @@ impl Node {
         Ok(JsonDeserializer::safe_to_int_from_field(&rs, "balance")? as u64)
     }
 
-    pub async fn get_balances(&self, addresses: &[Address], chain_id: u8) -> Result<Vec<Balance>> {
+    pub async fn get_balances(&self, addresses: &[Address]) -> Result<Vec<Balance>> {
         let get_balances_url = format!("{}addresses/balance", self.url().as_str(),);
         let mut json_addresses: Map<String, Value> = Map::new();
         json_addresses.insert(
@@ -114,14 +109,13 @@ impl Node {
             ),
         );
         let rs = self.post(&get_balances_url, &json_addresses.into()).await?;
-        JsonDeserializer::deserialize_balances(&rs, chain_id)
+        JsonDeserializer::deserialize_balances(&rs)
     }
 
     pub async fn get_balances_at_height(
         &self,
         addresses: &[Address],
         height: u32,
-        chain_id: u8,
     ) -> Result<Vec<Balance>> {
         let get_balances_url = format!("{}addresses/balance", self.url().as_str());
         let mut json_addresses: Map<String, Value> = Map::new();
@@ -136,7 +130,7 @@ impl Node {
         );
         json_addresses.insert("height".to_owned(), height.into());
         let rs = self.post(&get_balances_url, &json_addresses.into()).await?;
-        JsonDeserializer::deserialize_balances(&rs, chain_id)
+        JsonDeserializer::deserialize_balances(&rs)
     }
 
     pub async fn get_balance_details(&self, address: &Address) -> Result<BalanceDetails> {
@@ -146,7 +140,7 @@ impl Node {
             address.encoded()
         );
         let rs = self.get(&get_balance_details_url).await?;
-        JsonDeserializer::deserialize_balance_details(&rs, address.chain_id())
+        JsonDeserializer::deserialize_balance_details(&rs)
     }
 
     pub async fn get_data(&self, address: &Address) -> Result<Vec<DataEntry>> {
@@ -295,7 +289,7 @@ mod tests {
     use ChainId::MAINNET;
 
     use crate::model::data_entry::DataEntry;
-    use crate::model::{ApplicationStatus, ChainId};
+    use crate::model::{ApplicationStatus, ByteString, ChainId};
     use crate::node::{Node, Profile};
     use crate::util::Base58;
 
@@ -327,8 +321,8 @@ mod tests {
         let transaction = signed_transaction.tx();
 
         assert_eq!(transaction.timestamp(), 1659278184707);
-        assert_eq!(transaction.fee().fee(), 100000);
-        assert_eq!(transaction.fee().fee_asset_id(), None);
+        assert_eq!(transaction.fee().value(), 100000);
+        assert_eq!(transaction.fee().asset_id(), None);
         assert_eq!(
             transaction
                 .public_key()
@@ -348,13 +342,13 @@ mod tests {
             .data()
             .transfer_tx()
             .expect("failed to get transfer transaction");
-        assert_eq!(transfer_transaction.attachment(), Some("".into()));
+        assert_eq!(transfer_transaction.attachment().encoded(), "".to_owned());
         assert_eq!(
-            transfer_transaction.recipient(),
+            transfer_transaction.recipient().encoded(),
             "3PHey9P6xpUubQqP7DgMeWaza41yWQGGbHK"
         );
-        assert_eq!(transfer_transaction.asset(), None);
-        assert_eq!(transfer_transaction.amount(), 46095972);
+        assert_eq!(transfer_transaction.amount().asset_id(), None);
+        assert_eq!(transfer_transaction.amount().value(), 46095972);
     }
 
     #[tokio::test]
@@ -385,8 +379,8 @@ mod tests {
         let transaction = signed_transaction.tx();
 
         assert_eq!(transaction.timestamp(), 1660994483097);
-        assert_eq!(transaction.fee().fee(), 500000);
-        assert_eq!(transaction.fee().fee_asset_id(), None);
+        assert_eq!(transaction.fee().value(), 500000);
+        assert_eq!(transaction.fee().asset_id(), None);
         assert_eq!(
             transaction
                 .public_key()
