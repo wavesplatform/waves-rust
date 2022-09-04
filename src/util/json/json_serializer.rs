@@ -1,7 +1,10 @@
 use serde_json::{Map, Value};
 
 use crate::error::Result;
-use crate::model::{DataTransaction, SignedTransaction, Transaction, TransactionData};
+use crate::model::{
+    ByteString, DataTransaction, SignedTransaction, Transaction, TransactionData,
+    TransferTransaction,
+};
 use crate::util::Base58;
 
 pub struct JsonSerializer;
@@ -35,8 +38,8 @@ fn add_default_fields(
             .encoded()
             .into(),
     );
-    json_props.insert("fee".to_string(), tx.fee().fee().into());
-    json_props.insert("feeAssetId".to_string(), tx.fee().fee_asset_id().into());
+    json_props.insert("fee".to_string(), tx.fee().value().into());
+    json_props.insert("feeAssetId".to_string(), tx.fee().asset_id().into());
     json_props.insert("timestamp".to_string(), tx.timestamp().into());
     json_props.insert("proofs".to_string(), proofs(sign_tx).into());
     Ok(json_props.clone())
@@ -47,9 +50,20 @@ fn add_additional_fields(
     json_props: &mut Map<String, Value>,
 ) -> Result<Map<String, Value>> {
     match tx_data {
-        TransactionData::Transfer(_) => todo!(),
+        TransactionData::Transfer(transfer_tx) => {
+            json_props.insert(
+                "recipient".to_owned(),
+                transfer_tx.recipient().encoded().into(),
+            );
+            json_props.insert("amount".to_owned(), transfer_tx.amount().value().into());
+            json_props.insert("assetId".to_owned(), transfer_tx.amount().asset_id().into());
+            json_props.insert(
+                "attachment".to_owned(),
+                transfer_tx.attachment().encoded().into(),
+            );
+        }
         TransactionData::Data(data_tx) => {
-            json_props.insert("data".to_string(), data_tx.data().into())
+            json_props.insert("data".to_string(), data_tx.data().into());
         }
     };
     Ok(json_props.clone())
@@ -57,7 +71,7 @@ fn add_additional_fields(
 
 fn tx_type(tx: &Transaction) -> u8 {
     match tx.data() {
-        TransactionData::Transfer(_) => todo!(),
+        TransactionData::Transfer(_) => TransferTransaction::tx_type(),
         TransactionData::Data(_) => DataTransaction::tx_type(),
     }
 }

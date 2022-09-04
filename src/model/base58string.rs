@@ -7,7 +7,7 @@ pub trait ByteString {
     fn encoded_with_prefix(&self) -> String;
 }
 
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Base58String {
     bytes: Vec<u8>,
 }
@@ -20,6 +20,10 @@ impl Base58String {
     pub fn from_string(encoded: String) -> Result<Base58String> {
         let bytes: Vec<u8> = bs58::decode(encoded).into_vec()?;
         Ok(Base58String { bytes })
+    }
+
+    pub fn empty() -> Base58String {
+        Base58String { bytes: vec![] }
     }
 }
 
