@@ -1,6 +1,6 @@
 use waves_rust::model::{
-    Address, Amount, Base58String, ChainId, PrivateKey, Transaction, TransactionData,
-    TransferTransaction,
+    Address, Amount, Base58String, ChainId, IssueTransaction, PrivateKey, Transaction,
+    TransactionData, TransferTransaction,
 };
 use waves_rust::node::{Node, Profile};
 use waves_rust::util::get_current_epoch_millis;
@@ -15,27 +15,22 @@ async fn broadcast_and_read_test() {
     let private_key =
         PrivateKey::from_seed(SEED_PHRASE, 0).expect("failed to get private ket from seed phrase");
 
-    let recipient = Address::from_string(
-        &private_key
-            .public_key()
-            .address(ChainId::TESTNET.byte())
-            .expect("failed to get public key")
-            .encoded(),
-    )
-    .expect("failed to get address from public key");
-    let transaction_data = TransactionData::Transfer(TransferTransaction::new(
-        recipient,
-        Amount::new(1, None),
-        Base58String::empty(),
+    let transaction_data = TransactionData::Issue(IssueTransaction::new(
+        "test asset".to_owned(),
+        "this is test asset".to_owned(),
+        32,
+        3,
+        false,
+        None,
     ));
 
     let timestamp = get_current_epoch_millis();
     let signed_tx = Transaction::new(
         transaction_data,
-        Amount::new(100000, None),
+        Amount::new(100000000, None),
         timestamp,
         private_key.public_key(),
-        TransferTransaction::tx_type(),
+        IssueTransaction::tx_type(),
         3,
         ChainId::TESTNET.byte(),
     )

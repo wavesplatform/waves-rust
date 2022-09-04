@@ -1,6 +1,7 @@
 mod base58;
 mod base64;
 mod binary_serializer;
+mod byte_writer;
 mod bytes;
 mod crypto;
 mod hash;
@@ -11,6 +12,7 @@ mod utils;
 pub use crate::util::base64::*;
 pub use base58::*;
 pub use binary_serializer::*;
+pub use byte_writer::*;
 pub use bytes::*;
 pub use crypto::*;
 pub use hash::*;

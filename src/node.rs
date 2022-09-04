@@ -9,7 +9,7 @@ use serde_json::{Map, Value};
 
 use crate::model::account::{Address, Balance, BalanceDetails};
 use crate::model::data_entry::DataEntry;
-use crate::model::{ChainId, ScriptInfo, ScriptMeta, SignedTransaction, TransactionInfo};
+use crate::model::{ChainId, ScriptInfo, ScriptMeta, SignedTransaction, TransactionInfoResponse};
 use crate::util::JsonDeserializer;
 
 pub const MAINNET_URL: &str = "https://nodes.wavesnodes.com";
@@ -216,7 +216,10 @@ impl Node {
         JsonDeserializer::deserialize_script_meta(rs)
     }
 
-    pub async fn get_transaction_info(&self, transaction_id: &str) -> Result<TransactionInfo> {
+    pub async fn get_transaction_info(
+        &self,
+        transaction_id: &str,
+    ) -> Result<TransactionInfoResponse> {
         let get_tx_info_url = format!(
             "{}transactions/info/{}",
             self.url().as_str(),
@@ -304,27 +307,23 @@ mod tests {
             .expect("failed to get transaction info");
 
         assert_eq!(
-            transaction_info.id(),
+            transaction_info.id().encoded(),
             "8YsBZSZ3UmWAo8bCj8RN64BvoQUTdLtd567hXqQCYDVo"
         );
         assert_eq!(transaction_info.status(), ApplicationStatus::Succeed);
         assert_eq!(transaction_info.height(), 3229634);
 
-        let signed_transaction = transaction_info.signed_tx();
-
         let proof_from_rs = "4NiakymjU9s7mJYTBGbweGrDDwAauEXsuhMCeQJD1S28cEFL7hpjEL2LhaiVyFScq8UGVucpvCBo8PogvHQCdhrZ";
         assert_eq!(
-            signed_transaction.proofs()[0],
+            transaction_info.proofs()[0],
             Base58::decode(proof_from_rs).expect("failed to decode base58 from string")
         );
 
-        let transaction = signed_transaction.tx();
-
-        assert_eq!(transaction.timestamp(), 1659278184707);
-        assert_eq!(transaction.fee().value(), 100000);
-        assert_eq!(transaction.fee().asset_id(), None);
+        assert_eq!(transaction_info.timestamp(), 1659278184707);
+        assert_eq!(transaction_info.fee().value(), 100000);
+        assert_eq!(transaction_info.fee().asset_id(), None);
         assert_eq!(
-            transaction
+            transaction_info
                 .public_key()
                 .address(MAINNET.byte())
                 .expect("failed to get address from public key")
@@ -332,14 +331,14 @@ mod tests {
             "3P4eeU7v1LMHQFwwT2GW9W99c6vZyytHajj"
         );
         assert_eq!(
-            transaction.public_key().encoded(),
+            transaction_info.public_key().encoded(),
             "AdZiupVsS9PMbTQK7iePWmD4Y5s8ZF6PoaQFyHKV2anj"
         );
-        assert_eq!(transaction.tx_type(), 4);
-        assert_eq!(transaction.version(), 1);
+        assert_eq!(transaction_info.tx_type(), 4);
+        assert_eq!(transaction_info.version(), 1);
 
-        let transfer_transaction = transaction
-            .data()
+        let data_info = transaction_info.data();
+        let transfer_transaction = data_info
             .transfer_tx()
             .expect("failed to get transfer transaction");
         assert_eq!(transfer_transaction.attachment().encoded(), "".to_owned());
@@ -362,27 +361,23 @@ mod tests {
             .expect("failed to get transaction info");
 
         assert_eq!(
-            transaction_info.id(),
+            transaction_info.id().encoded(),
             "HcPcSma7oWeqy8g3ahhwFDzrq8YK8r739U4WC2ieB5Bs"
         );
         assert_eq!(transaction_info.status(), ApplicationStatus::Succeed);
         assert_eq!(transaction_info.height(), 3258212);
 
-        let signed_transaction = transaction_info.signed_tx();
-
         let proof_from_rs = "25KiXB1FS3FaupiPXyEVeRquKLK4FEb3NWF36D1eHw1gpT9Y53MbLsVqnX9rJC8MPg4x9yiUxFkmxF9DDTgQruhi";
         assert_eq!(
-            signed_transaction.proofs()[0],
+            transaction_info.proofs()[0],
             Base58::decode(proof_from_rs).expect("failed to decode base58 from string")
         );
 
-        let transaction = signed_transaction.tx();
-
-        assert_eq!(transaction.timestamp(), 1660994483097);
-        assert_eq!(transaction.fee().value(), 500000);
-        assert_eq!(transaction.fee().asset_id(), None);
+        assert_eq!(transaction_info.timestamp(), 1660994483097);
+        assert_eq!(transaction_info.fee().value(), 500000);
+        assert_eq!(transaction_info.fee().asset_id(), None);
         assert_eq!(
-            transaction
+            transaction_info
                 .public_key()
                 .address(MAINNET.byte())
                 .expect("failed to get address from public key")
@@ -390,14 +385,14 @@ mod tests {
             "3P4sxdNNPJLQcitAnLqLfSwaenjxFxQvZsE"
         );
         assert_eq!(
-            transaction.public_key().encoded(),
+            transaction_info.public_key().encoded(),
             "GTr2dXt3mxaD8tXGyNauV8YMy1hsSoi63DUuk4uyijqG"
         );
-        assert_eq!(transaction.tx_type(), 12);
-        assert_eq!(transaction.version(), 1);
+        assert_eq!(transaction_info.tx_type(), 12);
+        assert_eq!(transaction_info.version(), 1);
 
-        let data_transaction = transaction
-            .data()
+        let data_info = transaction_info.data();
+        let data_transaction = data_info
             .data_tx()
             .expect("failed to get data transaction from string");
 

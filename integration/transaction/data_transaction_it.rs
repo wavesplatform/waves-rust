@@ -49,14 +49,14 @@ async fn broadcast_and_read_test() {
     .expect("failed to sign transaction");
 
     let node = Node::from_profile(Profile::TESTNET);
-    let signed_tx_from_rs = node.broadcast(&signed_tx).await;
+    let tx_info = node.broadcast(&signed_tx).await;
 
-    match signed_tx_from_rs {
+    match tx_info {
         Ok(signed_tx_from_rs) => {
             assert_eq!(
                 signed_tx_from_rs
                     .id()
-                    .expect("failed to calculate id")
+                    .expect("failed to calculate tx id")
                     .encoded(),
                 signed_tx.id().expect("failed to calculate id").encoded()
             )

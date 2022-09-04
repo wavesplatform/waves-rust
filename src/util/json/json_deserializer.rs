@@ -1,10 +1,11 @@
 use crate::error::{Error, Result};
 use crate::model::account::{Address, Balance, BalanceDetails};
 use crate::model::data_entry::DataEntry;
-use crate::model::TransactionData::{Data, Transfer};
 use crate::model::{
-    Amount, ApplicationStatus, ArgMeta, AssetId, Base64String, DataTransaction, ScriptInfo,
-    ScriptMeta, SignedTransaction, Transaction, TransactionInfo, TransferTransaction,
+    Amount, ApplicationStatus, ArgMeta, AssetId, Base64String, DataTransaction,
+    DataTransactionInfo, Id, InvokeScriptTransaction, IssueTransaction, IssueTransactionInfo,
+    ScriptInfo, ScriptMeta, SignedTransaction, Transaction, TransactionData, TransactionDataInfo,
+    TransactionInfoResponse, TransferTransaction, TransferTransactionInfo,
 };
 use crate::util::Base58;
 use serde_json::Value;
@@ -13,8 +14,8 @@ use std::collections::HashMap;
 pub struct JsonDeserializer;
 
 impl JsonDeserializer {
-    pub fn deserialize_tx_info(value: &Value, chain_id: u8) -> Result<TransactionInfo> {
-        let id = Self::safe_to_string_from_field(value, "id")?;
+    pub fn deserialize_tx_info(value: &Value, chain_id: u8) -> Result<TransactionInfoResponse> {
+        let id = Id::from_string(&Self::safe_to_string_from_field(value, "id")?)?;
 
         let application_status =
             match Self::safe_to_string_from_field(value, "applicationStatus")?.as_str() {
@@ -24,13 +25,40 @@ impl JsonDeserializer {
                 &_ => ApplicationStatus::Unknown,
             };
         let height = Self::safe_to_int_from_field(value, "height")? as u32;
-        let signed_transaction = Self::deserialize_signed_tx(value, chain_id)?;
+        let proofs_array = Self::safe_to_array_from_field(value, "proofs")?;
+        let tx_type = Self::safe_to_int_from_field(value, "type")? as u8;
+        let fee = Self::safe_to_int_from_field(value, "fee")? as u64;
+        let fee_asset_id = match value["feeAssetId"].as_str() {
+            Some(val) => Some(AssetId::from_string(val)?),
+            None => None,
+        };
+        let transaction_data = match tx_type {
+            3 => TransactionDataInfo::Issue(IssueTransactionInfo::from_json(value)?),
+            4 => TransactionDataInfo::Transfer(TransferTransactionInfo::from_json(value)?),
+            12 => TransactionDataInfo::Data(DataTransactionInfo::from_json(value)?),
+            _ => panic!("unknown tx type"),
+        };
+        let timestamp = Self::safe_to_int_from_field(value, "timestamp")? as u64;
+        let public_key = Self::safe_to_string_from_field(value, "senderPublicKey")?.try_into()?;
+        let version = Self::safe_to_int_from_field(value, "version")? as u8;
 
-        Ok(TransactionInfo::new(
+        let proofs = proofs_array
+            .iter()
+            .map(|v| Base58::decode(&Self::safe_to_string(v)?))
+            .collect::<Result<Vec<Vec<u8>>>>()?;
+
+        Ok(TransactionInfoResponse::new(
             id,
-            signed_transaction,
             application_status,
+            transaction_data,
+            Amount::new(fee, fee_asset_id),
+            timestamp,
+            public_key,
+            tx_type,
+            version,
+            chain_id,
             height,
+            proofs,
         ))
     }
 
@@ -53,9 +81,11 @@ impl JsonDeserializer {
             None => None,
         };
         let transaction_data = match tx_type {
-            4 => Transfer(TransferTransaction::from_json(value)?),
-            12 => Data(DataTransaction::from_json(value)?),
-            _ => panic!("unknown tx type"),
+            3 => TransactionData::Issue(IssueTransaction::from_json(value)?),
+            4 => TransactionData::Transfer(TransferTransaction::from_json(value)?),
+            12 => TransactionData::Data(DataTransaction::from_json(value)?),
+            16 => TransactionData::InvokeScript(InvokeScriptTransaction::from_json(value)?),
+            _ => todo!(),
         };
         let timestamp = Self::safe_to_int_from_field(value, "timestamp")? as u64;
         let public_key = Self::safe_to_string_from_field(value, "senderPublicKey")?.try_into()?;
@@ -212,6 +242,16 @@ impl JsonDeserializer {
                 field: field_name.to_owned(),
             })?;
         Ok(map.to_owned())
+    }
+
+    pub fn safe_to_boolean_from_field(json: &Value, field_name: &str) -> Result<bool> {
+        let bool = json[field_name]
+            .as_bool()
+            .ok_or_else(|| Error::JsonParseError {
+                json: json.to_string(),
+                field: field_name.to_owned(),
+            })?;
+        Ok(bool)
     }
 
     pub fn safe_to_string(json: &Value) -> Result<String> {

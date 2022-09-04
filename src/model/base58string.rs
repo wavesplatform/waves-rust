@@ -2,7 +2,7 @@ use crate::error::Result;
 use std::fmt::{Display, Formatter};
 
 pub trait ByteString {
-    fn bytes(&self) -> &Vec<u8>;
+    fn bytes(&self) -> Vec<u8>;
     fn encoded(&self) -> String;
     fn encoded_with_prefix(&self) -> String;
 }
@@ -28,8 +28,8 @@ impl Base58String {
 }
 
 impl ByteString for Base58String {
-    fn bytes(&self) -> &Vec<u8> {
-        &self.bytes
+    fn bytes(&self) -> Vec<u8> {
+        self.bytes.clone()
     }
 
     fn encoded(&self) -> String {
@@ -72,7 +72,6 @@ mod tests {
     fn test_base58string_from_bytes() {
         let bytes = bs58::decode("7LBopaBdBzQbgqrnwgmgCDhcSTb32MYhE96SnSHcqZC2")
             .into_vec()
-            // todo return result
             .expect("Failed to parse base58 string");
         let base58string = Base58String::from_bytes(bytes);
 

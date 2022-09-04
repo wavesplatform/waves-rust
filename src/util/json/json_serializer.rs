@@ -2,8 +2,8 @@ use serde_json::{Map, Value};
 
 use crate::error::Result;
 use crate::model::{
-    ByteString, DataTransaction, SignedTransaction, Transaction, TransactionData,
-    TransferTransaction,
+    Arg, ByteString, DataTransaction, InvokeScriptTransaction, IssueTransaction, SignedTransaction,
+    Transaction, TransactionData, TransferTransaction,
 };
 use crate::util::Base58;
 
@@ -65,6 +65,18 @@ fn add_additional_fields(
         TransactionData::Data(data_tx) => {
             json_props.insert("data".to_string(), data_tx.data().into());
         }
+        TransactionData::Issue(issue_tx) => {
+            json_props.insert("name".to_string(), issue_tx.name().into());
+            json_props.insert("description".to_string(), issue_tx.description().into());
+            json_props.insert("quantity".to_string(), issue_tx.quantity().into());
+            json_props.insert("decimals".to_string(), issue_tx.decimals().into());
+            json_props.insert("reissuable".to_string(), issue_tx.is_reissuable().into());
+            json_props.insert(
+                "script".to_string(),
+                issue_tx.script().map(|it| it.encoded()).into(),
+            );
+        }
+        TransactionData::InvokeScript(invoke_tx) => invoke_to_json(invoke_tx, json_props),
     };
     Ok(json_props.clone())
 }
@@ -73,6 +85,8 @@ fn tx_type(tx: &Transaction) -> u8 {
     match tx.data() {
         TransactionData::Transfer(_) => TransferTransaction::tx_type(),
         TransactionData::Data(_) => DataTransaction::tx_type(),
+        TransactionData::Issue(_) => IssueTransaction::tx_type(),
+        TransactionData::InvokeScript(_) => InvokeScriptTransaction::tx_type(),
     }
 }
 
@@ -82,6 +96,61 @@ fn proofs(sign_tx: &SignedTransaction) -> Vec<String> {
         .iter()
         .map(|proof| Base58::encode(proof, false))
         .collect()
+}
+
+fn invoke_to_json(invoke_tx: &InvokeScriptTransaction, json: &mut Map<String, Value>) {
+    json.insert("dApp".to_owned(), invoke_tx.dapp().encoded().into());
+    let mut call: Map<String, Value> = Map::new();
+    call.insert("function".to_owned(), invoke_tx.function().name().into());
+    let mut args = vec![];
+    args_to_json(invoke_tx.function().args(), &mut args);
+    call.insert("args".to_owned(), Value::Array(args));
+    json.insert("call".to_owned(), call.into());
+    let payments: Vec<Value> = invoke_tx
+        .payment()
+        .iter()
+        .map(|arg| {
+            let mut map = Map::new();
+            map.insert("amount".to_owned(), arg.value().into());
+            map.insert(
+                "asset_id".to_owned(),
+                arg.asset_id().map(|it| it.encoded()).into(),
+            );
+            map.into()
+        })
+        .collect();
+    json.insert("payments".to_owned(), payments.into());
+}
+
+fn args_to_json(args: Vec<Arg>, json_args: &mut Vec<Value>) {
+    for arg in args {
+        let mut arg_map = Map::new();
+        match arg {
+            Arg::Binary(binary) => {
+                arg_map.insert("type".to_owned(), "binary".into());
+                arg_map.insert("value".to_owned(), binary.encoded_with_prefix().into());
+            }
+            Arg::Boolean(boolean) => {
+                arg_map.insert("type".to_owned(), "boolean".into());
+                arg_map.insert("value".to_owned(), boolean.into());
+            }
+            Arg::Integer(integer) => {
+                arg_map.insert("type".to_owned(), "integer".into());
+                arg_map.insert("value".to_owned(), integer.into());
+            }
+            Arg::String(string) => {
+                arg_map.insert("type".to_owned(), "string".into());
+                arg_map.insert("value".to_owned(), string.into());
+            }
+            Arg::List(list) => {
+                arg_map.insert("type".to_owned(), "list".into());
+                let mut list_args = vec![];
+                args_to_json(list, &mut list_args);
+                arg_map.insert("value".to_owned(), Value::Array(list_args));
+            }
+        };
+        json_args.push(arg_map.into())
+    }
 }
 
 #[cfg(test)]
@@ -131,9 +200,9 @@ mod tests {
             ),
             vec![
                 Base58::decode(
-                "4nDUCnVw9j9D5bTBSLfFCHR9CtvS32mSdxctccChRAohfLwz3ng3ps5ffUiy4NtRmXG7vDHRMW57ABxzkMW64tzC"
-            ).expect("Failed to decode base58 string")
-            ]
+                    "4nDUCnVw9j9D5bTBSLfFCHR9CtvS32mSdxctccChRAohfLwz3ng3ps5ffUiy4NtRmXG7vDHRMW57ABxzkMW64tzC"
+                ).expect("Failed to decode base58 string")
+            ],
         );
 
         let json = JsonSerializer::serialize_signed_tx(&signed_transaction)
