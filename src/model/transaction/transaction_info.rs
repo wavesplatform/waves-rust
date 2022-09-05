@@ -4,35 +4,63 @@ use crate::model::account::{PrivateKey, PublicKey};
 use crate::model::transaction::data_transaction::DataTransaction;
 use crate::model::transaction::TransactionData::Transfer;
 use crate::model::transaction::TransferTransaction;
-use crate::model::TransactionData::Data;
-use crate::model::{AssetId, Id};
+use crate::model::TransactionData::{Data, InvokeScript, Issue};
+use crate::model::{
+    AssetId, DataTransactionInfo, Id, InvokeScriptTransaction, IssueTransaction,
+    IssueTransactionInfo, TransferTransactionInfo,
+};
 use crate::util::{sign, BinarySerializer, Hash, JsonSerializer};
 use serde_json::Value;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub struct TransactionInfo {
-    id: String,
-    signed_transaction: SignedTransaction,
+pub struct TransactionInfoResponse {
+    id: Id,
     status: ApplicationStatus,
+    data: TransactionDataInfo,
+    fee: Amount,
+    timestamp: u64,
+    // todo check flatten for serde_json
+    public_key: PublicKey,
+    tx_type: u8,
+    version: u8,
+    chain_id: u8,
     height: u32,
+    proofs: Vec<Vec<u8>>,
 }
 
-impl TransactionInfo {
+#[allow(clippy::too_many_arguments)]
+impl TransactionInfoResponse {
     pub fn new(
-        id: String,
-        signed_transaction: SignedTransaction,
+        id: Id,
         status: ApplicationStatus,
+        data: TransactionDataInfo,
+        fee: Amount,
+        timestamp: u64,
+        // todo check flatten for serde_json
+        public_key: PublicKey,
+        tx_type: u8,
+        version: u8,
+        chain_id: u8,
         height: u32,
-    ) -> TransactionInfo {
-        TransactionInfo {
+        proofs: Vec<Vec<u8>>,
+    ) -> TransactionInfoResponse {
+        TransactionInfoResponse {
             id,
-            signed_transaction,
             status,
+            data,
+            fee,
+            timestamp,
+            // todo check flatten for serde_json
+            public_key,
+            tx_type,
+            version,
+            chain_id,
             height,
+            proofs,
         }
     }
 
-    pub fn id(&self) -> String {
+    pub fn id(&self) -> Id {
         self.id.clone()
     }
 
@@ -40,12 +68,40 @@ impl TransactionInfo {
         self.status
     }
 
+    pub fn data(&self) -> TransactionDataInfo {
+        self.data.clone()
+    }
+
+    pub fn fee(&self) -> Amount {
+        self.fee.clone()
+    }
+
+    pub fn timestamp(&self) -> u64 {
+        self.timestamp
+    }
+
+    pub fn public_key(&self) -> PublicKey {
+        self.public_key.clone()
+    }
+
     pub fn height(&self) -> u32 {
         self.height
     }
 
-    pub fn signed_tx(&self) -> &SignedTransaction {
-        &self.signed_transaction
+    pub fn tx_type(&self) -> u8 {
+        self.tx_type
+    }
+
+    pub fn version(&self) -> u8 {
+        self.version
+    }
+
+    pub fn chain_id(&self) -> u8 {
+        self.chain_id
+    }
+
+    pub fn proofs(&self) -> Vec<Vec<u8>> {
+        self.proofs.clone()
     }
 }
 
@@ -151,9 +207,48 @@ impl Transaction {
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]
+pub enum TransactionDataInfo {
+    Transfer(TransferTransactionInfo),
+    Data(DataTransactionInfo),
+    Issue(IssueTransactionInfo),
+}
+
+impl TransactionDataInfo {
+    pub fn transfer_tx(&self) -> Result<&TransferTransactionInfo> {
+        match self {
+            TransactionDataInfo::Transfer(tx) => Ok(tx),
+            tx => Err(WrongTransactionType {
+                expected_type: TransferTransaction::tx_type(),
+                actual_type: tx.tx_type(),
+            }),
+        }
+    }
+
+    pub fn data_tx(&self) -> Result<&DataTransactionInfo> {
+        match self {
+            TransactionDataInfo::Data(tx) => Ok(tx),
+            tx => Err(WrongTransactionType {
+                expected_type: DataTransaction::tx_type(),
+                actual_type: tx.tx_type(),
+            }),
+        }
+    }
+
+    pub fn tx_type(&self) -> u8 {
+        match self {
+            TransactionDataInfo::Transfer(_) => TransferTransaction::tx_type(),
+            TransactionDataInfo::Data(_) => DataTransaction::tx_type(),
+            TransactionDataInfo::Issue(_) => IssueTransaction::tx_type(),
+        }
+    }
+}
+
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub enum TransactionData {
     Transfer(TransferTransaction),
     Data(DataTransaction),
+    Issue(IssueTransaction),
+    InvokeScript(InvokeScriptTransaction),
 }
 
 impl TransactionData {
@@ -177,10 +272,32 @@ impl TransactionData {
         }
     }
 
+    pub fn issue_tx(&self) -> Result<&IssueTransaction> {
+        match self {
+            Issue(tx) => Ok(tx),
+            tx => Err(WrongTransactionType {
+                expected_type: IssueTransaction::tx_type(),
+                actual_type: tx.tx_type(),
+            }),
+        }
+    }
+
+    pub fn invoke_script_tx(&self) -> Result<&InvokeScriptTransaction> {
+        match self {
+            InvokeScript(tx) => Ok(tx),
+            tx => Err(WrongTransactionType {
+                expected_type: IssueTransaction::tx_type(),
+                actual_type: tx.tx_type(),
+            }),
+        }
+    }
+
     pub fn tx_type(&self) -> u8 {
         match self {
             Transfer(_) => TransferTransaction::tx_type(),
             Data(_) => DataTransaction::tx_type(),
+            Issue(_) => IssueTransaction::tx_type(),
+            InvokeScript(_) => InvokeScriptTransaction::tx_type(),
         }
     }
 }

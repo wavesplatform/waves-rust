@@ -6,21 +6,40 @@ use serde_json::{Map, Value};
 const TYPE: u8 = 12;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub struct DataTransaction {
+pub struct DataTransactionInfo {
     data: Vec<DataEntry>,
 }
 
-impl DataTransaction {
-    pub fn from_json(value: &Value) -> Result<DataTransaction> {
+impl DataTransactionInfo {
+    pub fn from_json(value: &Value) -> Result<DataTransactionInfo> {
         let data_array = JsonDeserializer::safe_to_array_from_field(value, "data")?;
         let data = data_array
             .iter()
             .map(|entry| entry.try_into())
             .collect::<Result<Vec<DataEntry>>>()?;
 
-        Ok(DataTransaction { data })
+        Ok(DataTransactionInfo { data })
     }
 
+    pub fn new(data: Vec<DataEntry>) -> Self {
+        DataTransactionInfo { data }
+    }
+
+    pub fn tx_type() -> u8 {
+        TYPE
+    }
+
+    pub fn data(&self) -> Vec<DataEntry> {
+        self.data.clone()
+    }
+}
+
+#[derive(Clone, Eq, PartialEq, Debug)]
+pub struct DataTransaction {
+    data: Vec<DataEntry>,
+}
+
+impl DataTransaction {
     pub fn new(data: Vec<DataEntry>) -> Self {
         DataTransaction { data }
     }
@@ -31,6 +50,16 @@ impl DataTransaction {
 
     pub fn data(&self) -> Vec<DataEntry> {
         self.data.clone()
+    }
+
+    pub fn from_json(value: &Value) -> Result<DataTransaction> {
+        let data_array = JsonDeserializer::safe_to_array_from_field(value, "data")?;
+        let data = data_array
+            .iter()
+            .map(|entry| entry.try_into())
+            .collect::<Result<Vec<DataEntry>>>()?;
+
+        Ok(DataTransaction { data })
     }
 }
 

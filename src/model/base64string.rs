@@ -24,8 +24,8 @@ impl Base64String {
 }
 
 impl ByteString for Base64String {
-    fn bytes(&self) -> &Vec<u8> {
-        &self.bytes
+    fn bytes(&self) -> Vec<u8> {
+        self.bytes.clone()
     }
 
     fn encoded(&self) -> String {
@@ -33,7 +33,7 @@ impl ByteString for Base64String {
     }
 
     fn encoded_with_prefix(&self) -> String {
-        format!("base58:{}", bs58::encode(&self.bytes).into_string())
+        format!("base64:{}", base64::encode(&self.bytes))
     }
 }
 
