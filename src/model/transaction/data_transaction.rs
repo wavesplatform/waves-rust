@@ -84,6 +84,9 @@ impl From<DataEntry> for Value {
                 map.insert("type".to_string(), "string".into());
                 map.insert("value".to_string(), value.into());
             }
+            DataEntry::DeleteEntry { key: _ } => {
+                map.insert("value".to_string(), Value::Null);
+            }
         };
         map.into()
     }

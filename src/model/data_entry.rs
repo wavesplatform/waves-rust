@@ -1,5 +1,7 @@
 use crate::error::{Error, Result};
-use crate::model::data_entry::DataEntry::{BinaryEntry, BooleanEntry, IntegerEntry, StringEntry};
+use crate::model::data_entry::DataEntry::{
+    BinaryEntry, BooleanEntry, DeleteEntry, IntegerEntry, StringEntry,
+};
 use crate::util::{Base64, JsonDeserializer};
 use serde_json::Value;
 
@@ -9,6 +11,7 @@ pub enum DataEntry {
     BooleanEntry { key: String, value: bool },
     BinaryEntry { key: String, value: Vec<u8> },
     StringEntry { key: String, value: String },
+    DeleteEntry { key: String },
 }
 
 impl DataEntry {
@@ -18,6 +21,7 @@ impl DataEntry {
             BooleanEntry { key, .. } => key.clone(),
             BinaryEntry { key, .. } => key.clone(),
             StringEntry { key, .. } => key.clone(),
+            DeleteEntry { key, .. } => key.clone(),
         }
     }
 }
@@ -28,29 +32,55 @@ impl TryFrom<&Value> for DataEntry {
     fn try_from(value: &Value) -> Result<Self> {
         let key_field = JsonDeserializer::safe_to_string_from_field(value, "key")?;
         let value_field = &value["value"];
-        let string_data_entry_type = JsonDeserializer::safe_to_string_from_field(value, "type")?;
-        let data_entry_type = string_data_entry_type.as_str();
-        match data_entry_type {
-            "binary" => Ok(BinaryEntry {
-                key: key_field,
-                value: Base64::decode(&JsonDeserializer::safe_to_string(value_field)?)?,
-            }),
-            "boolean" => Ok(BooleanEntry {
-                key: key_field,
-                value: JsonDeserializer::safe_to_boolean(value_field)?,
-            }),
-            "integer" => Ok(IntegerEntry {
-                key: key_field,
-                value: JsonDeserializer::safe_to_int(value_field)?,
-            }),
-            "string" => Ok(StringEntry {
-                key: key_field,
-                value: JsonDeserializer::safe_to_string(value_field)?,
-            }),
-            _ => Err(Error::JsonParseError {
-                field: data_entry_type.to_owned(),
-                json: value.to_string(),
-            }),
+        let entry_type = value["type"].as_str();
+        match entry_type {
+            Some(data_entry_type) => match data_entry_type {
+                "binary" => Ok(BinaryEntry {
+                    key: key_field,
+                    value: Base64::decode(&JsonDeserializer::safe_to_string(value_field)?)?,
+                }),
+                "boolean" => Ok(BooleanEntry {
+                    key: key_field,
+                    value: JsonDeserializer::safe_to_boolean(value_field)?,
+                }),
+                "integer" => Ok(IntegerEntry {
+                    key: key_field,
+                    value: JsonDeserializer::safe_to_int(value_field)?,
+                }),
+                "string" => Ok(StringEntry {
+                    key: key_field,
+                    value: JsonDeserializer::safe_to_string(value_field)?,
+                }),
+                _ => Err(Error::JsonParseError {
+                    field: data_entry_type.to_owned(),
+                    json: value.to_string(),
+                }),
+            },
+            None => Ok(DeleteEntry { key: key_field }),
         }
+        // let string_data_entry_type = JsonDeserializer::safe_to_string_from_field(value, "type")?;
+        // let data_entry_type = string_data_entry_type.as_str();
+        // match data_entry_type {
+        //     "binary" => Ok(BinaryEntry {
+        //         key: key_field,
+        //         value: Base64::decode(&JsonDeserializer::safe_to_string(value_field)?)?,
+        //     }),
+        //     "boolean" => Ok(BooleanEntry {
+        //         key: key_field,
+        //         value: JsonDeserializer::safe_to_boolean(value_field)?,
+        //     }),
+        //     "integer" => Ok(IntegerEntry {
+        //         key: key_field,
+        //         value: JsonDeserializer::safe_to_int(value_field)?,
+        //     }),
+        //     "string" => Ok(StringEntry {
+        //         key: key_field,
+        //         value: JsonDeserializer::safe_to_string(value_field)?,
+        //     }),
+        //     _ => Err(Error::JsonParseError {
+        //         field: data_entry_type.to_owned(),
+        //         json: value.to_string(),
+        //     }),
+        // }
     }
 }

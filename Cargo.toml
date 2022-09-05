@@ -34,6 +34,6 @@ protobuf-src = "1.0.5+3.19.3"
 
 
 [[test]]
-name = "integration"
-path = "integration/main.rs"
+name = "tests"
+path = "tests/main.rs"
 

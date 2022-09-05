@@ -1,7 +1,6 @@
-use waves_rust::model::{
-    Address, Amount, Base58String, ChainId, PrivateKey, Transaction, TransactionData,
-    TransferTransaction,
-};
+use waves_rust::model::account::PrivateKey;
+use waves_rust::model::data_entry::DataEntry;
+use waves_rust::model::{Amount, ChainId, DataTransaction, Transaction, TransactionData};
 use waves_rust::node::{Node, Profile};
 use waves_rust::util::get_current_epoch_millis;
 
@@ -10,24 +9,34 @@ trigger used census";
 
 //todo add docker private node
 
-//#[tokio::test]
+#[tokio::test]
 async fn broadcast_and_read_test() {
     let private_key =
         PrivateKey::from_seed(SEED_PHRASE, 0).expect("failed to get private ket from seed phrase");
 
-    let recipient = Address::from_string(
-        &private_key
-            .public_key()
-            .address(ChainId::TESTNET.byte())
-            .expect("failed to get public key")
-            .encoded(),
-    )
-    .expect("failed to get address from public key");
-    let transaction_data = TransactionData::Transfer(TransferTransaction::new(
-        recipient,
-        Amount::new(1, None),
-        Base58String::empty(),
-    ));
+    let binary_value: [u8; 12] = [0; 12];
+
+    let transaction_data = TransactionData::Data(DataTransaction::new(vec![
+        DataEntry::IntegerEntry {
+            key: "int".to_string(),
+            value: 12,
+        },
+        DataEntry::BooleanEntry {
+            key: "bool".to_string(),
+            value: false,
+        },
+        DataEntry::BinaryEntry {
+            key: "binary".to_string(),
+            value: binary_value.to_vec(),
+        },
+        DataEntry::StringEntry {
+            key: "str".to_string(),
+            value: "value".to_string(),
+        },
+        DataEntry::DeleteEntry {
+            key: "del_str".to_string(),
+        },
+    ]));
 
     let timestamp = get_current_epoch_millis();
     let signed_tx = Transaction::new(
@@ -35,17 +44,17 @@ async fn broadcast_and_read_test() {
         Amount::new(100000, None),
         timestamp,
         private_key.public_key(),
-        TransferTransaction::tx_type(),
-        3,
+        DataTransaction::tx_type(),
+        2,
         ChainId::TESTNET.byte(),
     )
     .sign(&private_key)
     .expect("failed to sign transaction");
 
     let node = Node::from_profile(Profile::TESTNET);
-    let signed_tx_from_rs = node.broadcast(&signed_tx).await;
+    let tx_info = node.broadcast(&signed_tx).await;
 
-    match signed_tx_from_rs {
+    match tx_info {
         Ok(signed_tx_from_rs) => {
             assert_eq!(
                 signed_tx_from_rs
