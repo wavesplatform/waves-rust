@@ -4,12 +4,13 @@ use crate::model::account::{PrivateKey, PublicKey};
 use crate::model::transaction::data_transaction::DataTransaction;
 use crate::model::transaction::TransactionData::Transfer;
 use crate::model::transaction::TransferTransaction;
-use crate::model::TransactionData::{Data, InvokeScript, Issue};
+use crate::model::TransactionData::{Data, Exchange, InvokeScript, Issue};
 use crate::model::{
-    AssetId, DataTransactionInfo, Id, InvokeScriptTransaction, IssueTransaction,
-    IssueTransactionInfo, TransferTransactionInfo,
+    AssetId, DataTransactionInfo, ExchangeTransaction, ExchangeTransactionInfo, Id,
+    InvokeScriptTransaction, InvokeScriptTransactionInfo, IssueTransaction, IssueTransactionInfo,
+    TransferTransactionInfo,
 };
-use crate::util::{sign, BinarySerializer, Hash, JsonSerializer};
+use crate::util::{sign_tx, BinarySerializer, Hash, JsonSerializer};
 use serde_json::Value;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
@@ -194,11 +195,11 @@ impl Transaction {
     }
 
     pub fn sign(&self, private_key: &PrivateKey) -> Result<SignedTransaction> {
-        sign(self, private_key)
+        sign_tx(self, private_key)
     }
 
     pub fn bytes(&self) -> Result<Vec<u8>> {
-        BinarySerializer::body_bytes(self)
+        BinarySerializer::tx_body_bytes(self)
     }
 
     pub fn id(&self) -> Result<Id> {
@@ -207,10 +208,14 @@ impl Transaction {
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]
+//todo fix it
+#[allow(clippy::large_enum_variant)]
 pub enum TransactionDataInfo {
     Transfer(TransferTransactionInfo),
     Data(DataTransactionInfo),
     Issue(IssueTransactionInfo),
+    Exchange(ExchangeTransactionInfo),
+    Invoke(InvokeScriptTransactionInfo),
 }
 
 impl TransactionDataInfo {
@@ -239,16 +244,21 @@ impl TransactionDataInfo {
             TransactionDataInfo::Transfer(_) => TransferTransaction::tx_type(),
             TransactionDataInfo::Data(_) => DataTransaction::tx_type(),
             TransactionDataInfo::Issue(_) => IssueTransaction::tx_type(),
+            TransactionDataInfo::Exchange(_) => ExchangeTransaction::tx_type(),
+            TransactionDataInfo::Invoke(_) => InvokeScriptTransaction::tx_type(),
         }
     }
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]
+//todo fix it
+#[allow(clippy::large_enum_variant)]
 pub enum TransactionData {
     Transfer(TransferTransaction),
     Data(DataTransaction),
     Issue(IssueTransaction),
     InvokeScript(InvokeScriptTransaction),
+    Exchange(ExchangeTransaction),
 }
 
 impl TransactionData {
@@ -298,6 +308,7 @@ impl TransactionData {
             Data(_) => DataTransaction::tx_type(),
             Issue(_) => IssueTransaction::tx_type(),
             InvokeScript(_) => InvokeScriptTransaction::tx_type(),
+            Exchange(_) => ExchangeTransaction::tx_type(),
         }
     }
 }

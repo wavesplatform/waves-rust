@@ -29,20 +29,6 @@ impl InvokeScriptTransactionInfo {
         }
     }
 
-    pub fn from_json(value: &Value) -> Result<InvokeScriptTransactionInfo> {
-        let dapp = JsonDeserializer::safe_to_string_from_field(value, "dApp")?;
-        let function: Function = value.try_into()?;
-        let payment = map_payment(value)?;
-        let state_changes = value["stateChanges"].borrow().try_into()?;
-
-        Ok(InvokeScriptTransactionInfo {
-            dapp: Address::from_string(&dapp)?,
-            function,
-            payment,
-            state_changes,
-        })
-    }
-
     pub fn dapp(&self) -> Address {
         self.dapp.clone()
     }
@@ -57,6 +43,24 @@ impl InvokeScriptTransactionInfo {
 
     pub fn state_changes(&self) -> StateChanges {
         self.state_changes.clone()
+    }
+}
+
+impl TryFrom<&Value> for InvokeScriptTransactionInfo {
+    type Error = Error;
+
+    fn try_from(value: &Value) -> Result<Self> {
+        let dapp = JsonDeserializer::safe_to_string_from_field(value, "dApp")?;
+        let function: Function = value.try_into()?;
+        let payment = map_payment(value)?;
+        let state_changes = value["stateChanges"].borrow().try_into()?;
+
+        Ok(InvokeScriptTransactionInfo {
+            dapp: Address::from_string(&dapp)?,
+            function,
+            payment,
+            state_changes,
+        })
     }
 }
 
@@ -206,6 +210,7 @@ mod tests {
     use crate::model::data_entry::DataEntry;
     use crate::model::{Arg, Base64String, ByteString, InvokeScriptTransactionInfo, LeaseStatus};
     use serde_json::Value;
+    use std::borrow::Borrow;
     use std::fs;
 
     #[test]
@@ -214,7 +219,8 @@ mod tests {
             .expect("Unable to read file");
         let json: Value = serde_json::from_str(&data).expect("failed to generate json from str");
 
-        let invoke_script_from_json = InvokeScriptTransactionInfo::from_json(&json).unwrap();
+        let invoke_script_from_json: InvokeScriptTransactionInfo =
+            json.borrow().try_into().unwrap();
         let function = invoke_script_from_json.function();
         assert_eq!("checkPointAndPoligon", function.name());
         assert_eq!(

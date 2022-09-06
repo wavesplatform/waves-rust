@@ -23,8 +23,8 @@ impl PublicKey {
         Base58::encode(&self.bytes, false)
     }
 
-    pub fn bytes(&self) -> &Vec<u8> {
-        &self.bytes
+    pub fn bytes(&self) -> Vec<u8> {
+        self.bytes.clone()
     }
 
     pub fn address(&self, chain_id: u8) -> Result<Address> {
