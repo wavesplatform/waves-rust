@@ -78,13 +78,32 @@ pub fn data_transaction_to_proto(transaction: &Transaction) -> Result<ProtoData>
     let data_entries = transaction.data().data_tx()?.data();
     for data_entry in data_entries {
         let key = data_entry.key();
-        let value = match data_entry {
-            DataEntry::IntegerEntry { key: _, value } => Some(IntValue(value)),
-            DataEntry::BooleanEntry { key: _, value } => Some(BoolValue(value)),
-            DataEntry::BinaryEntry { key: _, value } => Some(BinaryValue(value)),
-            DataEntry::StringEntry { key: _, value } => Some(StringValue(value)),
+        match data_entry {
+            DataEntry::IntegerEntry { key: _, value } => {
+                proto_data_entries.push(ProtoDataEntry {
+                    key,
+                    value: Some(IntValue(value)),
+                });
+            }
+            DataEntry::BooleanEntry { key: _, value } => {
+                proto_data_entries.push(ProtoDataEntry {
+                    key,
+                    value: Some(BoolValue(value)),
+                });
+            }
+            DataEntry::BinaryEntry { key: _, value } => proto_data_entries.push(ProtoDataEntry {
+                key,
+                value: Some(BinaryValue(value)),
+            }),
+            DataEntry::StringEntry { key: _, value } => proto_data_entries.push(ProtoDataEntry {
+                key,
+                value: Some(StringValue(value)),
+            }),
+            DataEntry::DeleteEntry { key: _ } => {
+                proto_data_entries.push(ProtoDataEntry { key, value: None });
+            }
         };
-        proto_data_entries.push(ProtoDataEntry { key, value });
+        //proto_data_entries.push(ProtoDataEntry { key, value });
     }
     let data_transaction = DataTransactionData {
         data: proto_data_entries,
@@ -118,7 +137,7 @@ fn invoke_script_from_proto(transaction: &Transaction) -> Result<ProtoData> {
             invoke_tx.dapp().public_key_hash(),
         )),
     });
-    let payments = invoke_tx
+    let payments: Vec<ProtoAmount> = invoke_tx
         .payment()
         .iter()
         .map(|amount| {

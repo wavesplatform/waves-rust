@@ -113,13 +113,13 @@ fn invoke_to_json(invoke_tx: &InvokeScriptTransaction, json: &mut Map<String, Va
             let mut map = Map::new();
             map.insert("amount".to_owned(), arg.value().into());
             map.insert(
-                "asset_id".to_owned(),
+                "assetId".to_owned(),
                 arg.asset_id().map(|it| it.encoded()).into(),
             );
             map.into()
         })
         .collect();
-    json.insert("payments".to_owned(), payments.into());
+    json.insert("payment".to_owned(), payments.into());
 }
 
 fn args_to_json(args: Vec<Arg>, json_args: &mut Vec<Value>) {

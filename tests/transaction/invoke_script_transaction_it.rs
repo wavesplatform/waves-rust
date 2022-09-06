@@ -1,3 +1,4 @@
+use waves_rust::model::ChainId::TESTNET;
 use waves_rust::model::{
     Address, Amount, Arg, Base58String, Base64String, ChainId, Function, InvokeScriptTransaction,
     IssueTransaction, PrivateKey, Transaction, TransactionData, TransferTransaction,
@@ -29,8 +30,11 @@ async fn broadcast_and_read_test() {
         ],
     );
 
-    let transaction_data =
-        TransactionData::InvokeScript(InvokeScriptTransaction::new(dapp, function, vec![]));
+    let transaction_data = TransactionData::InvokeScript(InvokeScriptTransaction::new(
+        dapp,
+        function,
+        vec![Amount::new(1, None), Amount::new(2, None)],
+    ));
 
     let timestamp = get_current_epoch_millis();
     let signed_tx = Transaction::new(
