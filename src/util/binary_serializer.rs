@@ -1,29 +1,43 @@
 use crate::error::Result;
 use crate::model::data_entry::DataEntry;
-use crate::model::TransactionData::{Data, InvokeScript, Issue, Transfer};
-use crate::model::{ByteString, Transaction};
+use crate::model::TransactionData::{Data, Exchange, InvokeScript, Issue, Transfer};
+use crate::model::{ByteString, Order, Transaction, TransactionData};
 use crate::util::ByteWriter;
 use crate::waves_proto::data_transaction_data::data_entry::Value::{
     BinaryValue, BoolValue, IntValue, StringValue,
 };
 use crate::waves_proto::data_transaction_data::DataEntry as ProtoDataEntry;
 use crate::waves_proto::transaction::Data as ProtoData;
-use crate::waves_proto::Transaction as ProtoTransaction;
 use crate::waves_proto::{
-    recipient, Amount as ProtoAmount, Amount, Recipient, TransferTransactionData,
+    recipient, Amount as ProtoAmount, Amount, BurnTransactionData, Recipient,
+    TransferTransactionData,
 };
 use crate::waves_proto::{DataTransactionData, InvokeScriptTransactionData, IssueTransactionData};
+use crate::waves_proto::{ExchangeTransactionData, Transaction as ProtoTransaction};
+use crate::waves_proto::{Order as ProtoOrder, ReissueTransactionData};
 use prost::Message;
 
 pub struct BinarySerializer;
 
 impl BinarySerializer {
-    pub fn body_bytes(transaction: &Transaction) -> Result<Vec<u8>> {
+    pub fn tx_body_bytes(transaction: &Transaction) -> Result<Vec<u8>> {
         let proto_data = match transaction.data() {
             Transfer(_) => transfer_transaction_to_proto(transaction)?,
             Data(_) => data_transaction_to_proto(transaction)?,
             Issue(_) => issue_transaction_from_proto(transaction)?,
             InvokeScript(_) => invoke_script_from_proto(transaction)?,
+            Exchange(exchange_tx) => {
+                let proto_exchange_tx: ExchangeTransactionData = exchange_tx.try_into()?;
+                ProtoData::Exchange(proto_exchange_tx)
+            }
+            TransactionData::Reissue(reissue_tx) => {
+                let proto_reissue_tx: ReissueTransactionData = reissue_tx.try_into()?;
+                ProtoData::Reissue(proto_reissue_tx)
+            }
+            TransactionData::Burn(burn_tx) => {
+                let proto_burn_tx: BurnTransactionData = burn_tx.try_into()?;
+                ProtoData::Burn(proto_burn_tx)
+            }
         };
 
         let fee_asset_id = match transaction.fee().asset_id() {
@@ -40,13 +54,20 @@ impl BinarySerializer {
             chain_id: transaction.chain_id() as i32,
             data: Some(proto_data),
             fee: Some(amount),
-            sender_public_key: transaction.public_key().bytes().clone(),
+            sender_public_key: transaction.public_key().bytes(),
             timestamp: transaction.timestamp() as i64,
             version: transaction.version() as i32,
         };
 
         let mut buf = vec![];
         proto_tx.encode(&mut buf)?;
+        Ok(buf)
+    }
+
+    pub fn order_body_byte(order: &Order) -> Result<Vec<u8>> {
+        let proto_order: ProtoOrder = order.try_into()?;
+        let mut buf = vec![];
+        proto_order.encode(&mut buf)?;
         Ok(buf)
     }
 }

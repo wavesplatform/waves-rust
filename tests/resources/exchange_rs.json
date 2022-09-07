@@ -1,0 +1,69 @@
+{
+  "type": 7,
+  "id": "3Dnz7D4VVv71rwtVJG76VM9FZh1R5NZ61yY3Pz5APc6m",
+  "fee": 300000,
+  "feeAssetId": null,
+  "timestamp": 1662500994932,
+  "version": 4,
+  "chainId": 84,
+  "sender": "3MxtrLkrbcG28uTvmbKmhrwGrR65ooHVYvK",
+  "senderPublicKey": "CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt",
+  "proofs": [
+    "2P49ZYmTQ8sWPo15eAfphgQETNdXqpaMKFitdbMgTjmXXhp5e7yN3rSQ936K5XU74JsHkY79kHwtHyRJXQxsmsNS"
+  ],
+  "order1": {
+    "version": 4,
+    "id": "BBzUjBofreRf7gPMwWKT79ayZ5zNRQqgq8R9cRKZZ8ru",
+    "sender": "3MxjhrvCr1nnDxvNJiCQfSC557gd8QYEhDx",
+    "senderPublicKey": "9oRf59sSHE2inwF6wraJDPQNsx7ktMKxaKvyFFL8GDrh",
+    "matcherPublicKey": "CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt",
+    "assetPair": {
+      "amountAsset": "8bt2MZjuUCJPmfucPfaZPTXqrxmoCHCC8gVnbjZ7bhH6",
+      "priceAsset": null
+    },
+    "orderType": "buy",
+    "amount": 100,
+    "price": 1000,
+    "timestamp": 1662500994929,
+    "expiration": 1665092994929,
+    "matcherFee": 300000,
+    "signature": "2YgYwW6o88K3NXYy39TaUu1bwVkzpbr9oQwSDehnkJskfshC6f9F5vYmY736kEExRGHiDmW4hbuyxuqE8cw8WeJ8",
+    "proofs": [
+      "2YgYwW6o88K3NXYy39TaUu1bwVkzpbr9oQwSDehnkJskfshC6f9F5vYmY736kEExRGHiDmW4hbuyxuqE8cw8WeJ8"
+    ],
+    "matcherFeeAssetId": null,
+    "eip712Signature": null,
+    "priceMode": null
+  },
+  "order2": {
+    "version": 4,
+    "id": "3qKPaEp8DDxRJQCV8ZKs4MZcTTZSsio57kXxoZtGLVgk",
+    "sender": "3MxtrLkrbcG28uTvmbKmhrwGrR65ooHVYvK",
+    "senderPublicKey": "CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt",
+    "matcherPublicKey": "CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt",
+    "assetPair": {
+      "amountAsset": "8bt2MZjuUCJPmfucPfaZPTXqrxmoCHCC8gVnbjZ7bhH6",
+      "priceAsset": null
+    },
+    "orderType": "sell",
+    "amount": 100,
+    "price": 1000,
+    "timestamp": 1662500994931,
+    "expiration": 1665092994931,
+    "matcherFee": 300000,
+    "signature": "5Mbvg4kz1rPLBVBWoTcY2e6Zajoqxq6g38WPfvxCMiHmjxm8TPZpLpEitf9SdfGSpBHtAxas2YRe7X4UcmBugDFL",
+    "proofs": [
+      "5Mbvg4kz1rPLBVBWoTcY2e6Zajoqxq6g38WPfvxCMiHmjxm8TPZpLpEitf9SdfGSpBHtAxas2YRe7X4UcmBugDFL"
+    ],
+    "matcherFeeAssetId": null,
+    "eip712Signature": null,
+    "priceMode": null
+  },
+  "amount": 100,
+  "price": 1000,
+  "buyMatcherFee": 300000,
+  "sellMatcherFee": 300000,
+  "height": 2217824,
+  "applicationStatus": "succeeded",
+  "spentComplexity": 0
+}

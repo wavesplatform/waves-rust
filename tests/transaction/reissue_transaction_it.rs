@@ -1,7 +1,6 @@
-use waves_rust::model::ChainId::TESTNET;
 use waves_rust::model::{
-    Address, Amount, Arg, Base58String, Base64String, ChainId, Function, InvokeScriptTransaction,
-    IssueTransaction, PrivateKey, Transaction, TransactionData, TransferTransaction,
+    Amount, AssetId, ChainId, IssueTransaction, PrivateKey, ReissueTransaction, Transaction,
+    TransactionData,
 };
 use waves_rust::node::{Node, Profile};
 use waves_rust::util::get_current_epoch_millis;
@@ -14,35 +13,26 @@ trigger used census";
 //#[tokio::test]
 async fn broadcast_and_read_test() {
     let private_key =
-        PrivateKey::from_seed(SEED_PHRASE, 0).expect("failed to get private ket from seed phrase");
+        PrivateKey::from_seed("b", 0).expect("failed to get private ket from seed phrase");
 
-    let dapp = Address::from_string("3N2yqTEKArWS3ySs2f6t8fpXdjX6cpPuhG8")
-        .expect("failed to create address from string");
-
-    let function = Function::new(
-        "storeData".to_owned(),
-        vec![
-            Arg::Boolean(true),
-            Arg::String("some string".to_owned()),
-            Arg::Integer(123),
-            Arg::Binary(Base64String::from_bytes(vec![3, 5, 2, 11, 15])),
-            Arg::List(vec![Arg::Integer(123), Arg::Integer(543)]),
-        ],
-    );
-
-    let transaction_data = TransactionData::InvokeScript(InvokeScriptTransaction::new(
-        dapp,
-        function,
-        vec![Amount::new(1, None), Amount::new(2, None)],
+    let transaction_data = TransactionData::Reissue(ReissueTransaction::new(
+        Amount::new(
+            12,
+            Some(
+                AssetId::from_string("8bt2MZjuUCJPmfucPfaZPTXqrxmoCHCC8gVnbjZ7bhH6")
+                    .expect("failed"),
+            ),
+        ),
+        true,
     ));
 
     let timestamp = get_current_epoch_millis();
     let signed_tx = Transaction::new(
         transaction_data,
-        Amount::new(500000, None),
+        Amount::new(100000000, None),
         timestamp,
         private_key.public_key(),
-        InvokeScriptTransaction::tx_type(),
+        ReissueTransaction::tx_type(),
         3,
         ChainId::TESTNET.byte(),
     )
