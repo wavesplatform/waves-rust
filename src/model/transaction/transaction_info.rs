@@ -6,11 +6,12 @@ use crate::model::account::{PrivateKey, PublicKey};
 use crate::model::transaction::data_transaction::DataTransaction;
 use crate::model::transaction::TransactionData::Transfer;
 use crate::model::transaction::TransferTransaction;
-use crate::model::TransactionData::{Data, Exchange, InvokeScript, Issue, Reissue};
+use crate::model::TransactionData::{Burn, Data, Exchange, InvokeScript, Issue, Reissue};
 use crate::model::{
-    AssetId, DataTransactionInfo, ExchangeTransaction, ExchangeTransactionInfo, Id,
-    InvokeScriptTransaction, InvokeScriptTransactionInfo, IssueTransaction, IssueTransactionInfo,
-    ReissueTransaction, ReissueTransactionInfo, TransferTransactionInfo,
+    AssetId, BurnTransaction, BurnTransactionInfo, DataTransactionInfo, ExchangeTransaction,
+    ExchangeTransactionInfo, Id, InvokeScriptTransaction, InvokeScriptTransactionInfo,
+    IssueTransaction, IssueTransactionInfo, ReissueTransaction, ReissueTransactionInfo,
+    TransferTransactionInfo,
 };
 use crate::util::{sign_tx, BinarySerializer, Hash, JsonSerializer};
 
@@ -216,6 +217,7 @@ pub enum TransactionDataInfo {
     Data(DataTransactionInfo),
     Issue(IssueTransactionInfo),
     Reissue(ReissueTransactionInfo),
+    Burn(BurnTransactionInfo),
     Exchange(ExchangeTransactionInfo),
     Invoke(InvokeScriptTransactionInfo),
 }
@@ -249,6 +251,7 @@ impl TransactionDataInfo {
             TransactionDataInfo::Exchange(_) => ExchangeTransaction::tx_type(),
             TransactionDataInfo::Invoke(_) => InvokeScriptTransaction::tx_type(),
             TransactionDataInfo::Reissue(_) => ReissueTransaction::tx_type(),
+            TransactionDataInfo::Burn(_) => BurnTransaction::tx_type(),
         }
     }
 }
@@ -259,6 +262,7 @@ impl TransactionDataInfo {
 pub enum TransactionData {
     Transfer(TransferTransaction),
     Reissue(ReissueTransaction),
+    Burn(BurnTransaction),
     Data(DataTransaction),
     Issue(IssueTransaction),
     InvokeScript(InvokeScriptTransaction),
@@ -314,6 +318,7 @@ impl TransactionData {
             InvokeScript(_) => InvokeScriptTransaction::tx_type(),
             Exchange(_) => ExchangeTransaction::tx_type(),
             Reissue(_) => ReissueTransaction::tx_type(),
+            Burn(_) => BurnTransaction::tx_type(),
         }
     }
 }
