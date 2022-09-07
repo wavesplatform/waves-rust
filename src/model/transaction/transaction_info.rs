@@ -1,17 +1,18 @@
+use serde_json::Value;
+
 use crate::error::Error::WrongTransactionType;
 use crate::error::Result;
 use crate::model::account::{PrivateKey, PublicKey};
 use crate::model::transaction::data_transaction::DataTransaction;
 use crate::model::transaction::TransactionData::Transfer;
 use crate::model::transaction::TransferTransaction;
-use crate::model::TransactionData::{Data, Exchange, InvokeScript, Issue};
+use crate::model::TransactionData::{Data, Exchange, InvokeScript, Issue, Reissue};
 use crate::model::{
     AssetId, DataTransactionInfo, ExchangeTransaction, ExchangeTransactionInfo, Id,
     InvokeScriptTransaction, InvokeScriptTransactionInfo, IssueTransaction, IssueTransactionInfo,
-    TransferTransactionInfo,
+    ReissueTransaction, ReissueTransactionInfo, TransferTransactionInfo,
 };
 use crate::util::{sign_tx, BinarySerializer, Hash, JsonSerializer};
-use serde_json::Value;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct TransactionInfoResponse {
@@ -214,6 +215,7 @@ pub enum TransactionDataInfo {
     Transfer(TransferTransactionInfo),
     Data(DataTransactionInfo),
     Issue(IssueTransactionInfo),
+    Reissue(ReissueTransactionInfo),
     Exchange(ExchangeTransactionInfo),
     Invoke(InvokeScriptTransactionInfo),
 }
@@ -246,6 +248,7 @@ impl TransactionDataInfo {
             TransactionDataInfo::Issue(_) => IssueTransaction::tx_type(),
             TransactionDataInfo::Exchange(_) => ExchangeTransaction::tx_type(),
             TransactionDataInfo::Invoke(_) => InvokeScriptTransaction::tx_type(),
+            TransactionDataInfo::Reissue(_) => ReissueTransaction::tx_type(),
         }
     }
 }
@@ -255,6 +258,7 @@ impl TransactionDataInfo {
 #[allow(clippy::large_enum_variant)]
 pub enum TransactionData {
     Transfer(TransferTransaction),
+    Reissue(ReissueTransaction),
     Data(DataTransaction),
     Issue(IssueTransaction),
     InvokeScript(InvokeScriptTransaction),
@@ -309,6 +313,7 @@ impl TransactionData {
             Issue(_) => IssueTransaction::tx_type(),
             InvokeScript(_) => InvokeScriptTransaction::tx_type(),
             Exchange(_) => ExchangeTransaction::tx_type(),
+            Reissue(_) => ReissueTransaction::tx_type(),
         }
     }
 }
