@@ -9,7 +9,8 @@ use crate::waves_proto::data_transaction_data::data_entry::Value::{
 use crate::waves_proto::data_transaction_data::DataEntry as ProtoDataEntry;
 use crate::waves_proto::transaction::Data as ProtoData;
 use crate::waves_proto::{
-    recipient, Amount as ProtoAmount, Amount, Recipient, TransferTransactionData,
+    recipient, Amount as ProtoAmount, Amount, BurnTransactionData, Recipient,
+    TransferTransactionData,
 };
 use crate::waves_proto::{DataTransactionData, InvokeScriptTransactionData, IssueTransactionData};
 use crate::waves_proto::{ExchangeTransactionData, Transaction as ProtoTransaction};
@@ -32,6 +33,10 @@ impl BinarySerializer {
             TransactionData::Reissue(reissue_tx) => {
                 let proto_reissue_tx: ReissueTransactionData = reissue_tx.try_into()?;
                 ProtoData::Reissue(proto_reissue_tx)
+            }
+            TransactionData::Burn(burn_tx) => {
+                let proto_burn_tx: BurnTransactionData = burn_tx.try_into()?;
+                ProtoData::Burn(proto_burn_tx)
             }
         };
 

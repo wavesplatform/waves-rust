@@ -2,9 +2,9 @@ use serde_json::{Map, Value};
 
 use crate::error::Result;
 use crate::model::{
-    Arg, ByteString, DataTransaction, ExchangeTransaction, InvokeScriptTransaction,
-    IssueTransaction, ReissueTransaction, SignedTransaction, Transaction, TransactionData,
-    TransferTransaction,
+    Arg, BurnTransaction, ByteString, DataTransaction, ExchangeTransaction,
+    InvokeScriptTransaction, IssueTransaction, ReissueTransaction, SignedTransaction, Transaction,
+    TransactionData, TransferTransaction,
 };
 use crate::util::Base58;
 
@@ -86,6 +86,10 @@ fn add_additional_fields(
             let mut issue_tx_json: Map<String, Value> = reissue_tx.try_into()?;
             json_props.append(&mut issue_tx_json);
         }
+        TransactionData::Burn(burn_tx) => {
+            let mut burn_tx_json: Map<String, Value> = burn_tx.try_into()?;
+            json_props.append(&mut burn_tx_json);
+        }
     };
     Ok(json_props.clone())
 }
@@ -98,6 +102,7 @@ fn tx_type(tx: &Transaction) -> u8 {
         TransactionData::InvokeScript(_) => InvokeScriptTransaction::tx_type(),
         TransactionData::Exchange(_) => ExchangeTransaction::tx_type(),
         TransactionData::Reissue(_) => ReissueTransaction::tx_type(),
+        TransactionData::Burn(_) => BurnTransaction::tx_type(),
     }
 }
 
