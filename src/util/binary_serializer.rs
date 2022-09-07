@@ -1,19 +1,19 @@
 use crate::error::Result;
 use crate::model::data_entry::DataEntry;
 use crate::model::TransactionData::{Data, Exchange, InvokeScript, Issue, Transfer};
-use crate::model::{ByteString, Order, Transaction};
+use crate::model::{ByteString, Order, Transaction, TransactionData};
 use crate::util::ByteWriter;
 use crate::waves_proto::data_transaction_data::data_entry::Value::{
     BinaryValue, BoolValue, IntValue, StringValue,
 };
 use crate::waves_proto::data_transaction_data::DataEntry as ProtoDataEntry;
 use crate::waves_proto::transaction::Data as ProtoData;
-use crate::waves_proto::Order as ProtoOrder;
 use crate::waves_proto::{
     recipient, Amount as ProtoAmount, Amount, Recipient, TransferTransactionData,
 };
 use crate::waves_proto::{DataTransactionData, InvokeScriptTransactionData, IssueTransactionData};
 use crate::waves_proto::{ExchangeTransactionData, Transaction as ProtoTransaction};
+use crate::waves_proto::{Order as ProtoOrder, ReissueTransactionData};
 use prost::Message;
 
 pub struct BinarySerializer;
@@ -28,6 +28,10 @@ impl BinarySerializer {
             Exchange(exchange_tx) => {
                 let proto_exchange_tx: ExchangeTransactionData = exchange_tx.try_into()?;
                 ProtoData::Exchange(proto_exchange_tx)
+            }
+            TransactionData::Reissue(reissue_tx) => {
+                let proto_reissue_tx: ReissueTransactionData = reissue_tx.try_into()?;
+                ProtoData::Reissue(proto_reissue_tx)
             }
         };
 
