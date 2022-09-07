@@ -229,6 +229,11 @@ impl Node {
         JsonDeserializer::deserialize_tx_info(&rs, self.chain_id)
     }
 
+    pub async fn get_assets_balance(
+        &self,
+        address: &Address
+    ) -> Result<>
+
     pub async fn broadcast(&self, signed_tx: &SignedTransaction) -> Result<SignedTransaction> {
         let broadcast_tx_url = format!("{}transactions/broadcast", self.url().as_str());
         let rs = self.post(&broadcast_tx_url, &signed_tx.to_json()?).await?;
