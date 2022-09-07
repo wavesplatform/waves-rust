@@ -6,12 +6,12 @@ use crate::model::account::{PrivateKey, PublicKey};
 use crate::model::transaction::data_transaction::DataTransaction;
 use crate::model::transaction::TransactionData::Transfer;
 use crate::model::transaction::TransferTransaction;
-use crate::model::TransactionData::{Burn, Data, Exchange, InvokeScript, Issue, Reissue};
+use crate::model::TransactionData::{Burn, Data, Exchange, InvokeScript, Issue, Lease, Reissue};
 use crate::model::{
     AssetId, BurnTransaction, BurnTransactionInfo, DataTransactionInfo, ExchangeTransaction,
     ExchangeTransactionInfo, Id, InvokeScriptTransaction, InvokeScriptTransactionInfo,
-    IssueTransaction, IssueTransactionInfo, ReissueTransaction, ReissueTransactionInfo,
-    TransferTransactionInfo,
+    IssueTransaction, IssueTransactionInfo, LeaseTransaction, LeaseTransactionInfo,
+    ReissueTransaction, ReissueTransactionInfo, TransferTransactionInfo,
 };
 use crate::util::{sign_tx, BinarySerializer, Hash, JsonSerializer};
 
@@ -217,6 +217,7 @@ pub enum TransactionDataInfo {
     Data(DataTransactionInfo),
     Issue(IssueTransactionInfo),
     Reissue(ReissueTransactionInfo),
+    Lease(LeaseTransactionInfo),
     Burn(BurnTransactionInfo),
     Exchange(ExchangeTransactionInfo),
     Invoke(InvokeScriptTransactionInfo),
@@ -252,6 +253,7 @@ impl TransactionDataInfo {
             TransactionDataInfo::Invoke(_) => InvokeScriptTransaction::tx_type(),
             TransactionDataInfo::Reissue(_) => ReissueTransaction::tx_type(),
             TransactionDataInfo::Burn(_) => BurnTransaction::tx_type(),
+            TransactionDataInfo::Lease(_) => LeaseTransaction::tx_type(),
         }
     }
 }
@@ -263,6 +265,7 @@ pub enum TransactionData {
     Transfer(TransferTransaction),
     Reissue(ReissueTransaction),
     Burn(BurnTransaction),
+    Lease(LeaseTransaction),
     Data(DataTransaction),
     Issue(IssueTransaction),
     InvokeScript(InvokeScriptTransaction),
@@ -319,6 +322,7 @@ impl TransactionData {
             Exchange(_) => ExchangeTransaction::tx_type(),
             Reissue(_) => ReissueTransaction::tx_type(),
             Burn(_) => BurnTransaction::tx_type(),
+            Lease(_) => LeaseTransaction::tx_type(),
         }
     }
 }
