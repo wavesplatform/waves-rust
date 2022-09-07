@@ -35,7 +35,9 @@ impl JsonDeserializer {
         let transaction_data = match tx_type {
             3 => TransactionDataInfo::Issue(IssueTransactionInfo::from_json(value)?),
             4 => TransactionDataInfo::Transfer(TransferTransactionInfo::from_json(value)?),
+            7 => TransactionDataInfo::Exchange(value.try_into()?),
             12 => TransactionDataInfo::Data(DataTransactionInfo::from_json(value)?),
+            16 => TransactionDataInfo::Invoke(value.try_into()?),
             _ => panic!("unknown tx type"),
         };
         let timestamp = Self::safe_to_int_from_field(value, "timestamp")? as u64;
@@ -83,6 +85,7 @@ impl JsonDeserializer {
         let transaction_data = match tx_type {
             3 => TransactionData::Issue(IssueTransaction::from_json(value)?),
             4 => TransactionData::Transfer(TransferTransaction::from_json(value)?),
+            7 => TransactionData::Exchange(value.try_into()?),
             12 => TransactionData::Data(DataTransaction::from_json(value)?),
             16 => TransactionData::InvokeScript(InvokeScriptTransaction::from_json(value)?),
             _ => todo!(),

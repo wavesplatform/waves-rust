@@ -12,7 +12,7 @@ impl Address {
         Ok(Address {
             bytes: Crypto::get_address(
                 &chain_id,
-                &Crypto::get_public_key_hash(public_key.bytes())?,
+                &Crypto::get_public_key_hash(&public_key.bytes())?,
             )?,
         })
     }

@@ -11,7 +11,7 @@ trigger used census";
 
 //todo add docker private node
 
-#[tokio::test]
+//#[tokio::test]
 async fn broadcast_and_read_test() {
     let private_key =
         PrivateKey::from_seed(SEED_PHRASE, 0).expect("failed to get private ket from seed phrase");

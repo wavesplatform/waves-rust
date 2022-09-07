@@ -1,12 +1,20 @@
 use crate::error::Result;
 use crate::model::account::PrivateKey;
-use crate::model::{SignedTransaction, Transaction};
+use crate::model::{Order, SignedOrder, SignedTransaction, Transaction};
 use crate::util::BinarySerializer;
 
-pub fn sign(transaction: &Transaction, private_key: &PrivateKey) -> Result<SignedTransaction> {
-    let bytes = BinarySerializer::body_bytes(transaction);
+pub fn sign_tx(transaction: &Transaction, private_key: &PrivateKey) -> Result<SignedTransaction> {
+    let bytes = BinarySerializer::tx_body_bytes(transaction);
     Ok(SignedTransaction::new(
         transaction.clone(),
+        vec![private_key.sign(&bytes?)?],
+    ))
+}
+
+pub fn sign_order(order: &Order, private_key: &PrivateKey) -> Result<SignedOrder> {
+    let bytes = BinarySerializer::order_body_byte(order);
+    Ok(SignedOrder::new(
+        order.clone(),
         vec![private_key.sign(&bytes?)?],
     ))
 }
@@ -16,7 +24,7 @@ mod tests {
     use crate::model::account::PrivateKey;
     use crate::model::data_entry::DataEntry;
     use crate::model::{Amount, ChainId, DataTransaction, Transaction, TransactionData};
-    use crate::util::{sign, Base58};
+    use crate::util::{sign, sign_tx, Base58};
 
     const SEED_PHRASE: &str = "dwarf chimney miss category orchard organ neck income prevent \
     trigger used census";
@@ -57,7 +65,7 @@ mod tests {
             ChainId::TESTNET.byte(),
         );
 
-        let signed_tx = sign(&transaction, &private_key);
+        let signed_tx = sign_tx(&transaction, &private_key);
 
         match signed_tx {
             Ok(success) => {
