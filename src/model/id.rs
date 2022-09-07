@@ -24,4 +24,8 @@ impl Id {
     pub fn encoded_with_prefix(&self) -> String {
         Base58::encode(&self.bytes, true)
     }
+
+    pub fn bytes(&self) -> Vec<u8> {
+        self.bytes.clone()
+    }
 }
