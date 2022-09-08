@@ -26,7 +26,7 @@ impl TryFrom<Value> for AssetsBalanceResponse {
             .iter()
             .map(|v| v.try_into())
             .collect::<Result<Vec<AssetBalance>>>()?;
-        return Ok(AssetsBalanceResponse::new(address, balances));
+        Ok(AssetsBalanceResponse::new(address, balances))
     }
 }
 
