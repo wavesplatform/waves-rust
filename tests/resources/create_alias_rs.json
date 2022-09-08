@@ -1,0 +1,18 @@
+{
+  "type": 10,
+  "id": "5Hri2XC3QFqP4MNHa84rdyoAAQKiL8ijhVy2WmPjRwdv",
+  "fee": 100000,
+  "feeAssetId": null,
+  "timestamp": 1662650000377,
+  "version": 3,
+  "chainId": 84,
+  "sender": "3MxtrLkrbcG28uTvmbKmhrwGrR65ooHVYvK",
+  "senderPublicKey": "CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt",
+  "proofs": [
+    "5h3nNEdPy6h7NT3HuNqBpALbRaf39SRCsDdAj6aWy6Jy3MjCEnja1ibkcUyf7xZECtUNq5nhhz7GtRbUmxK3EBR2"
+  ],
+  "alias": "alias1662650000377",
+  "height": 2220282,
+  "applicationStatus": "succeeded",
+  "spentComplexity": 0
+}

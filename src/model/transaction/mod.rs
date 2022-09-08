@@ -1,5 +1,6 @@
 mod action;
 mod burn_transaction;
+mod create_alias_transaction;
 mod data_transaction;
 mod exchange_transaction;
 mod invoke_script_transaction;
@@ -12,6 +13,7 @@ mod transfer_transaction;
 
 pub use action::*;
 pub use burn_transaction::*;
+pub use create_alias_transaction::*;
 pub use data_transaction::*;
 pub use exchange_transaction::*;
 pub use invoke_script_transaction::*;
