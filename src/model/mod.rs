@@ -10,6 +10,7 @@ pub mod order;
 pub mod script;
 pub mod state_changes;
 pub mod transaction;
+pub mod transfer;
 
 pub use account::*;
 pub use asset::asset_id::*;
@@ -22,3 +23,4 @@ pub use order::*;
 pub use script::*;
 pub use state_changes::*;
 pub use transaction::*;
+pub use transfer::*;
