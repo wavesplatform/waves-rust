@@ -15,8 +15,8 @@ async fn broadcast_and_read_test() {
         PrivateKey::from_seed(SEED_PHRASE, 0).expect("failed to get private ket from seed phrase");
 
     let transaction_data = TransactionData::Issue(IssueTransaction::new(
-        "test asset_id".to_owned(),
-        "this is test asset_id".to_owned(),
+        "test asset".to_owned(),
+        "this is test asset".to_owned(),
         32,
         3,
         false,
