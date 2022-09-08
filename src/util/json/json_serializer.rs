@@ -1,11 +1,7 @@
 use serde_json::{Map, Value};
 
 use crate::error::Result;
-use crate::model::{
-    Arg, BurnTransaction, ByteString, CreateAliasTransaction, DataTransaction, ExchangeTransaction,
-    InvokeScriptTransaction, IssueTransaction, LeaseCancelTransaction, LeaseTransaction,
-    ReissueTransaction, SignedTransaction, Transaction, TransactionData, TransferTransaction,
-};
+use crate::model::{Arg, BurnTransaction, ByteString, CreateAliasTransaction, DataTransaction, ExchangeTransaction, InvokeScriptTransaction, IssueTransaction, LeaseCancelTransaction, LeaseTransaction, MassTransferTransaction, ReissueTransaction, SignedTransaction, Transaction, TransactionData, TransferTransaction};
 use crate::util::Base58;
 
 pub struct JsonSerializer;
@@ -102,6 +98,10 @@ fn add_additional_fields(
             let mut create_alias_tx: Map<String, Value> = create_alias_tx.try_into()?;
             json_props.append(&mut create_alias_tx);
         }
+        TransactionData::MassTransfer(mass_transfer_tx) => {
+            let mut mass_transfer_tx: Map<String, Value> = mass_transfer_tx.try_into()?;
+            json_props.append(&mut mass_transfer_tx);
+        }
     };
     Ok(json_props.clone())
 }
@@ -118,6 +118,7 @@ fn tx_type(tx: &Transaction) -> u8 {
         TransactionData::Lease(_) => LeaseTransaction::tx_type(),
         TransactionData::LeaseCancel(_) => LeaseCancelTransaction::tx_type(),
         TransactionData::CreateAlias(_) => CreateAliasTransaction::tx_type(),
+        TransactionData::MassTransfer(_) => MassTransferTransaction::tx_type()
     }
 }
 
