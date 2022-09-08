@@ -10,6 +10,7 @@ use serde_json::{Map, Value};
 use crate::model::account::{Address, Balance, BalanceDetails};
 use crate::model::data_entry::DataEntry;
 use crate::model::{ChainId, ScriptInfo, ScriptMeta, SignedTransaction, TransactionInfoResponse};
+use crate::model::asset::balance::{AssetsBalanceResponse};
 use crate::util::JsonDeserializer;
 
 pub const MAINNET_URL: &str = "https://nodes.wavesnodes.com";
@@ -232,7 +233,15 @@ impl Node {
     pub async fn get_assets_balance(
         &self,
         address: &Address
-    ) -> Result<>
+    ) -> Result<AssetsBalanceResponse> {
+        let url = format!(
+            "{}assets/balance/{}",
+            self.url().as_str(),
+            address.encoded()
+        );
+        let rs = self.get(&url).await?;
+        rs.try_into()
+    }
 
     pub async fn broadcast(&self, signed_tx: &SignedTransaction) -> Result<SignedTransaction> {
         let broadcast_tx_url = format!("{}transactions/broadcast", self.url().as_str());
