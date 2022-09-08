@@ -12,7 +12,7 @@ pub mod state_changes;
 pub mod transaction;
 
 pub use account::*;
-pub use asset::*;
+pub use asset::asset_id::*;
 pub use base58string::*;
 pub use base64string::*;
 pub use chain_id::*;

@@ -8,6 +8,7 @@ use serde_json::Value::Array;
 use serde_json::{Map, Value};
 
 use crate::model::account::{Address, Balance, BalanceDetails};
+use crate::model::asset::balance::AssetsBalanceResponse;
 use crate::model::data_entry::DataEntry;
 use crate::model::{ChainId, ScriptInfo, ScriptMeta, SignedTransaction, TransactionInfoResponse};
 use crate::util::JsonDeserializer;
@@ -227,6 +228,16 @@ impl Node {
         );
         let rs = self.get(&get_tx_info_url).await?;
         JsonDeserializer::deserialize_tx_info(&rs, self.chain_id)
+    }
+
+    pub async fn get_assets_balance(&self, address: &Address) -> Result<AssetsBalanceResponse> {
+        let url = format!(
+            "{}assets/balance/{}",
+            self.url().as_str(),
+            address.encoded()
+        );
+        let rs = self.get(&url).await?;
+        rs.try_into()
     }
 
     pub async fn broadcast(&self, signed_tx: &SignedTransaction) -> Result<SignedTransaction> {
