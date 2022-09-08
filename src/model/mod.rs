@@ -1,4 +1,5 @@
 pub mod account;
+pub mod asset;
 pub mod asset_id;
 pub mod base58string;
 pub mod base64string;
@@ -10,7 +11,6 @@ pub mod order;
 pub mod script;
 pub mod state_changes;
 pub mod transaction;
-pub mod asset;
 
 pub use account::*;
 pub use asset_id::*;

@@ -1,3 +1,3 @@
 mod addresses_it;
-mod transaction;
 mod assets;
+mod transaction;

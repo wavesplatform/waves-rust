@@ -8,9 +8,9 @@ use serde_json::Value::Array;
 use serde_json::{Map, Value};
 
 use crate::model::account::{Address, Balance, BalanceDetails};
+use crate::model::asset::balance::AssetsBalanceResponse;
 use crate::model::data_entry::DataEntry;
 use crate::model::{ChainId, ScriptInfo, ScriptMeta, SignedTransaction, TransactionInfoResponse};
-use crate::model::asset::balance::{AssetsBalanceResponse};
 use crate::util::JsonDeserializer;
 
 pub const MAINNET_URL: &str = "https://nodes.wavesnodes.com";
@@ -230,10 +230,7 @@ impl Node {
         JsonDeserializer::deserialize_tx_info(&rs, self.chain_id)
     }
 
-    pub async fn get_assets_balance(
-        &self,
-        address: &Address
-    ) -> Result<AssetsBalanceResponse> {
+    pub async fn get_assets_balance(&self, address: &Address) -> Result<AssetsBalanceResponse> {
         let url = format!(
             "{}assets/balance/{}",
             self.url().as_str(),
