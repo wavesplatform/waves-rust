@@ -1,7 +1,12 @@
 use serde_json::{Map, Value};
 
 use crate::error::Result;
-use crate::model::{Arg, BurnTransaction, ByteString, CreateAliasTransaction, DataTransaction, ExchangeTransaction, InvokeScriptTransaction, IssueTransaction, LeaseCancelTransaction, LeaseTransaction, MassTransferTransaction, ReissueTransaction, SignedTransaction, Transaction, TransactionData, TransferTransaction};
+use crate::model::{
+    Arg, BurnTransaction, ByteString, CreateAliasTransaction, DataTransaction, ExchangeTransaction,
+    InvokeScriptTransaction, IssueTransaction, LeaseCancelTransaction, LeaseTransaction,
+    MassTransferTransaction, ReissueTransaction, SignedTransaction, Transaction, TransactionData,
+    TransferTransaction,
+};
 use crate::util::Base58;
 
 pub struct JsonSerializer;
@@ -118,7 +123,7 @@ fn tx_type(tx: &Transaction) -> u8 {
         TransactionData::Lease(_) => LeaseTransaction::tx_type(),
         TransactionData::LeaseCancel(_) => LeaseCancelTransaction::tx_type(),
         TransactionData::CreateAlias(_) => CreateAliasTransaction::tx_type(),
-        TransactionData::MassTransfer(_) => MassTransferTransaction::tx_type()
+        TransactionData::MassTransfer(_) => MassTransferTransaction::tx_type(),
     }
 }
 

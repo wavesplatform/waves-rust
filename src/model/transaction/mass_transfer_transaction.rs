@@ -1,5 +1,5 @@
 use crate::error::{Error, Result};
-use crate::model::{Amount, AssetId, Base58String, ByteString, Transfer};
+use crate::model::{AssetId, Base58String, ByteString, Transfer};
 use crate::util::JsonDeserializer;
 use crate::waves_proto::mass_transfer_transaction_data::Transfer as ProtoTransfer;
 use crate::waves_proto::MassTransferTransactionData;

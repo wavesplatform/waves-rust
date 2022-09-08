@@ -6,8 +6,18 @@ use crate::model::account::{PrivateKey, PublicKey};
 use crate::model::transaction::data_transaction::DataTransaction;
 use crate::model::transaction::TransactionData::Transfer;
 use crate::model::transaction::TransferTransaction;
-use crate::model::TransactionData::{Burn, CreateAlias, Data, Exchange, InvokeScript, Issue, Lease, LeaseCancel, MassTransfer, Reissue};
-use crate::model::{AssetId, BurnTransaction, BurnTransactionInfo, CreateAliasTransaction, CreateAliasTransactionInfo, DataTransactionInfo, ExchangeTransaction, ExchangeTransactionInfo, Id, InvokeScriptTransaction, InvokeScriptTransactionInfo, IssueTransaction, IssueTransactionInfo, LeaseCancelTransaction, LeaseCancelTransactionInfo, LeaseTransaction, LeaseTransactionInfo, MassTransferTransaction, MassTransferTransactionInfo, ReissueTransaction, ReissueTransactionInfo, TransferTransactionInfo};
+use crate::model::TransactionData::{
+    Burn, CreateAlias, Data, Exchange, InvokeScript, Issue, Lease, LeaseCancel, MassTransfer,
+    Reissue,
+};
+use crate::model::{
+    AssetId, BurnTransaction, BurnTransactionInfo, CreateAliasTransaction,
+    CreateAliasTransactionInfo, DataTransactionInfo, ExchangeTransaction, ExchangeTransactionInfo,
+    Id, InvokeScriptTransaction, InvokeScriptTransactionInfo, IssueTransaction,
+    IssueTransactionInfo, LeaseCancelTransaction, LeaseCancelTransactionInfo, LeaseTransaction,
+    LeaseTransactionInfo, MassTransferTransaction, MassTransferTransactionInfo, ReissueTransaction,
+    ReissueTransactionInfo, TransferTransactionInfo,
+};
 use crate::util::{sign_tx, BinarySerializer, Hash, JsonSerializer};
 
 #[derive(Clone, Eq, PartialEq, Debug)]
@@ -254,7 +264,7 @@ impl TransactionDataInfo {
             TransactionDataInfo::Lease(_) => LeaseTransaction::tx_type(),
             TransactionDataInfo::LeaseCancel(_) => LeaseCancelTransaction::tx_type(),
             TransactionDataInfo::CreateAlias(_) => CreateAliasTransaction::tx_type(),
-            TransactionDataInfo::MassTransfer(_) => MassTransferTransaction::tx_type()
+            TransactionDataInfo::MassTransfer(_) => MassTransferTransaction::tx_type(),
         }
     }
 }
@@ -329,7 +339,7 @@ impl TransactionData {
             Lease(_) => LeaseTransaction::tx_type(),
             LeaseCancel(_) => LeaseCancelTransaction::tx_type(),
             CreateAlias(_) => CreateAliasTransaction::tx_type(),
-            MassTransfer(_) => MassTransferTransaction::tx_type()
+            MassTransfer(_) => MassTransferTransaction::tx_type(),
         }
     }
 }

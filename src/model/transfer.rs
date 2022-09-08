@@ -1,5 +1,5 @@
 use crate::error::{Error, Result};
-use crate::model::{Address, AssetId};
+use crate::model::Address;
 use crate::util::JsonDeserializer;
 use crate::waves_proto::mass_transfer_transaction_data::Transfer as ProtoTransfer;
 use crate::waves_proto::{recipient, Recipient};
