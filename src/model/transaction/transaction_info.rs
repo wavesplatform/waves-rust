@@ -7,14 +7,14 @@ use crate::model::transaction::data_transaction::DataTransaction;
 use crate::model::transaction::TransactionData::Transfer;
 use crate::model::transaction::TransferTransaction;
 use crate::model::TransactionData::{
-    Burn, Data, Exchange, InvokeScript, Issue, Lease, LeaseCancel, Reissue,
+    Burn, CreateAlias, Data, Exchange, InvokeScript, Issue, Lease, LeaseCancel, Reissue,
 };
 use crate::model::{
-    AssetId, BurnTransaction, BurnTransactionInfo, DataTransactionInfo, ExchangeTransaction,
-    ExchangeTransactionInfo, Id, InvokeScriptTransaction, InvokeScriptTransactionInfo,
-    IssueTransaction, IssueTransactionInfo, LeaseCancelTransaction, LeaseCancelTransactionInfo,
-    LeaseTransaction, LeaseTransactionInfo, ReissueTransaction, ReissueTransactionInfo,
-    TransferTransactionInfo,
+    AssetId, BurnTransaction, BurnTransactionInfo, CreateAliasTransaction,
+    CreateAliasTransactionInfo, DataTransactionInfo, ExchangeTransaction, ExchangeTransactionInfo,
+    Id, InvokeScriptTransaction, InvokeScriptTransactionInfo, IssueTransaction,
+    IssueTransactionInfo, LeaseCancelTransaction, LeaseCancelTransactionInfo, LeaseTransaction,
+    LeaseTransactionInfo, ReissueTransaction, ReissueTransactionInfo, TransferTransactionInfo,
 };
 use crate::util::{sign_tx, BinarySerializer, Hash, JsonSerializer};
 
@@ -222,6 +222,7 @@ pub enum TransactionDataInfo {
     Reissue(ReissueTransactionInfo),
     Lease(LeaseTransactionInfo),
     LeaseCancel(LeaseCancelTransactionInfo),
+    CreateAlias(CreateAliasTransactionInfo),
     Burn(BurnTransactionInfo),
     Exchange(ExchangeTransactionInfo),
     Invoke(InvokeScriptTransactionInfo),
@@ -259,6 +260,7 @@ impl TransactionDataInfo {
             TransactionDataInfo::Burn(_) => BurnTransaction::tx_type(),
             TransactionDataInfo::Lease(_) => LeaseTransaction::tx_type(),
             TransactionDataInfo::LeaseCancel(_) => LeaseCancelTransaction::tx_type(),
+            TransactionDataInfo::CreateAlias(_) => CreateAliasTransaction::tx_type(),
         }
     }
 }
@@ -272,6 +274,7 @@ pub enum TransactionData {
     Burn(BurnTransaction),
     Lease(LeaseTransaction),
     LeaseCancel(LeaseCancelTransaction),
+    CreateAlias(CreateAliasTransaction),
     Data(DataTransaction),
     Issue(IssueTransaction),
     InvokeScript(InvokeScriptTransaction),
@@ -330,6 +333,7 @@ impl TransactionData {
             Burn(_) => BurnTransaction::tx_type(),
             Lease(_) => LeaseTransaction::tx_type(),
             LeaseCancel(_) => LeaseCancelTransaction::tx_type(),
+            CreateAlias(_) => CreateAliasTransaction::tx_type(),
         }
     }
 }
