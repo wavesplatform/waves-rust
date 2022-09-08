@@ -3,8 +3,8 @@ use serde_json::{Map, Value};
 use crate::error::Result;
 use crate::model::{
     Arg, BurnTransaction, ByteString, DataTransaction, ExchangeTransaction,
-    InvokeScriptTransaction, IssueTransaction, LeaseTransaction, ReissueTransaction,
-    SignedTransaction, Transaction, TransactionData, TransferTransaction,
+    InvokeScriptTransaction, IssueTransaction, LeaseCancelTransaction, LeaseTransaction,
+    ReissueTransaction, SignedTransaction, Transaction, TransactionData, TransferTransaction,
 };
 use crate::util::Base58;
 
@@ -94,6 +94,10 @@ fn add_additional_fields(
             let mut lease_tx_json: Map<String, Value> = lease_tx.try_into()?;
             json_props.append(&mut lease_tx_json);
         }
+        TransactionData::LeaseCancel(lease_cancel_tx) => {
+            let mut lease_cancel_tx: Map<String, Value> = lease_cancel_tx.try_into()?;
+            json_props.append(&mut lease_cancel_tx);
+        }
     };
     Ok(json_props.clone())
 }
@@ -108,6 +112,7 @@ fn tx_type(tx: &Transaction) -> u8 {
         TransactionData::Reissue(_) => ReissueTransaction::tx_type(),
         TransactionData::Burn(_) => BurnTransaction::tx_type(),
         TransactionData::Lease(_) => LeaseTransaction::tx_type(),
+        TransactionData::LeaseCancel(_) => LeaseCancelTransaction::tx_type(),
     }
 }
 

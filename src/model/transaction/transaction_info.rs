@@ -6,12 +6,15 @@ use crate::model::account::{PrivateKey, PublicKey};
 use crate::model::transaction::data_transaction::DataTransaction;
 use crate::model::transaction::TransactionData::Transfer;
 use crate::model::transaction::TransferTransaction;
-use crate::model::TransactionData::{Burn, Data, Exchange, InvokeScript, Issue, Lease, Reissue};
+use crate::model::TransactionData::{
+    Burn, Data, Exchange, InvokeScript, Issue, Lease, LeaseCancel, Reissue,
+};
 use crate::model::{
     AssetId, BurnTransaction, BurnTransactionInfo, DataTransactionInfo, ExchangeTransaction,
     ExchangeTransactionInfo, Id, InvokeScriptTransaction, InvokeScriptTransactionInfo,
-    IssueTransaction, IssueTransactionInfo, LeaseTransaction, LeaseTransactionInfo,
-    ReissueTransaction, ReissueTransactionInfo, TransferTransactionInfo,
+    IssueTransaction, IssueTransactionInfo, LeaseCancelTransaction, LeaseCancelTransactionInfo,
+    LeaseTransaction, LeaseTransactionInfo, ReissueTransaction, ReissueTransactionInfo,
+    TransferTransactionInfo,
 };
 use crate::util::{sign_tx, BinarySerializer, Hash, JsonSerializer};
 
@@ -218,6 +221,7 @@ pub enum TransactionDataInfo {
     Issue(IssueTransactionInfo),
     Reissue(ReissueTransactionInfo),
     Lease(LeaseTransactionInfo),
+    LeaseCancel(LeaseCancelTransactionInfo),
     Burn(BurnTransactionInfo),
     Exchange(ExchangeTransactionInfo),
     Invoke(InvokeScriptTransactionInfo),
@@ -254,6 +258,7 @@ impl TransactionDataInfo {
             TransactionDataInfo::Reissue(_) => ReissueTransaction::tx_type(),
             TransactionDataInfo::Burn(_) => BurnTransaction::tx_type(),
             TransactionDataInfo::Lease(_) => LeaseTransaction::tx_type(),
+            TransactionDataInfo::LeaseCancel(_) => LeaseCancelTransaction::tx_type(),
         }
     }
 }
@@ -266,6 +271,7 @@ pub enum TransactionData {
     Reissue(ReissueTransaction),
     Burn(BurnTransaction),
     Lease(LeaseTransaction),
+    LeaseCancel(LeaseCancelTransaction),
     Data(DataTransaction),
     Issue(IssueTransaction),
     InvokeScript(InvokeScriptTransaction),
@@ -323,6 +329,7 @@ impl TransactionData {
             Reissue(_) => ReissueTransaction::tx_type(),
             Burn(_) => BurnTransaction::tx_type(),
             Lease(_) => LeaseTransaction::tx_type(),
+            LeaseCancel(_) => LeaseCancelTransaction::tx_type(),
         }
     }
 }

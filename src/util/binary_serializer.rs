@@ -9,8 +9,8 @@ use crate::waves_proto::data_transaction_data::data_entry::Value::{
 use crate::waves_proto::data_transaction_data::DataEntry as ProtoDataEntry;
 use crate::waves_proto::transaction::Data as ProtoData;
 use crate::waves_proto::{
-    recipient, Amount as ProtoAmount, Amount, BurnTransactionData, LeaseTransactionData, Recipient,
-    TransferTransactionData,
+    recipient, Amount as ProtoAmount, Amount, BurnTransactionData, LeaseCancelTransactionData,
+    LeaseTransactionData, Recipient, TransferTransactionData,
 };
 use crate::waves_proto::{DataTransactionData, InvokeScriptTransactionData, IssueTransactionData};
 use crate::waves_proto::{ExchangeTransactionData, Transaction as ProtoTransaction};
@@ -41,6 +41,11 @@ impl BinarySerializer {
             TransactionData::Lease(lease_tx) => {
                 let proto_lease_tx: LeaseTransactionData = lease_tx.try_into()?;
                 ProtoData::Lease(proto_lease_tx)
+            }
+            TransactionData::LeaseCancel(lease_cancel_tx) => {
+                let proto_lease_cancel_tx: LeaseCancelTransactionData =
+                    lease_cancel_tx.try_into()?;
+                ProtoData::LeaseCancel(proto_lease_cancel_tx)
             }
         };
 

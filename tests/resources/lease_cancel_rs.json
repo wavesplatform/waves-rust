@@ -1,0 +1,29 @@
+{
+  "type": 9,
+  "id": "FoPVrSqzK74bwt8hgCDsEb48HJv7g2nvjeCW5wBoWpXb",
+  "fee": 100000,
+  "feeAssetId": null,
+  "timestamp": 1662567297736,
+  "version": 3,
+  "chainId": 84,
+  "sender": "3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q",
+  "senderPublicKey": "8jDzNuHZwuTTo6WvZMdSoNc8ydY6a7UnxvwHZ8kooMuS",
+  "proofs": [
+    "24AeoHN28JoQiEj3eZCgiorhzoY67KQ1BTBbJ2dRyPmUMXF4XiEjXx8cozQSJUKSEftKuf8uAShNistFKwgwPFke"
+  ],
+  "leaseId": "5EWudZk4xXaqRezrh26zqjbNeAzvEzDATjs4paKdyhGy",
+  "height": 2218925,
+  "applicationStatus": "succeeded",
+  "spentComplexity": 0,
+  "lease": {
+    "id": "5EWudZk4xXaqRezrh26zqjbNeAzvEzDATjs4paKdyhGy",
+    "originTransactionId": "5EWudZk4xXaqRezrh26zqjbNeAzvEzDATjs4paKdyhGy",
+    "sender": "3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q",
+    "recipient": "3MxtrLkrbcG28uTvmbKmhrwGrR65ooHVYvK",
+    "amount": 100,
+    "height": 2218886,
+    "status": "canceled",
+    "cancelHeight": 2218925,
+    "cancelTransactionId": "FoPVrSqzK74bwt8hgCDsEb48HJv7g2nvjeCW5wBoWpXb"
+  }
+}
