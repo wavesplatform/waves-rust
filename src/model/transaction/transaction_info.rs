@@ -8,7 +8,7 @@ use crate::model::transaction::TransactionData::Transfer;
 use crate::model::transaction::TransferTransaction;
 use crate::model::TransactionData::{
     Burn, CreateAlias, Data, Exchange, InvokeScript, Issue, Lease, LeaseCancel, MassTransfer,
-    Reissue, SetAssetScript, SetScript,
+    Reissue, SetAssetScript, SetScript, SponsorFee,
 };
 use crate::model::{
     AssetId, BurnTransaction, BurnTransactionInfo, CreateAliasTransaction,
@@ -17,7 +17,8 @@ use crate::model::{
     IssueTransactionInfo, LeaseCancelTransaction, LeaseCancelTransactionInfo, LeaseTransaction,
     LeaseTransactionInfo, MassTransferTransaction, MassTransferTransactionInfo, ReissueTransaction,
     ReissueTransactionInfo, SetAssetScriptTransaction, SetAssetScriptTransactionInfo,
-    SetScriptTransaction, SetScriptTransactionInfo, TransferTransactionInfo,
+    SetScriptTransaction, SetScriptTransactionInfo, SponsorFeeTransaction,
+    SponsorFeeTransactionInfo, TransferTransactionInfo,
 };
 use crate::util::{sign_tx, BinarySerializer, Hash, JsonSerializer};
 
@@ -228,6 +229,7 @@ pub enum TransactionDataInfo {
     CreateAlias(CreateAliasTransactionInfo),
     MassTransfer(MassTransferTransactionInfo),
     SetScript(SetScriptTransactionInfo),
+    SponsorFee(SponsorFeeTransactionInfo),
     SetAssetScript(SetAssetScriptTransactionInfo),
     Burn(BurnTransactionInfo),
     Exchange(ExchangeTransactionInfo),
@@ -270,6 +272,7 @@ impl TransactionDataInfo {
             TransactionDataInfo::MassTransfer(_) => MassTransferTransaction::tx_type(),
             TransactionDataInfo::SetScript(_) => SetScriptTransaction::tx_type(),
             TransactionDataInfo::SetAssetScript(_) => SetAssetScriptTransaction::tx_type(),
+            TransactionDataInfo::SponsorFee(_) => SponsorFeeTransaction::tx_type(),
         }
     }
 }
@@ -286,6 +289,7 @@ pub enum TransactionData {
     CreateAlias(CreateAliasTransaction),
     MassTransfer(MassTransferTransaction),
     SetScript(SetScriptTransaction),
+    SponsorFee(SponsorFeeTransaction),
     SetAssetScript(SetAssetScriptTransaction),
     Data(DataTransaction),
     Issue(IssueTransaction),
@@ -349,6 +353,7 @@ impl TransactionData {
             MassTransfer(_) => MassTransferTransaction::tx_type(),
             SetScript(_) => SetScriptTransaction::tx_type(),
             SetAssetScript(_) => SetAssetScriptTransaction::tx_type(),
+            SponsorFee(_) => SponsorFeeTransaction::tx_type(),
         }
     }
 }
