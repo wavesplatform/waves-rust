@@ -11,6 +11,7 @@ mod mass_transfer_transaction;
 mod reissue_transaction;
 mod set_asset_script_transaction;
 mod set_script_transaction;
+mod sponsor_fee_transaction;
 mod transaction_info;
 mod transfer_transaction;
 
@@ -27,5 +28,6 @@ pub use mass_transfer_transaction::*;
 pub use reissue_transaction::*;
 pub use set_asset_script_transaction::*;
 pub use set_script_transaction::*;
+pub use sponsor_fee_transaction::*;
 pub use transaction_info::*;
 pub use transfer_transaction::*;
