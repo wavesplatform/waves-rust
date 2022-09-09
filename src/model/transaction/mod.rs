@@ -9,6 +9,7 @@ mod lease_cancel_transaction;
 mod lease_transaction;
 mod mass_transfer_transaction;
 mod reissue_transaction;
+mod set_script_transaction;
 mod transaction_info;
 mod transfer_transaction;
 
@@ -23,5 +24,6 @@ pub use lease_cancel_transaction::*;
 pub use lease_transaction::*;
 pub use mass_transfer_transaction::*;
 pub use reissue_transaction::*;
+pub use set_script_transaction::*;
 pub use transaction_info::*;
 pub use transfer_transaction::*;

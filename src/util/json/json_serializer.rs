@@ -4,8 +4,8 @@ use crate::error::Result;
 use crate::model::{
     Arg, BurnTransaction, ByteString, CreateAliasTransaction, DataTransaction, ExchangeTransaction,
     InvokeScriptTransaction, IssueTransaction, LeaseCancelTransaction, LeaseTransaction,
-    MassTransferTransaction, ReissueTransaction, SignedTransaction, Transaction, TransactionData,
-    TransferTransaction,
+    MassTransferTransaction, ReissueTransaction, SetScriptTransaction, SignedTransaction,
+    Transaction, TransactionData, TransferTransaction,
 };
 use crate::util::Base58;
 
@@ -107,6 +107,10 @@ fn add_additional_fields(
             let mut mass_transfer_tx: Map<String, Value> = mass_transfer_tx.try_into()?;
             json_props.append(&mut mass_transfer_tx);
         }
+        TransactionData::SetScript(set_script_tx) => {
+            let mut set_script_tx: Map<String, Value> = set_script_tx.try_into()?;
+            json_props.append(&mut set_script_tx);
+        }
     };
     Ok(json_props.clone())
 }
@@ -124,6 +128,7 @@ fn tx_type(tx: &Transaction) -> u8 {
         TransactionData::LeaseCancel(_) => LeaseCancelTransaction::tx_type(),
         TransactionData::CreateAlias(_) => CreateAliasTransaction::tx_type(),
         TransactionData::MassTransfer(_) => MassTransferTransaction::tx_type(),
+        TransactionData::SetScript(_) => SetScriptTransaction::tx_type(),
     }
 }
 

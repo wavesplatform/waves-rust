@@ -43,6 +43,7 @@ impl JsonDeserializer {
             10 => TransactionDataInfo::CreateAlias(value.try_into()?),
             11 => TransactionDataInfo::MassTransfer(value.try_into()?),
             12 => TransactionDataInfo::Data(DataTransactionInfo::from_json(value)?),
+            13 => TransactionDataInfo::SetScript(value.try_into()?),
             16 => TransactionDataInfo::Invoke(value.try_into()?),
             _ => panic!("unknown tx type"),
         };
@@ -99,6 +100,7 @@ impl JsonDeserializer {
             10 => TransactionData::CreateAlias(value.try_into()?),
             11 => TransactionData::MassTransfer(value.try_into()?),
             12 => TransactionData::Data(DataTransaction::from_json(value)?),
+            13 => TransactionData::SetScript(value.try_into()?),
             16 => TransactionData::InvokeScript(InvokeScriptTransaction::from_json(value)?),
             _ => todo!(),
         };

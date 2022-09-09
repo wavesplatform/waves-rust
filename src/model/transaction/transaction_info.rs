@@ -8,7 +8,7 @@ use crate::model::transaction::TransactionData::Transfer;
 use crate::model::transaction::TransferTransaction;
 use crate::model::TransactionData::{
     Burn, CreateAlias, Data, Exchange, InvokeScript, Issue, Lease, LeaseCancel, MassTransfer,
-    Reissue,
+    Reissue, SetScript,
 };
 use crate::model::{
     AssetId, BurnTransaction, BurnTransactionInfo, CreateAliasTransaction,
@@ -16,7 +16,8 @@ use crate::model::{
     Id, InvokeScriptTransaction, InvokeScriptTransactionInfo, IssueTransaction,
     IssueTransactionInfo, LeaseCancelTransaction, LeaseCancelTransactionInfo, LeaseTransaction,
     LeaseTransactionInfo, MassTransferTransaction, MassTransferTransactionInfo, ReissueTransaction,
-    ReissueTransactionInfo, TransferTransactionInfo,
+    ReissueTransactionInfo, SetScriptTransaction, SetScriptTransactionInfo,
+    TransferTransactionInfo,
 };
 use crate::util::{sign_tx, BinarySerializer, Hash, JsonSerializer};
 
@@ -226,6 +227,7 @@ pub enum TransactionDataInfo {
     LeaseCancel(LeaseCancelTransactionInfo),
     CreateAlias(CreateAliasTransactionInfo),
     MassTransfer(MassTransferTransactionInfo),
+    SetScript(SetScriptTransactionInfo),
     Burn(BurnTransactionInfo),
     Exchange(ExchangeTransactionInfo),
     Invoke(InvokeScriptTransactionInfo),
@@ -265,6 +267,7 @@ impl TransactionDataInfo {
             TransactionDataInfo::LeaseCancel(_) => LeaseCancelTransaction::tx_type(),
             TransactionDataInfo::CreateAlias(_) => CreateAliasTransaction::tx_type(),
             TransactionDataInfo::MassTransfer(_) => MassTransferTransaction::tx_type(),
+            TransactionDataInfo::SetScript(_) => SetScriptTransaction::tx_type(),
         }
     }
 }
@@ -280,6 +283,7 @@ pub enum TransactionData {
     LeaseCancel(LeaseCancelTransaction),
     CreateAlias(CreateAliasTransaction),
     MassTransfer(MassTransferTransaction),
+    SetScript(SetScriptTransaction),
     Data(DataTransaction),
     Issue(IssueTransaction),
     InvokeScript(InvokeScriptTransaction),
@@ -340,6 +344,7 @@ impl TransactionData {
             LeaseCancel(_) => LeaseCancelTransaction::tx_type(),
             CreateAlias(_) => CreateAliasTransaction::tx_type(),
             MassTransfer(_) => MassTransferTransaction::tx_type(),
+            SetScript(_) => SetScriptTransaction::tx_type(),
         }
     }
 }
