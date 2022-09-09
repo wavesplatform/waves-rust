@@ -1,7 +1,7 @@
 use waves_rust::model::{
-    Address, Amount, AssetId, Base58String, BurnTransaction, ChainId, IssueTransaction,
-    MassTransferTransaction, PrivateKey, ReissueTransaction, Transaction, TransactionData,
-    Transfer,
+    Address, Amount, AssetId, Base64String, BurnTransaction, ChainId, IssueTransaction, PrivateKey,
+    ReissueTransaction, SetAssetScriptTransaction, SetScriptTransaction, Transaction,
+    TransactionData,
 };
 use waves_rust::node::{Node, Profile};
 use waves_rust::util::get_current_epoch_millis;
@@ -12,30 +12,22 @@ trigger used census";
 
 //todo add docker private node
 
+const COMPILED_ASSET_SCRIPT: &str = "base64:AgQAAAAHbWFzdGVyMQkBAAAAEWFkZHJlc3NGcm9tU3RyaW5nAAAAAQIAAAAQMzMzbWFzdGVyQWRkcmVzcwQAAAAHJG1hdGNoMAUAAAACdHgDCQAAAQAAAAIFAAAAByRtYXRjaDACAAAAE1RyYW5zZmVyVHJhbnNhY3Rpb24EAAAAAXQFAAAAByRtYXRjaDADCQAAAAAAAAIIBQAAAAF0AAAABnNlbmRlcgUAAAAHbWFzdGVyMQYJAAAAAAAAAggFAAAAAXQAAAAJcmVjaXBpZW50BQAAAAdtYXN0ZXIxAwkAAAEAAAACBQAAAAckbWF0Y2gwAgAAABdNYXNzVHJhbnNmZXJUcmFuc2FjdGlvbgQAAAACbXQFAAAAByRtYXRjaDAJAAAAAAAAAggFAAAAAm10AAAABnNlbmRlcgUAAAAHbWFzdGVyMQMJAAABAAAAAgUAAAAHJG1hdGNoMAIAAAATRXhjaGFuZ2VUcmFuc2FjdGlvbgcGFLbwIw==";
+
 //#[tokio::test]
 async fn broadcast_and_read_test() {
     let private_key =
-        PrivateKey::from_seed("b", 0).expect("failed to get private ket from seed phrase");
+        PrivateKey::from_seed("d", 0).expect("failed to get private ket from seed phrase");
 
-    let transaction_data = TransactionData::MassTransfer(MassTransferTransaction::new(
-        Some(AssetId::from_string("8bt2MZjuUCJPmfucPfaZPTXqrxmoCHCC8gVnbjZ7bhH6").expect("failed")),
-        vec![
-            Transfer::new(
-                Address::from_string("3MxtrLkrbcG28uTvmbKmhrwGrR65ooHVYvK").expect("failed"),
-                10,
-            ),
-            Transfer::new(
-                Address::from_string("3MxjhrvCr1nnDxvNJiCQfSC557gd8QYEhDx").expect("faield"),
-                12,
-            ),
-        ],
-        Base58String::from_bytes(vec![1, 2, 3]),
+    let transaction_data = TransactionData::SetAssetScript(SetAssetScriptTransaction::new(
+        AssetId::from_string("CVwsbXjXmdYF2q4RCPuQKf7sLGpzhk7BNnYsxGZZJMym").expect("failed"),
+        Base64String::from_string(COMPILED_ASSET_SCRIPT).expect("failed"),
     ));
 
     let timestamp = get_current_epoch_millis();
     let signed_tx = Transaction::new(
         transaction_data,
-        Amount::new(200000, None),
+        Amount::new(100000000, None),
         timestamp,
         private_key.public_key(),
         3,

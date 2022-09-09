@@ -4,8 +4,8 @@ use crate::error::Result;
 use crate::model::{
     Arg, BurnTransaction, ByteString, CreateAliasTransaction, DataTransaction, ExchangeTransaction,
     InvokeScriptTransaction, IssueTransaction, LeaseCancelTransaction, LeaseTransaction,
-    MassTransferTransaction, ReissueTransaction, SetScriptTransaction, SignedTransaction,
-    Transaction, TransactionData, TransferTransaction,
+    MassTransferTransaction, ReissueTransaction, SetAssetScriptTransaction, SetScriptTransaction,
+    SignedTransaction, Transaction, TransactionData, TransferTransaction,
 };
 use crate::util::Base58;
 
@@ -111,6 +111,10 @@ fn add_additional_fields(
             let mut set_script_tx: Map<String, Value> = set_script_tx.try_into()?;
             json_props.append(&mut set_script_tx);
         }
+        TransactionData::SetAssetScript(set_asset_script_tx) => {
+            let mut set_asset_script_tx: Map<String, Value> = set_asset_script_tx.try_into()?;
+            json_props.append(&mut set_asset_script_tx);
+        }
     };
     Ok(json_props.clone())
 }
@@ -129,6 +133,7 @@ fn tx_type(tx: &Transaction) -> u8 {
         TransactionData::CreateAlias(_) => CreateAliasTransaction::tx_type(),
         TransactionData::MassTransfer(_) => MassTransferTransaction::tx_type(),
         TransactionData::SetScript(_) => SetScriptTransaction::tx_type(),
+        TransactionData::SetAssetScript(_) => SetAssetScriptTransaction::tx_type(),
     }
 }
 
@@ -236,7 +241,6 @@ mod tests {
                 Amount::new(100000, None),
                 1661456063029,
                 public_key,
-                DataTransaction::tx_type(),
                 2,
                 ChainId::TESTNET.byte(),
             ),

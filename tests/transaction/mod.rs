@@ -8,6 +8,7 @@ mod lease_cancel_transaction_it;
 mod lease_transaction_it;
 mod mass_transfer_transaction_it;
 mod reissue_transaction_it;
+mod set_asset_script_transaction_it;
 mod set_script_transaction_it;
 mod transfer_transaction_it;
 
@@ -21,5 +22,6 @@ pub use lease_cancel_transaction_it::*;
 pub use lease_transaction_it::*;
 pub use mass_transfer_transaction_it::*;
 pub use reissue_transaction_it::*;
+pub use set_script_transaction_it::*;
 pub use set_script_transaction_it::*;
 pub use transfer_transaction_it::*;

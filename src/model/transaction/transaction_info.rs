@@ -8,7 +8,7 @@ use crate::model::transaction::TransactionData::Transfer;
 use crate::model::transaction::TransferTransaction;
 use crate::model::TransactionData::{
     Burn, CreateAlias, Data, Exchange, InvokeScript, Issue, Lease, LeaseCancel, MassTransfer,
-    Reissue, SetScript,
+    Reissue, SetAssetScript, SetScript,
 };
 use crate::model::{
     AssetId, BurnTransaction, BurnTransactionInfo, CreateAliasTransaction,
@@ -16,8 +16,8 @@ use crate::model::{
     Id, InvokeScriptTransaction, InvokeScriptTransactionInfo, IssueTransaction,
     IssueTransactionInfo, LeaseCancelTransaction, LeaseCancelTransactionInfo, LeaseTransaction,
     LeaseTransactionInfo, MassTransferTransaction, MassTransferTransactionInfo, ReissueTransaction,
-    ReissueTransactionInfo, SetScriptTransaction, SetScriptTransactionInfo,
-    TransferTransactionInfo,
+    ReissueTransactionInfo, SetAssetScriptTransaction, SetAssetScriptTransactionInfo,
+    SetScriptTransaction, SetScriptTransactionInfo, TransferTransactionInfo,
 };
 use crate::util::{sign_tx, BinarySerializer, Hash, JsonSerializer};
 
@@ -159,10 +159,10 @@ impl Transaction {
         fee: Amount,
         timestamp: u64,
         public_key: PublicKey,
-        tx_type: u8,
         version: u8,
         chain_id: u8,
     ) -> Transaction {
+        let tx_type = data.tx_type();
         Transaction {
             data,
             fee,
@@ -228,6 +228,7 @@ pub enum TransactionDataInfo {
     CreateAlias(CreateAliasTransactionInfo),
     MassTransfer(MassTransferTransactionInfo),
     SetScript(SetScriptTransactionInfo),
+    SetAssetScript(SetAssetScriptTransactionInfo),
     Burn(BurnTransactionInfo),
     Exchange(ExchangeTransactionInfo),
     Invoke(InvokeScriptTransactionInfo),
@@ -268,6 +269,7 @@ impl TransactionDataInfo {
             TransactionDataInfo::CreateAlias(_) => CreateAliasTransaction::tx_type(),
             TransactionDataInfo::MassTransfer(_) => MassTransferTransaction::tx_type(),
             TransactionDataInfo::SetScript(_) => SetScriptTransaction::tx_type(),
+            TransactionDataInfo::SetAssetScript(_) => SetAssetScriptTransaction::tx_type(),
         }
     }
 }
@@ -284,6 +286,7 @@ pub enum TransactionData {
     CreateAlias(CreateAliasTransaction),
     MassTransfer(MassTransferTransaction),
     SetScript(SetScriptTransaction),
+    SetAssetScript(SetAssetScriptTransaction),
     Data(DataTransaction),
     Issue(IssueTransaction),
     InvokeScript(InvokeScriptTransaction),
@@ -345,6 +348,7 @@ impl TransactionData {
             CreateAlias(_) => CreateAliasTransaction::tx_type(),
             MassTransfer(_) => MassTransferTransaction::tx_type(),
             SetScript(_) => SetScriptTransaction::tx_type(),
+            SetAssetScript(_) => SetAssetScriptTransaction::tx_type(),
         }
     }
 }
