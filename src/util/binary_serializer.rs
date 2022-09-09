@@ -11,7 +11,7 @@ use crate::waves_proto::transaction::Data as ProtoData;
 use crate::waves_proto::{
     recipient, Amount as ProtoAmount, Amount, BurnTransactionData, CreateAliasTransactionData,
     LeaseCancelTransactionData, LeaseTransactionData, MassTransferTransactionData, Recipient,
-    SetScriptTransactionData, TransferTransactionData,
+    SetAssetScriptTransactionData, SetScriptTransactionData, TransferTransactionData,
 };
 use crate::waves_proto::{DataTransactionData, InvokeScriptTransactionData, IssueTransactionData};
 use crate::waves_proto::{ExchangeTransactionData, Transaction as ProtoTransaction};
@@ -61,6 +61,11 @@ impl BinarySerializer {
             TransactionData::SetScript(set_script_tx) => {
                 let proto_set_script_tx: SetScriptTransactionData = set_script_tx.try_into()?;
                 ProtoData::SetScript(proto_set_script_tx)
+            }
+            TransactionData::SetAssetScript(set_asset_script_tx) => {
+                let proto_set_asset_script_tx: SetAssetScriptTransactionData =
+                    set_asset_script_tx.try_into()?;
+                ProtoData::SetAssetScript(proto_set_asset_script_tx)
             }
         };
 

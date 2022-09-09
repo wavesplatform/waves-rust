@@ -32,10 +32,9 @@ async fn broadcast_and_read_test() {
     let timestamp = get_current_epoch_millis();
     let signed_tx = Transaction::new(
         transaction_data,
-        Amount::new(100000, None),
+        Amount::new(100000000, None),
         timestamp,
         private_key.public_key(),
-        TransferTransaction::tx_type(),
         3,
         ChainId::TESTNET.byte(),
     )

@@ -60,7 +60,6 @@ mod tests {
             Amount::new(100000, None),
             1661456063029,
             private_key.public_key(),
-            DataTransaction::tx_type(),
             2,
             ChainId::TESTNET.byte(),
         );

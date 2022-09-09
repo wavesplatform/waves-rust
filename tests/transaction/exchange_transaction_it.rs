@@ -66,7 +66,6 @@ async fn broadcast_and_read_test() {
         Amount::new(300000, None),
         timestamp,
         bob.public_key(),
-        ExchangeTransaction::tx_type(),
         4,
         ChainId::TESTNET.byte(),
     )

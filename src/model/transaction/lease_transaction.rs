@@ -110,7 +110,7 @@ impl TryFrom<&LeaseTransaction> for LeaseTransactionData {
 
 #[cfg(test)]
 mod tests {
-    use crate::model::{BurnTransactionInfo, LeaseTransactionInfo};
+    use crate::model::LeaseTransactionInfo;
     use serde_json::Value;
     use std::borrow::Borrow;
     use std::fs;

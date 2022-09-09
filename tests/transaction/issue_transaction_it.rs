@@ -29,7 +29,6 @@ async fn broadcast_and_read_test() {
         Amount::new(100000000, None),
         timestamp,
         private_key.public_key(),
-        IssueTransaction::tx_type(),
         3,
         ChainId::TESTNET.byte(),
     )

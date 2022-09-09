@@ -31,7 +31,6 @@ async fn broadcast_and_read_test() {
         Amount::new(100000, None),
         timestamp,
         alice.public_key(),
-        LeaseTransaction::tx_type(),
         3,
         ChainId::TESTNET.byte(),
     )
