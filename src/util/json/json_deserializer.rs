@@ -102,7 +102,7 @@ impl JsonDeserializer {
             11 => TransactionData::MassTransfer(value.try_into()?),
             12 => TransactionData::Data(DataTransaction::from_json(value)?),
             13 => TransactionData::SetScript(value.try_into()?),
-            15 => TransactionData::SetScript(value.try_into()?),
+            15 => TransactionData::SetAssetScript(value.try_into()?),
             16 => TransactionData::InvokeScript(InvokeScriptTransaction::from_json(value)?),
             _ => todo!(),
         };
