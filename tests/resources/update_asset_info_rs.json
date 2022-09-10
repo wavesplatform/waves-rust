@@ -1,0 +1,20 @@
+{
+  "type": 17,
+  "id": "A8xxTmhe8PDiggtJtK64maaseq7kp35tHqJHGjZ98xmo",
+  "fee": 100000,
+  "feeAssetId": null,
+  "timestamp": 1662814074142,
+  "version": 3,
+  "chainId": 83,
+  "sender": "3MZZFMeZJu5ZG62ngZuSPNp14naps6FPJ2T",
+  "senderPublicKey": "CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt",
+  "proofs": [
+    "4bTrycSB8oxor5vKRcoyuwHusg6osncdZGxRh2mX6rA8UHrdCMbchej6G9riib9hjVJ345mTHm2cu1P5Wombdmad"
+  ],
+  "assetId": "7qhc24Cq53DiaHUzmcaYMUKq8kidaVW8ZAvKrTtADozG",
+  "name": "UpdatedAsset",
+  "description": "updated description",
+  "height": 1262355,
+  "applicationStatus": "succeeded",
+  "spentComplexity": 0
+}

@@ -12,6 +12,7 @@ mod set_asset_script_transaction_it;
 mod set_script_transaction_it;
 mod sponsor_fee_transaction_it;
 mod transfer_transaction_it;
+mod update_asset_info_transaction_it;
 
 pub use burn_transaction_it::*;
 pub use create_alias_transaction_it::*;
@@ -27,3 +28,4 @@ pub use set_script_transaction_it::*;
 pub use set_script_transaction_it::*;
 pub use sponsor_fee_transaction_it::*;
 pub use transfer_transaction_it::*;
+pub use update_asset_info_transaction_it::*;

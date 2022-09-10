@@ -47,6 +47,7 @@ impl JsonDeserializer {
             14 => TransactionDataInfo::SponsorFee(value.try_into()?),
             15 => TransactionDataInfo::SetAssetScript(value.try_into()?),
             16 => TransactionDataInfo::Invoke(value.try_into()?),
+            17 => TransactionDataInfo::UpdateAssetInfo(value.try_into()?),
             _ => panic!("unknown tx type"),
         };
         let timestamp = Self::safe_to_int_from_field(value, "timestamp")? as u64;
@@ -106,6 +107,7 @@ impl JsonDeserializer {
             14 => TransactionData::SponsorFee(value.try_into()?),
             15 => TransactionData::SetAssetScript(value.try_into()?),
             16 => TransactionData::InvokeScript(InvokeScriptTransaction::from_json(value)?),
+            17 => TransactionData::UpdateAssetInfo(value.try_into()?),
             _ => todo!(),
         };
         let timestamp = Self::safe_to_int_from_field(value, "timestamp")? as u64;
