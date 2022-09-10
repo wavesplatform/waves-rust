@@ -102,7 +102,7 @@ impl TryFrom<&SetAssetScriptTransaction> for SetAssetScriptTransactionData {
 
 #[cfg(test)]
 mod tests {
-    use crate::model::{ByteString, SetAssetScriptTransaction, SetScriptTransactionInfo};
+    use crate::model::{ByteString, SetAssetScriptTransaction};
     use serde_json::Value;
     use std::borrow::Borrow;
     use std::fs;

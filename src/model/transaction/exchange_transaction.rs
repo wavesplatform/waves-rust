@@ -7,8 +7,6 @@ use serde_json::{Map, Value};
 use std::borrow::Borrow;
 
 const TYPE: u8 = 7;
-//const LATEST_VERSION: u8 = 3;
-//const MIN_FEE: u64 = 300_000;
 
 #[derive(Eq, PartialEq, Clone, Debug)]
 pub struct ExchangeTransactionInfo {

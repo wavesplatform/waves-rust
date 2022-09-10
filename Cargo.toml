@@ -28,6 +28,8 @@ rand = "0.8.5"
 
 anyhow = "1.0.62"
 
+hex = "0.4.3"
+
 [build-dependencies]
 tonic-build = "0.8"
 protobuf-src = "1.0.5+3.19.3"
