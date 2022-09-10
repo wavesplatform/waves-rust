@@ -6,6 +6,7 @@ use crate::model::{
     InvokeScriptTransaction, IssueTransaction, LeaseCancelTransaction, LeaseTransaction,
     MassTransferTransaction, ReissueTransaction, SetAssetScriptTransaction, SetScriptTransaction,
     SignedTransaction, SponsorFeeTransaction, Transaction, TransactionData, TransferTransaction,
+    UpdateAssetInfoTransaction,
 };
 use crate::util::Base58;
 
@@ -119,6 +120,10 @@ fn add_additional_fields(
             let mut sponsor_fee_tx: Map<String, Value> = sponsor_fee_tx.try_into()?;
             json_props.append(&mut sponsor_fee_tx);
         }
+        TransactionData::UpdateAssetInfo(update_asset_info_tx) => {
+            let mut update_asset_info_tx: Map<String, Value> = update_asset_info_tx.try_into()?;
+            json_props.append(&mut update_asset_info_tx);
+        }
     };
     Ok(json_props.clone())
 }
@@ -139,6 +144,7 @@ fn tx_type(tx: &Transaction) -> u8 {
         TransactionData::SetScript(_) => SetScriptTransaction::tx_type(),
         TransactionData::SetAssetScript(_) => SetAssetScriptTransaction::tx_type(),
         TransactionData::SponsorFee(_) => SponsorFeeTransaction::tx_type(),
+        TransactionData::UpdateAssetInfo(_) => UpdateAssetInfoTransaction::tx_type(),
     }
 }
 

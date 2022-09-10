@@ -8,7 +8,7 @@ use crate::model::transaction::TransactionData::Transfer;
 use crate::model::transaction::TransferTransaction;
 use crate::model::TransactionData::{
     Burn, CreateAlias, Data, Exchange, InvokeScript, Issue, Lease, LeaseCancel, MassTransfer,
-    Reissue, SetAssetScript, SetScript, SponsorFee,
+    Reissue, SetAssetScript, SetScript, SponsorFee, UpdateAssetInfo,
 };
 use crate::model::{
     AssetId, BurnTransaction, BurnTransactionInfo, CreateAliasTransaction,
@@ -18,7 +18,8 @@ use crate::model::{
     LeaseTransactionInfo, MassTransferTransaction, MassTransferTransactionInfo, ReissueTransaction,
     ReissueTransactionInfo, SetAssetScriptTransaction, SetAssetScriptTransactionInfo,
     SetScriptTransaction, SetScriptTransactionInfo, SponsorFeeTransaction,
-    SponsorFeeTransactionInfo, TransferTransactionInfo,
+    SponsorFeeTransactionInfo, TransferTransactionInfo, UpdateAssetInfoTransaction,
+    UpdateAssetInfoTransactionInfo,
 };
 use crate::util::{sign_tx, BinarySerializer, Hash, JsonSerializer};
 
@@ -234,6 +235,7 @@ pub enum TransactionDataInfo {
     Burn(BurnTransactionInfo),
     Exchange(ExchangeTransactionInfo),
     Invoke(InvokeScriptTransactionInfo),
+    UpdateAssetInfo(UpdateAssetInfoTransactionInfo),
 }
 
 impl TransactionDataInfo {
@@ -273,6 +275,7 @@ impl TransactionDataInfo {
             TransactionDataInfo::SetScript(_) => SetScriptTransaction::tx_type(),
             TransactionDataInfo::SetAssetScript(_) => SetAssetScriptTransaction::tx_type(),
             TransactionDataInfo::SponsorFee(_) => SponsorFeeTransaction::tx_type(),
+            TransactionDataInfo::UpdateAssetInfo(_) => UpdateAssetInfoTransaction::tx_type(),
         }
     }
 }
@@ -294,6 +297,7 @@ pub enum TransactionData {
     Data(DataTransaction),
     Issue(IssueTransaction),
     InvokeScript(InvokeScriptTransaction),
+    UpdateAssetInfo(UpdateAssetInfoTransaction),
     Exchange(ExchangeTransaction),
 }
 
@@ -354,6 +358,7 @@ impl TransactionData {
             SetScript(_) => SetScriptTransaction::tx_type(),
             SetAssetScript(_) => SetAssetScriptTransaction::tx_type(),
             SponsorFee(_) => SponsorFeeTransaction::tx_type(),
+            UpdateAssetInfo(_) => UpdateAssetInfoTransaction::tx_type(),
         }
     }
 }
