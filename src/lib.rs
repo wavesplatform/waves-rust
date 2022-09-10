@@ -1,5 +1,3 @@
-extern crate core;
-
 pub mod constants;
 pub mod error;
 pub mod model;

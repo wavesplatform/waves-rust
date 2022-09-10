@@ -1,0 +1,21 @@
+{
+  "type": 18,
+  "id": "CB6ha67dKnjT4Kz9UQvuuyzL9d3pvXkVT6GntD8Q3GsH",
+  "fee": 100000,
+  "feeAssetId": null,
+  "timestamp": 1661335349747,
+  "version": 1,
+  "chainId": 83,
+  "bytes": "0xf874860182cf4da9f38502540be400830186a094379d106fc58416c2b0f090b81b89371ca2d45a0788016345785d8a00008081c9a02ecee551acc6be0ec939d5d2849041c1efca2380063663cf8b0377d42adf6f15a06d573079afbae4dda60e8797ab2aa05a089dc0c823640f5cc6c409109198f2a4",
+  "sender": "3MiKAyPxv5ccsFToCQiazxvBn4SMxECaFkU",
+  "senderPublicKey": "5BcWEhVZFuvMhs8DRF1C8GLSbXvobkfaaRvANa86MboLSQLxC5989Zgo3Djp8WwWKo3JshYP39NnBAJRqTCXZ5Qd",
+  "height": 1237631,
+  "applicationStatus": "succeeded",
+  "spentComplexity": 0,
+  "payload": {
+    "type": "transfer",
+    "recipient": "3MVeY7NhZciZLsnwb4E47moXVd9y4gKw8S7",
+    "asset": null,
+    "amount": 10000000
+  }
+}

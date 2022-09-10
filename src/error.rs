@@ -1,6 +1,7 @@
 use base64::DecodeError;
 use blake2::digest::{InvalidBufferSize, InvalidOutputSize};
 use ed25519_dalek::SignatureError;
+use hex::FromHexError;
 use prost::EncodeError;
 use std::result;
 use url::ParseError;
@@ -20,7 +21,7 @@ pub enum Error {
     #[error("base58 error {0}")]
     Base58Error(#[from] bs58::decode::Error),
     #[error("blake error {0}")]
-    BlakeError(InvalidSizeError),
+    BlakeError(#[from] InvalidSizeError),
     #[error("url parse error {0}")]
     UrlParseError(#[from] ParseError),
     #[error("wrong transaction type expected {expected_type:?} found {actual_type:?}")]
@@ -36,6 +37,8 @@ pub enum Error {
     },
     #[error("failed to convert Montgomery Point to Edwards Point")]
     MontgomeryPointConversionError,
+    #[error("failed to convert hex string to bytes")]
+    HexError(#[from] FromHexError),
 }
 
 #[derive(Debug, thiserror::Error)]
