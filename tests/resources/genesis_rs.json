@@ -1,0 +1,11 @@
+{
+  "type": 1,
+  "id": "5G66c9GPn2egiM4bQBBF3gCkHS8sQZupRvWCpWKWGQTRRbtqdtZJ5Mt29exbHTDZW2RWygVKZ3oBNg4RwezN7wmA",
+  "fee": 0,
+  "timestamp": 1478000000000,
+  "signature": "5G66c9GPn2egiM4bQBBF3gCkHS8sQZupRvWCpWKWGQTRRbtqdtZJ5Mt29exbHTDZW2RWygVKZ3oBNg4RwezN7wmA",
+  "recipient": "3My3KZgFQ3CrVHgz6vGRt8687sH4oAA1qp8",
+  "amount": "400000000000000",
+  "height": 1,
+  "spentComplexity": 0
+}

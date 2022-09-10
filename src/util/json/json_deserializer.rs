@@ -1,11 +1,12 @@
+use crate::constants::HASH_LENGTH;
 use crate::error::{Error, Result};
 use crate::model::account::{Address, Balance, BalanceDetails};
 use crate::model::data_entry::DataEntry;
 use crate::model::{
     Amount, ApplicationStatus, ArgMeta, AssetId, Base64String, DataTransaction,
     DataTransactionInfo, Id, InvokeScriptTransaction, IssueTransaction, IssueTransactionInfo,
-    ScriptInfo, ScriptMeta, SignedTransaction, Transaction, TransactionData, TransactionDataInfo,
-    TransactionInfoResponse, TransferTransaction, TransferTransactionInfo,
+    PublicKey, ScriptInfo, ScriptMeta, SignedTransaction, Transaction, TransactionData,
+    TransactionDataInfo, TransactionInfoResponse, TransferTransaction, TransferTransactionInfo,
 };
 use crate::util::Base58;
 use serde_json::Value;
@@ -76,7 +77,15 @@ impl JsonDeserializer {
 
     pub fn deserialize_signed_tx(value: &Value, chain_id: u8) -> Result<SignedTransaction> {
         let transaction = Self::deserialize_tx(value, chain_id)?;
-        let proofs_array = Self::safe_to_array_from_field(value, "proofs")?;
+
+        let proofs_array = if transaction.tx_type() == 1 {
+            vec![Value::String(JsonDeserializer::safe_to_string_from_field(
+                value,
+                "signature",
+            )?)]
+        } else {
+            Self::safe_to_array_from_field(value, "proofs")?
+        };
 
         let proofs = proofs_array
             .iter()
@@ -111,7 +120,11 @@ impl JsonDeserializer {
             _ => todo!(),
         };
         let timestamp = Self::safe_to_int_from_field(value, "timestamp")? as u64;
-        let public_key = Self::safe_to_string_from_field(value, "senderPublicKey")?.try_into()?;
+        let public_key = if tx_type == 1 {
+            PublicKey::from_bytes(&[0; HASH_LENGTH])
+        } else {
+            Self::safe_to_string_from_field(value, "senderPublicKey")?.try_into()?
+        };
         let version = Self::safe_to_int_from_field(value, "version")? as u8;
         Ok(Transaction::new(
             transaction_data,

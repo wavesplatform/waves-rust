@@ -25,18 +25,18 @@ use crate::util::{sign_tx, BinarySerializer, Hash, JsonSerializer};
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct TransactionInfoResponse {
-    id: Id,
+    id: Id, //+
     status: ApplicationStatus,
     data: TransactionDataInfo,
-    fee: Amount,
-    timestamp: u64,
+    fee: Amount, //+
+    timestamp: u64, //+
     // todo check flatten for serde_json
     public_key: PublicKey,
-    tx_type: u8,
+    tx_type: u8,//+
     version: u8,
     chain_id: u8,
     height: u32,
-    proofs: Vec<Vec<u8>>,
+    proofs: Vec<Vec<u8>>, //+
 }
 
 #[allow(clippy::too_many_arguments)]
