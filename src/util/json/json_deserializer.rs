@@ -22,9 +22,9 @@ impl JsonDeserializer {
 
         let tx_type = Self::safe_to_int_from_field(value, "type")? as u8;
 
-        let application_status = if tx_type == 1 {
+        let application_status = if tx_type == 1 || tx_type == 2 {
             //todo check is genesos always succeed
-            ApplicationStatus::Unknown
+            ApplicationStatus::Succeed
         } else {
             match Self::safe_to_string_from_field(value, "applicationStatus")?.as_str() {
                 "succeeded" => ApplicationStatus::Succeed,
@@ -36,6 +36,7 @@ impl JsonDeserializer {
         let height = Self::safe_to_int_from_field(value, "height")? as u32;
         let transaction_data = match tx_type {
             1 => TransactionDataInfo::Genesis(value.try_into()?),
+            2 => TransactionDataInfo::Payment(value.try_into()?),
             3 => TransactionDataInfo::Issue(IssueTransactionInfo::from_json(value)?),
             4 => TransactionDataInfo::Transfer(TransferTransactionInfo::from_json(value)?),
             5 => TransactionDataInfo::Reissue(value.try_into()?),
@@ -99,6 +100,7 @@ impl JsonDeserializer {
         };
         let transaction_data = match tx_type {
             1 => TransactionData::Genesis(value.try_into()?),
+            2 => TransactionData::Payment(value.try_into()?),
             3 => TransactionData::Issue(IssueTransaction::from_json(value)?),
             4 => TransactionData::Transfer(TransferTransaction::from_json(value)?),
             5 => TransactionData::Reissue(value.try_into()?),
@@ -117,20 +119,21 @@ impl JsonDeserializer {
             _ => todo!(),
         };
         let timestamp = Self::safe_to_int_from_field(value, "timestamp")? as u64;
-        let public_key_version = if tx_type == 1 {
-            (PublicKey::from_bytes(&[0; HASH_LENGTH]), 1)
-        } else {
-            (
-                Self::safe_to_string_from_field(value, "senderPublicKey")?.try_into()?,
-                Self::safe_to_int_from_field(value, "version")? as u8,
-            )
+        let public_key = match tx_type {
+            1 => PublicKey::from_bytes(&[0; HASH_LENGTH]),
+            _ => Self::safe_to_string_from_field(value, "senderPublicKey")?.try_into()?,
+        };
+
+        let version = match tx_type {
+            1 | 2 => 1_u8,
+            _ => Self::safe_to_int_from_field(value, "version")? as u8,
         };
         Ok(Transaction::new(
             transaction_data,
             Amount::new(fee, fee_asset_id),
             timestamp,
-            public_key_version.0,
-            public_key_version.1,
+            public_key,
+            version,
             chain_id,
         ))
     }

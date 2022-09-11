@@ -1,18 +1,18 @@
 use crate::error::{Error, Result};
 use crate::model::Address;
 use crate::util::JsonDeserializer;
-use crate::waves_proto::GenesisTransactionData;
+use crate::waves_proto::PaymentTransactionData;
 use serde_json::Value;
 
-const TYPE: u8 = 1;
+const TYPE: u8 = 2;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub struct GenesisTransactionInfo {
+pub struct PaymentTransactionInfo {
     recipient: Address,
     amount: u64,
 }
 
-impl GenesisTransactionInfo {
+impl PaymentTransactionInfo {
     pub fn new(recipient: Address, amount: u64) -> Self {
         Self { recipient, amount }
     }
@@ -27,12 +27,12 @@ impl GenesisTransactionInfo {
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub struct GenesisTransaction {
+pub struct PaymentTransaction {
     recipient: Address,
     amount: u64,
 }
 
-impl GenesisTransaction {
+impl PaymentTransaction {
     pub fn new(recipient: Address, amount: u64) -> Self {
         Self { recipient, amount }
     }
@@ -50,46 +50,46 @@ impl GenesisTransaction {
     }
 }
 
-impl TryFrom<&GenesisTransaction> for GenesisTransactionData {
+impl TryFrom<&PaymentTransaction> for PaymentTransactionData {
     type Error = Error;
 
-    fn try_from(value: &GenesisTransaction) -> Result<Self> {
-        Ok(GenesisTransactionData {
+    fn try_from(value: &PaymentTransaction) -> Result<Self> {
+        Ok(PaymentTransactionData {
             recipient_address: value.recipient().bytes(),
             amount: value.amount() as i64,
         })
     }
 }
 
-impl TryFrom<&Value> for GenesisTransactionInfo {
+impl TryFrom<&Value> for PaymentTransactionInfo {
     type Error = Error;
 
     fn try_from(value: &Value) -> Result<Self> {
-        let amount = JsonDeserializer::safe_to_string_from_field(value, "amount")?;
+        let amount = JsonDeserializer::safe_to_int_from_field(value, "amount")?;
         let recipient = JsonDeserializer::safe_to_string_from_field(value, "recipient")?;
-        Ok(GenesisTransactionInfo {
+        Ok(PaymentTransactionInfo {
             recipient: Address::from_string(&recipient)?,
-            amount: amount.parse().expect("failed to parse amount from string"),
+            amount: amount as u64,
         })
     }
 }
 
-impl TryFrom<&Value> for GenesisTransaction {
+impl TryFrom<&Value> for PaymentTransaction {
     type Error = Error;
 
     fn try_from(value: &Value) -> Result<Self> {
-        let amount = JsonDeserializer::safe_to_string_from_field(value, "amount")?;
+        let amount = JsonDeserializer::safe_to_int_from_field(value, "amount")?;
         let recipient = JsonDeserializer::safe_to_string_from_field(value, "recipient")?;
-        Ok(GenesisTransaction {
+        Ok(PaymentTransaction {
             recipient: Address::from_string(&recipient)?,
-            amount: amount.parse().expect("failed to parse amount from string"),
+            amount: amount as u64,
         })
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::model::{ChainId, GenesisTransactionInfo};
+    use crate::model::{ChainId, GenesisTransactionInfo, PaymentTransaction};
     use crate::util::JsonDeserializer;
     use serde_json::Value;
     use std::borrow::Borrow;
@@ -97,24 +97,24 @@ mod tests {
 
     #[test]
     fn test_json_to_genesis_transaction() {
-        let data =
-            fs::read_to_string("./tests/resources/genesis_rs.json").expect("Unable to read file");
+        let data = fs::read_to_string("./tests/resources/payment_transaction_rs.json")
+            .expect("Unable to read file");
         let json: Value = serde_json::from_str(&data).expect("failed to generate json from str");
 
-        let genesis_tx = JsonDeserializer::deserialize_signed_tx(&json, ChainId::TESTNET.byte())
+        let payment_tx = JsonDeserializer::deserialize_signed_tx(&json, ChainId::TESTNET.byte())
             .expect("failed to deserialize");
 
-        let genesis_tx_info = JsonDeserializer::deserialize_tx_info(&json, ChainId::TESTNET.byte())
+        let payment_tx_info = JsonDeserializer::deserialize_tx_info(&json, ChainId::TESTNET.byte())
             .expect("failed to deserialize");
 
-        assert_eq!(genesis_tx.id().expect("failed id"), genesis_tx_info.id());
+        assert_eq!(payment_tx.id().expect("id failed"), payment_tx_info.id());
 
-        let genesis_from_json: GenesisTransactionInfo = json.borrow().try_into().unwrap();
+        let payment_from_json: PaymentTransaction = json.borrow().try_into().unwrap();
 
-        assert_eq!(400000000000000, genesis_from_json.amount());
+        assert_eq!(910924657498, payment_from_json.amount());
         assert_eq!(
-            "3My3KZgFQ3CrVHgz6vGRt8687sH4oAA1qp8",
-            genesis_from_json.recipient().encoded()
+            "3PP4hNGAJaMqmx9vpdYUHk8owF3mwbUevoz",
+            payment_from_json.recipient().encoded()
         );
     }
 }
