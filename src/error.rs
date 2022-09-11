@@ -47,8 +47,8 @@ pub enum Error {
         max_length: u8,
         alphabet: String,
         prefix: String,
-        chain_id: char
-    }
+        chain_id: char,
+    },
 }
 
 #[derive(Debug, thiserror::Error)]

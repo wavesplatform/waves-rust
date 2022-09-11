@@ -24,7 +24,7 @@ mod tests {
     use crate::model::account::PrivateKey;
     use crate::model::data_entry::DataEntry;
     use crate::model::{Amount, ChainId, DataTransaction, Transaction, TransactionData};
-    use crate::util::{sign_tx, Base58};
+    use crate::util::sign_tx;
 
     const SEED_PHRASE: &str = "dwarf chimney miss category orchard organ neck income prevent \
     trigger used census";

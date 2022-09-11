@@ -331,7 +331,6 @@ mod tests {
     use crate::api::node::{Node, Profile};
     use crate::model::data_entry::DataEntry;
     use crate::model::{ApplicationStatus, ByteString, ChainId};
-    use crate::util::Base58;
 
     #[tokio::test]
     async fn test_get_transfer_transaction_info() {
@@ -339,7 +338,7 @@ mod tests {
 
         let node = Node::from_profile(Profile::MAINNET);
         let transaction_info = node
-            .get_transaction_info(tx_id.into())
+            .get_transaction_info(tx_id)
             .await
             .expect("failed to get transaction info");
 
@@ -390,7 +389,7 @@ mod tests {
 
         let node = Node::from_profile(Profile::MAINNET);
         let transaction_info = node
-            .get_transaction_info(tx_id.into())
+            .get_transaction_info(tx_id)
             .await
             .expect("failed to get transaction info");
 
@@ -432,7 +431,7 @@ mod tests {
         match data_entries[0].clone() {
             DataEntry::IntegerEntry { key, value } => {
                 assert_eq!(key, "price_ausdtlpm_20220820");
-                assert_eq!(value, 1823153 as i64)
+                assert_eq!(value, 1823153_i64)
             }
             _ => panic!("failed"),
         };
@@ -440,7 +439,7 @@ mod tests {
         match data_entries[1].clone() {
             DataEntry::IntegerEntry { key, value } => {
                 assert_eq!(key, "lastHeight_ausdtlpm");
-                assert_eq!(value, 3258212 as i64)
+                assert_eq!(value, 3258212_i64)
             }
             _ => panic!("failed"),
         }

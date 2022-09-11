@@ -44,7 +44,7 @@ impl Alias {
         full_name
             .replace(PREFIX, "")
             .chars()
-            .nth(0)
+            .next()
             .expect("failed to get chain id from alias") as u8
     }
 
@@ -70,10 +70,10 @@ impl Alias {
         .is_match(&name)
     }
 
-    fn replace_prefix(chain_id: u8, name: &String) -> String {
+    fn replace_prefix(chain_id: u8, name: &str) -> String {
         Regex::new(&format!(r"^{}{}:", PREFIX, chain_id as char))
             .expect("invalid regex")
-            .replace(&name, "")
+            .replace(name, "")
             .to_string()
     }
 }

@@ -34,8 +34,8 @@ mod tests {
     fn test_invalid_base58string() {
         let empty_string = "";
         let invalid_string = "0LBopaBdBzQbgqrnwgmgCDhcSTb32MYhE96SnSHcqZC2";
-        assert_eq!(Base58::string_is_valid(empty_string.into()), true);
-        assert_eq!(Base58::string_is_valid(invalid_string.into()), false);
+        assert_eq!(Base58::string_is_valid(empty_string), true);
+        assert_eq!(Base58::string_is_valid(invalid_string), false);
     }
 
     #[test]

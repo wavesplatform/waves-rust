@@ -24,8 +24,7 @@ impl TryFrom<&Value> for AliasesByAddressResponse {
     fn try_from(value: &Value) -> Result<Self> {
         let vec: Vec<String> = JsonDeserializer::safe_to_array(value)?
             .iter()
-            .map(|alias| alias.as_str())
-            .flatten()
+            .filter_map(|alias| alias.as_str())
             .map(|alias| alias.to_owned())
             .collect();
 
