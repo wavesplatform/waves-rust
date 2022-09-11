@@ -155,9 +155,9 @@ mod tests {
     }
 
     fn private_key(seed_phrase: &str, nonce: u8) -> Result<Vec<u8>> {
-        let account_seed = Crypto::get_account_seed(&seed_phrase.as_bytes().to_vec(), nonce)
+        let account_seed = Crypto::get_account_seed(seed_phrase.as_bytes(), nonce)
             .expect("failed to get account seed");
-        Ok(Crypto::get_private_key(&account_seed)?)
+        Crypto::get_private_key(&account_seed)
     }
 }
 

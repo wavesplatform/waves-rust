@@ -10,7 +10,10 @@ use serde_json::{Map, Value};
 use crate::model::account::{Address, Balance, BalanceDetails};
 use crate::model::asset::balance::AssetsBalanceResponse;
 use crate::model::data_entry::DataEntry;
-use crate::model::{ChainId, ScriptInfo, ScriptMeta, SignedTransaction, TransactionInfoResponse};
+use crate::model::{
+    Alias, AliasesByAddressResponse, ChainId, ScriptInfo, ScriptMeta, SignedTransaction,
+    TransactionInfoResponse,
+};
 use crate::util::JsonDeserializer;
 
 pub const MAINNET_URL: &str = "https://nodes.wavesnodes.com";
@@ -54,6 +57,8 @@ impl Node {
     pub fn chain_id(&self) -> u8 {
         self.chain_id
     }
+
+    // ADDRESSES
 
     pub async fn get_addresses(&self) -> Result<Vec<Address>> {
         let get_addresses_url = format!("{}addresses", self.url().as_str());
@@ -217,6 +222,29 @@ impl Node {
         JsonDeserializer::deserialize_script_meta(rs)
     }
 
+    // ALIAS
+    pub async fn get_aliases_by_address(
+        &self,
+        address: &Address,
+    ) -> Result<AliasesByAddressResponse> {
+        let get_aliases_by_address_url = format!(
+            "{}alias/by-address/{}",
+            self.url().as_str(),
+            address.encoded()
+        );
+        let rs = &self.get(&get_aliases_by_address_url).await?;
+        rs.try_into()
+    }
+
+    pub async fn get_address_by_alias(&self, alias: &Alias) -> Result<Address> {
+        let get_address_by_alias_url =
+            format!("{}alias/by-alias/{}", self.url().as_str(), alias.name());
+        let rs = &self.get(&get_address_by_alias_url).await?;
+        Address::from_string(&JsonDeserializer::safe_to_string_from_field(rs, "address")?)
+    }
+
+    // BLOCKCHAIN
+
     pub async fn get_transaction_info(
         &self,
         transaction_id: &str,
@@ -302,10 +330,9 @@ impl Profile {
 mod tests {
     use ChainId::MAINNET;
 
+    use crate::api::node::{Node, Profile};
     use crate::model::data_entry::DataEntry;
     use crate::model::{ApplicationStatus, ByteString, ChainId};
-    use crate::node::{Node, Profile};
-    use crate::util::Base58;
 
     #[tokio::test]
     async fn test_get_transfer_transaction_info() {
@@ -313,7 +340,7 @@ mod tests {
 
         let node = Node::from_profile(Profile::MAINNET);
         let transaction_info = node
-            .get_transaction_info(tx_id.into())
+            .get_transaction_info(tx_id)
             .await
             .expect("failed to get transaction info");
 
@@ -364,7 +391,7 @@ mod tests {
 
         let node = Node::from_profile(Profile::MAINNET);
         let transaction_info = node
-            .get_transaction_info(tx_id.into())
+            .get_transaction_info(tx_id)
             .await
             .expect("failed to get transaction info");
 
@@ -406,7 +433,7 @@ mod tests {
         match data_entries[0].clone() {
             DataEntry::IntegerEntry { key, value } => {
                 assert_eq!(key, "price_ausdtlpm_20220820");
-                assert_eq!(value, 1823153 as i64)
+                assert_eq!(value, 1823153_i64)
             }
             _ => panic!("failed"),
         };
@@ -414,7 +441,7 @@ mod tests {
         match data_entries[1].clone() {
             DataEntry::IntegerEntry { key, value } => {
                 assert_eq!(key, "lastHeight_ausdtlpm");
-                assert_eq!(value, 3258212 as i64)
+                assert_eq!(value, 3258212_i64)
             }
             _ => panic!("failed"),
         }

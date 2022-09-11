@@ -1,11 +1,9 @@
+use waves_rust::api::{Node, Profile};
 use waves_rust::model::{
-    Address, Amount, AssetId, Base58String, BurnTransaction, ChainId, IssueTransaction,
-    MassTransferTransaction, PrivateKey, ReissueTransaction, Transaction, TransactionData,
-    Transfer,
+    Address, Amount, AssetId, Base58String, ChainId, MassTransferTransaction, PrivateKey,
+    Transaction, TransactionData, Transfer,
 };
-use waves_rust::node::{Node, Profile};
 use waves_rust::util::get_current_epoch_millis;
-use waves_rust::waves_proto::invoke_script_result::Burn;
 
 const SEED_PHRASE: &str = "dwarf chimney miss category orchard organ neck income prevent \
 trigger used census";

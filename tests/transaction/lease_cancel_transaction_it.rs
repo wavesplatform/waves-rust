@@ -1,10 +1,8 @@
+use waves_rust::api::{Node, Profile};
 use waves_rust::model::{
-    Amount, AssetId, BurnTransaction, ChainId, Id, IssueTransaction, LeaseCancelTransaction,
-    LeaseTransaction, PrivateKey, ReissueTransaction, Transaction, TransactionData,
+    Amount, ChainId, Id, LeaseCancelTransaction, PrivateKey, Transaction, TransactionData,
 };
-use waves_rust::node::{Node, Profile};
 use waves_rust::util::get_current_epoch_millis;
-use waves_rust::waves_proto::invoke_script_result::Burn;
 
 const SEED_PHRASE: &str = "dwarf chimney miss category orchard organ neck income prevent \
 trigger used census";
@@ -16,7 +14,7 @@ async fn broadcast_and_read_test() {
     let alice =
         PrivateKey::from_seed(SEED_PHRASE, 0).expect("failed to get private ket from seed phrase");
 
-    let bob = PrivateKey::from_seed("b", 0).expect("failed to get private key");
+    let _bob = PrivateKey::from_seed("b", 0).expect("failed to get private key");
 
     let transaction_data = TransactionData::LeaseCancel(LeaseCancelTransaction::new(
         Id::from_string("5EWudZk4xXaqRezrh26zqjbNeAzvEzDATjs4paKdyhGy").expect("failed"),

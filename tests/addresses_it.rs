@@ -1,6 +1,6 @@
 use regex::Regex;
-use waves_rust::model::{Address, ByteString, ChainId};
-use waves_rust::node::{Node, Profile};
+use waves_rust::api::{Node, Profile};
+use waves_rust::model::{Address, ByteString};
 
 #[tokio::test]
 async fn get_addresses_test() {
@@ -48,7 +48,7 @@ async fn get_balance_with_confirmation_test() {
 async fn get_balances_test() {
     let node = Node::from_profile(Profile::TESTNET);
     let balances = node
-        .get_balances(&vec![
+        .get_balances(&[
             Address::from_string("3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q").unwrap(),
             Address::from_string("3MtQQX9NwYH5URGGcS2e6ptEgV7wTFesaRW").unwrap(),
         ])
@@ -69,7 +69,7 @@ async fn get_balances_at_height_test() {
     let node = Node::from_profile(Profile::TESTNET);
     let balances = node
         .get_balances_at_height(
-            &vec![
+            &[
                 Address::from_string("3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q").unwrap(),
                 Address::from_string("3MtQQX9NwYH5URGGcS2e6ptEgV7wTFesaRW").unwrap(),
             ],
@@ -124,7 +124,7 @@ async fn get_address_data_by_keys_test() {
     let node = Node::from_profile(Profile::TESTNET);
     let address = Address::from_string("3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q").unwrap();
     let data_entries = node
-        .get_data_by_keys(&address, &vec!["binary".to_owned(), "bool".to_owned()])
+        .get_data_by_keys(&address, &["binary".to_owned(), "bool".to_owned()])
         .await;
 
     match data_entries {

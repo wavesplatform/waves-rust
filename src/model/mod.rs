@@ -1,4 +1,5 @@
 pub mod account;
+pub mod alias;
 pub mod asset;
 pub mod base58string;
 pub mod base64string;
@@ -8,12 +9,14 @@ pub mod id;
 pub mod lease_info;
 pub mod order;
 pub mod proof;
+pub mod rs;
 pub mod script;
 pub mod state_changes;
 pub mod transaction;
 pub mod transfer;
 
 pub use account::*;
+pub use alias::*;
 pub use asset::asset_id::*;
 pub use base58string::*;
 pub use base64string::*;
@@ -22,6 +25,7 @@ pub use id::*;
 pub use lease_info::*;
 pub use order::*;
 pub use proof::*;
+pub use rs::*;
 pub use script::*;
 pub use state_changes::*;
 pub use transaction::*;

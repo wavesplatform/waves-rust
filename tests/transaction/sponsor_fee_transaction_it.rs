@@ -1,8 +1,7 @@
+use waves_rust::api::{Node, Profile};
 use waves_rust::model::{
-    Amount, AssetId, Base58String, ChainId, PrivateKey, SponsorFeeTransaction, Transaction,
-    TransactionData, TransferTransaction,
+    Amount, AssetId, ChainId, PrivateKey, SponsorFeeTransaction, Transaction, TransactionData,
 };
-use waves_rust::node::{Node, Profile};
 use waves_rust::util::get_current_epoch_millis;
 
 const SEED_PHRASE: &str = "dwarf chimney miss category orchard organ neck income prevent \

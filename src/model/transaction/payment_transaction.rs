@@ -89,7 +89,7 @@ impl TryFrom<&Value> for PaymentTransaction {
 
 #[cfg(test)]
 mod tests {
-    use crate::model::{ChainId, GenesisTransactionInfo, PaymentTransaction};
+    use crate::model::{ChainId, PaymentTransaction};
     use crate::util::JsonDeserializer;
     use serde_json::Value;
     use std::borrow::Borrow;
