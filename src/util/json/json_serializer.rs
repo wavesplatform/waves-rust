@@ -1,7 +1,13 @@
 use serde_json::{Map, Value};
 
 use crate::error::Result;
-use crate::model::{Arg, BurnTransaction, ByteString, CreateAliasTransaction, DataTransaction, ExchangeTransaction, GenesisTransaction, InvokeScriptTransaction, IssueTransaction, LeaseCancelTransaction, LeaseTransaction, MassTransferTransaction, PaymentTransaction, ReissueTransaction, SetAssetScriptTransaction, SetScriptTransaction, SignedTransaction, SponsorFeeTransaction, Transaction, TransactionData, TransferTransaction, UpdateAssetInfoTransaction};
+use crate::model::{
+    Arg, BurnTransaction, ByteString, CreateAliasTransaction, DataTransaction, ExchangeTransaction,
+    GenesisTransaction, InvokeScriptTransaction, IssueTransaction, LeaseCancelTransaction,
+    LeaseTransaction, MassTransferTransaction, PaymentTransaction, ReissueTransaction,
+    SetAssetScriptTransaction, SetScriptTransaction, SignedTransaction, SponsorFeeTransaction,
+    Transaction, TransactionData, TransferTransaction, UpdateAssetInfoTransaction,
+};
 
 pub struct JsonSerializer;
 
