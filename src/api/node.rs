@@ -1,4 +1,5 @@
 use regex::Regex;
+use std::borrow::Borrow;
 use std::str::FromStr;
 use std::time::Duration;
 
@@ -11,8 +12,8 @@ use crate::model::account::{Address, Balance, BalanceDetails};
 use crate::model::asset::balance::AssetsBalanceResponse;
 use crate::model::data_entry::DataEntry;
 use crate::model::{
-    Alias, AliasesByAddressResponse, ChainId, ScriptInfo, ScriptMeta, SignedTransaction,
-    TransactionInfoResponse,
+    Alias, AliasesByAddressResponse, BlockchainRewards, ChainId, ScriptInfo, ScriptMeta,
+    SignedTransaction, TransactionInfoResponse,
 };
 use crate::util::JsonDeserializer;
 
@@ -244,6 +245,19 @@ impl Node {
     }
 
     // BLOCKCHAIN
+
+    pub async fn get_blockchain_rewards(&self) -> Result<BlockchainRewards> {
+        let get_blockchain_rewards_url = format!("{}blockchain/rewards", self.url().as_str());
+        let rs = &self.get(&get_blockchain_rewards_url).await?;
+        rs.try_into()
+    }
+
+    pub async fn get_blockchain_rewards_at_height(&self, height: u32) -> Result<BlockchainRewards> {
+        let get_blockchain_rewards_url =
+            format!("{}blockchain/rewards/{}", self.url().as_str(), height);
+        let rs = &self.get(&get_blockchain_rewards_url).await?;
+        rs.try_into()
+    }
 
     pub async fn get_transaction_info(
         &self,

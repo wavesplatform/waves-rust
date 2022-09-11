@@ -1,0 +1,15 @@
+{
+  "height": 2224756,
+  "totalWavesAmount": 10904654200000000,
+  "currentReward": 600000000,
+  "minIncrement": 50000000,
+  "term": 100000,
+  "nextCheck": 2316999,
+  "votingIntervalStart": 2307000,
+  "votingInterval": 10000,
+  "votingThreshold": 5001,
+  "votes": {
+    "increase": 0,
+    "decrease": 1
+  }
+}
