@@ -39,6 +39,8 @@ pub enum Error {
     MontgomeryPointConversionError,
     #[error("failed to convert hex string to bytes")]
     HexError(#[from] FromHexError),
+    #[error("unsupported operation: {0}")]
+    UnsupportedOperation(String),
 }
 
 #[derive(Debug, thiserror::Error)]

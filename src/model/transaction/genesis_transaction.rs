@@ -107,6 +107,8 @@ mod tests {
         let genesis_tx_info = JsonDeserializer::deserialize_tx_info(&json, ChainId::TESTNET.byte())
             .expect("failed to deserialize");
 
+        assert_eq!(genesis_tx.id().expect("failed id"), genesis_tx_info.id());
+
         let genesis_from_json: GenesisTransactionInfo = json.borrow().try_into().unwrap();
 
         assert_eq!(400000000000000, genesis_from_json.amount());

@@ -1,6 +1,6 @@
 use serde_json::{Map, Value};
 
-use crate::error::Result;
+use crate::error::{Error, Result};
 use crate::model::{
     Arg, BurnTransaction, ByteString, CreateAliasTransaction, DataTransaction, ExchangeTransaction,
     GenesisTransaction, InvokeScriptTransaction, IssueTransaction, LeaseCancelTransaction,
@@ -52,8 +52,12 @@ fn add_additional_fields(
     json_props: &mut Map<String, Value>,
 ) -> Result<Map<String, Value>> {
     match tx_data {
-        TransactionData::Genesis(_) => panic!("broadcasting genesis transaction not implemented"),
-        TransactionData::Payment(_) => panic!("broadcasting payment transaction not implemented"),
+        TransactionData::Genesis(_) => Err(Error::UnsupportedOperation(
+            "broadcasting genesis transaction".to_owned(),
+        ))?,
+        TransactionData::Payment(_) => Err(Error::UnsupportedOperation(
+            "broadcasting payment transaction".to_owned(),
+        ))?,
         TransactionData::Transfer(transfer_tx) => {
             json_props.insert(
                 "recipient".to_owned(),

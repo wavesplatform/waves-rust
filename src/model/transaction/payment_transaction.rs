@@ -107,8 +107,7 @@ mod tests {
         let payment_tx_info = JsonDeserializer::deserialize_tx_info(&json, ChainId::TESTNET.byte())
             .expect("failed to deserialize");
 
-        //todo invalid tx id need to implement legacy id
-        //assert_eq!(payment_tx.id().expect("id failed"), payment_tx_info.id());
+        assert_eq!(payment_tx.id().expect("id failed"), payment_tx_info.id());
 
         let payment_from_json: PaymentTransaction = json.borrow().try_into().unwrap();
 

@@ -1,7 +1,7 @@
 use serde_json::Value;
 
 use crate::error::Error::WrongTransactionType;
-use crate::error::Result;
+use crate::error::{Error, Result};
 use crate::model::account::{PrivateKey, PublicKey};
 use crate::model::transaction::data_transaction::DataTransaction;
 use crate::model::transaction::TransactionData::Transfer;
@@ -215,7 +215,9 @@ impl Transaction {
 
     pub fn id(&self) -> Result<Id> {
         match self.tx_type {
-            1 | 2 => Ok(Id::from_bytes(&self.bytes()?)),
+            1 | 2 => Err(Error::UnsupportedOperation(
+                "id calculation from unsigned payment or genesis transaction".to_owned(),
+            )),
             _ => Ok(Id::from_bytes(&Hash::blake(&self.bytes()?)?)),
         }
     }
@@ -394,7 +396,11 @@ impl SignedTransaction {
     }
 
     pub fn id(&self) -> Result<Id> {
-        self.tx().id()
+        let tx = self.tx();
+        match tx.tx_type {
+            1 | 2 => Ok(Id::from_bytes(&self.proofs[0].bytes())),
+            _ => tx.id(),
+        }
     }
 
     pub fn proofs(&self) -> Vec<Proof> {
