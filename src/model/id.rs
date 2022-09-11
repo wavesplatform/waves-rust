@@ -1,9 +1,16 @@
 use crate::error::Result;
 use crate::util::Base58;
+use std::fmt;
 
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct Id {
     bytes: Vec<u8>,
+}
+
+impl fmt::Debug for Id {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Id {{ {} }}", self.encoded())
+    }
 }
 
 impl Id {

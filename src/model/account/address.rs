@@ -1,10 +1,17 @@
 use crate::error::Result;
 use crate::model::account::PublicKey;
 use crate::util::{Base58, Crypto};
+use std::fmt;
 
-#[derive(Eq, PartialEq, Clone, Debug)]
+#[derive(Eq, PartialEq, Clone)]
 pub struct Address {
     bytes: Vec<u8>,
+}
+
+impl fmt::Debug for Address {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Address {{ {} }}", self.encoded())
+    }
 }
 
 impl Address {

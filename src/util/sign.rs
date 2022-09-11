@@ -1,13 +1,13 @@
 use crate::error::Result;
 use crate::model::account::PrivateKey;
-use crate::model::{Order, SignedOrder, SignedTransaction, Transaction};
+use crate::model::{Order, Proof, SignedOrder, SignedTransaction, Transaction};
 use crate::util::BinarySerializer;
 
 pub fn sign_tx(transaction: &Transaction, private_key: &PrivateKey) -> Result<SignedTransaction> {
     let bytes = BinarySerializer::tx_body_bytes(transaction);
     Ok(SignedTransaction::new(
         transaction.clone(),
-        vec![private_key.sign(&bytes?)?],
+        vec![Proof::new(private_key.sign(&bytes?)?)],
     ))
 }
 
@@ -69,12 +69,11 @@ mod tests {
         match signed_tx {
             Ok(success) => {
                 let signature = success.proofs()[0].to_owned();
-                println!("signature {}", Base58::encode(&signature, false));
 
                 let is_signature_valid = private_key
                     .is_signature_valid(
                         &transaction.bytes().expect("failed to get body bytes"),
-                        &signature,
+                        &signature.bytes(),
                     )
                     .expect("failed to validate signature");
 

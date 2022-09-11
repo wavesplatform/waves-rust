@@ -1,10 +1,17 @@
 use crate::error::{Error, Result};
 use crate::model::account::Address;
 use crate::util::Base58;
+use std::fmt;
 
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct PublicKey {
     bytes: Vec<u8>,
+}
+
+impl fmt::Debug for PublicKey {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "PublicKey {{ {} }}", self.encoded())
+    }
 }
 
 impl PublicKey {

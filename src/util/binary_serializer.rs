@@ -24,6 +24,7 @@ pub struct BinarySerializer;
 impl BinarySerializer {
     pub fn tx_body_bytes(transaction: &Transaction) -> Result<Vec<u8>> {
         let proto_data = match transaction.data() {
+            TransactionData::Genesis(_) => todo!(),
             Transfer(_) => transfer_transaction_to_proto(transaction)?,
             Data(_) => data_transaction_to_proto(transaction)?,
             Issue(_) => issue_transaction_from_proto(transaction)?,

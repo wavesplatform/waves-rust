@@ -1,10 +1,17 @@
 use crate::error::{Error, Result};
 use crate::util::Base58;
 use serde_json::Value;
+use std::fmt;
 
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct AssetId {
     bytes: Vec<u8>,
+}
+
+impl fmt::Debug for AssetId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "AssetId {{ {} }}", self.encoded())
+    }
 }
 
 impl AssetId {

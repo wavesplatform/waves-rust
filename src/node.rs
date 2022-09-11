@@ -325,10 +325,7 @@ mod tests {
         assert_eq!(transaction_info.height(), 3229634);
 
         let proof_from_rs = "4NiakymjU9s7mJYTBGbweGrDDwAauEXsuhMCeQJD1S28cEFL7hpjEL2LhaiVyFScq8UGVucpvCBo8PogvHQCdhrZ";
-        assert_eq!(
-            transaction_info.proofs()[0],
-            Base58::decode(proof_from_rs).expect("failed to decode base58 from string")
-        );
+        assert_eq!(transaction_info.proofs()[0].encoded(), proof_from_rs);
 
         assert_eq!(transaction_info.timestamp(), 1659278184707);
         assert_eq!(transaction_info.fee().value(), 100000);
@@ -379,10 +376,7 @@ mod tests {
         assert_eq!(transaction_info.height(), 3258212);
 
         let proof_from_rs = "25KiXB1FS3FaupiPXyEVeRquKLK4FEb3NWF36D1eHw1gpT9Y53MbLsVqnX9rJC8MPg4x9yiUxFkmxF9DDTgQruhi";
-        assert_eq!(
-            transaction_info.proofs()[0],
-            Base58::decode(proof_from_rs).expect("failed to decode base58 from string")
-        );
+        assert_eq!(transaction_info.proofs()[0].encoded(), proof_from_rs);
 
         assert_eq!(transaction_info.timestamp(), 1660994483097);
         assert_eq!(transaction_info.fee().value(), 500000);

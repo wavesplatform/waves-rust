@@ -5,7 +5,7 @@ use crate::model::data_entry::DataEntry;
 use crate::model::{
     Amount, ApplicationStatus, ArgMeta, AssetId, Base64String, DataTransaction,
     DataTransactionInfo, Id, InvokeScriptTransaction, IssueTransaction, IssueTransactionInfo,
-    PublicKey, ScriptInfo, ScriptMeta, SignedTransaction, Transaction, TransactionData,
+    Proof, PublicKey, ScriptInfo, ScriptMeta, SignedTransaction, Transaction, TransactionData,
     TransactionDataInfo, TransactionInfoResponse, TransferTransaction, TransferTransactionInfo,
 };
 use crate::util::Base58;
@@ -18,22 +18,24 @@ impl JsonDeserializer {
     pub fn deserialize_tx_info(value: &Value, chain_id: u8) -> Result<TransactionInfoResponse> {
         let id = Id::from_string(&Self::safe_to_string_from_field(value, "id")?)?;
 
-        let application_status =
+        let signed_tx = JsonDeserializer::deserialize_signed_tx(value, chain_id)?;
+
+        let tx_type = Self::safe_to_int_from_field(value, "type")? as u8;
+
+        let application_status = if tx_type == 1 {
+            //todo check is genesos always succeed
+            ApplicationStatus::Unknown
+        } else {
             match Self::safe_to_string_from_field(value, "applicationStatus")?.as_str() {
                 "succeeded" => ApplicationStatus::Succeed,
                 //todo check statuses in wavesJ
                 "scriptExecutionFailed" => ApplicationStatus::ScriptExecutionFailed,
                 &_ => ApplicationStatus::Unknown,
-            };
-        let height = Self::safe_to_int_from_field(value, "height")? as u32;
-        let proofs_array = Self::safe_to_array_from_field(value, "proofs")?;
-        let tx_type = Self::safe_to_int_from_field(value, "type")? as u8;
-        let fee = Self::safe_to_int_from_field(value, "fee")? as u64;
-        let fee_asset_id = match value["feeAssetId"].as_str() {
-            Some(val) => Some(AssetId::from_string(val)?),
-            None => None,
+            }
         };
+        let height = Self::safe_to_int_from_field(value, "height")? as u32;
         let transaction_data = match tx_type {
+            1 => TransactionDataInfo::Genesis(value.try_into()?),
             3 => TransactionDataInfo::Issue(IssueTransactionInfo::from_json(value)?),
             4 => TransactionDataInfo::Transfer(TransferTransactionInfo::from_json(value)?),
             5 => TransactionDataInfo::Reissue(value.try_into()?),
@@ -52,26 +54,20 @@ impl JsonDeserializer {
             _ => panic!("unknown tx type"),
         };
         let timestamp = Self::safe_to_int_from_field(value, "timestamp")? as u64;
-        let public_key = Self::safe_to_string_from_field(value, "senderPublicKey")?.try_into()?;
-        let version = Self::safe_to_int_from_field(value, "version")? as u8;
 
-        let proofs = proofs_array
-            .iter()
-            .map(|v| Base58::decode(&Self::safe_to_string(v)?))
-            .collect::<Result<Vec<Vec<u8>>>>()?;
-
+        let tx = signed_tx.tx();
         Ok(TransactionInfoResponse::new(
             id,
             application_status,
             transaction_data,
-            Amount::new(fee, fee_asset_id),
+            tx.fee(),
             timestamp,
-            public_key,
+            tx.public_key(),
             tx_type,
-            version,
+            tx.version(),
             chain_id,
             height,
-            proofs,
+            signed_tx.proofs(),
         ))
     }
 
@@ -89,8 +85,8 @@ impl JsonDeserializer {
 
         let proofs = proofs_array
             .iter()
-            .map(|v| Base58::decode(&Self::safe_to_string(v)?))
-            .collect::<Result<Vec<Vec<u8>>>>()?;
+            .map(|v| Ok(Proof::new(Base58::decode(&Self::safe_to_string(v)?)?)))
+            .collect::<Result<Vec<Proof>>>()?;
         Ok(SignedTransaction::new(transaction, proofs))
     }
 
@@ -102,6 +98,7 @@ impl JsonDeserializer {
             None => None,
         };
         let transaction_data = match tx_type {
+            1 => TransactionData::Genesis(value.try_into()?),
             3 => TransactionData::Issue(IssueTransaction::from_json(value)?),
             4 => TransactionData::Transfer(TransferTransaction::from_json(value)?),
             5 => TransactionData::Reissue(value.try_into()?),
@@ -120,18 +117,20 @@ impl JsonDeserializer {
             _ => todo!(),
         };
         let timestamp = Self::safe_to_int_from_field(value, "timestamp")? as u64;
-        let public_key = if tx_type == 1 {
-            PublicKey::from_bytes(&[0; HASH_LENGTH])
+        let public_key_version = if tx_type == 1 {
+            (PublicKey::from_bytes(&[0; HASH_LENGTH]), 1)
         } else {
-            Self::safe_to_string_from_field(value, "senderPublicKey")?.try_into()?
+            (
+                Self::safe_to_string_from_field(value, "senderPublicKey")?.try_into()?,
+                Self::safe_to_int_from_field(value, "version")? as u8,
+            )
         };
-        let version = Self::safe_to_int_from_field(value, "version")? as u8;
         Ok(Transaction::new(
             transaction_data,
             Amount::new(fee, fee_asset_id),
             timestamp,
-            public_key,
-            version,
+            public_key_version.0,
+            public_key_version.1,
             chain_id,
         ))
     }
