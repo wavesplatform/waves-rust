@@ -7,36 +7,36 @@ use crate::model::transaction::data_transaction::DataTransaction;
 use crate::model::transaction::TransactionData::Transfer;
 use crate::model::transaction::TransferTransaction;
 use crate::model::TransactionData::{
-    Burn, CreateAlias, Data, Exchange, InvokeScript, Issue, Lease, LeaseCancel, MassTransfer,
-    Reissue, SetAssetScript, SetScript, SponsorFee, UpdateAssetInfo,
+    Burn, CreateAlias, Data, Exchange, Genesis, InvokeScript, Issue, Lease, LeaseCancel,
+    MassTransfer, Reissue, SetAssetScript, SetScript, SponsorFee, UpdateAssetInfo,
 };
 use crate::model::{
     AssetId, BurnTransaction, BurnTransactionInfo, CreateAliasTransaction,
     CreateAliasTransactionInfo, DataTransactionInfo, ExchangeTransaction, ExchangeTransactionInfo,
-    Id, InvokeScriptTransaction, InvokeScriptTransactionInfo, IssueTransaction,
-    IssueTransactionInfo, LeaseCancelTransaction, LeaseCancelTransactionInfo, LeaseTransaction,
-    LeaseTransactionInfo, MassTransferTransaction, MassTransferTransactionInfo, ReissueTransaction,
-    ReissueTransactionInfo, SetAssetScriptTransaction, SetAssetScriptTransactionInfo,
-    SetScriptTransaction, SetScriptTransactionInfo, SponsorFeeTransaction,
-    SponsorFeeTransactionInfo, TransferTransactionInfo, UpdateAssetInfoTransaction,
-    UpdateAssetInfoTransactionInfo,
+    GenesisTransaction, GenesisTransactionInfo, Id, InvokeScriptTransaction,
+    InvokeScriptTransactionInfo, IssueTransaction, IssueTransactionInfo, LeaseCancelTransaction,
+    LeaseCancelTransactionInfo, LeaseTransaction, LeaseTransactionInfo, MassTransferTransaction,
+    MassTransferTransactionInfo, Proof, ReissueTransaction, ReissueTransactionInfo,
+    SetAssetScriptTransaction, SetAssetScriptTransactionInfo, SetScriptTransaction,
+    SetScriptTransactionInfo, SponsorFeeTransaction, SponsorFeeTransactionInfo,
+    TransferTransactionInfo, UpdateAssetInfoTransaction, UpdateAssetInfoTransactionInfo,
 };
 use crate::util::{sign_tx, BinarySerializer, Hash, JsonSerializer};
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct TransactionInfoResponse {
-    id: Id,
+    id: Id, //+
     status: ApplicationStatus,
     data: TransactionDataInfo,
-    fee: Amount,
-    timestamp: u64,
+    fee: Amount,    //+
+    timestamp: u64, //+
     // todo check flatten for serde_json
     public_key: PublicKey,
-    tx_type: u8,
+    tx_type: u8, //+
     version: u8,
     chain_id: u8,
     height: u32,
-    proofs: Vec<Vec<u8>>,
+    proofs: Vec<Proof>, //+
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -53,7 +53,7 @@ impl TransactionInfoResponse {
         version: u8,
         chain_id: u8,
         height: u32,
-        proofs: Vec<Vec<u8>>,
+        proofs: Vec<Proof>,
     ) -> TransactionInfoResponse {
         TransactionInfoResponse {
             id,
@@ -111,7 +111,7 @@ impl TransactionInfoResponse {
         self.chain_id
     }
 
-    pub fn proofs(&self) -> Vec<Vec<u8>> {
+    pub fn proofs(&self) -> Vec<Proof> {
         self.proofs.clone()
     }
 }
@@ -188,8 +188,8 @@ impl Transaction {
         self.timestamp
     }
 
-    pub fn public_key(&self) -> &PublicKey {
-        &self.public_key
+    pub fn public_key(&self) -> PublicKey {
+        self.public_key.clone()
     }
 
     pub fn tx_type(&self) -> u8 {
@@ -221,6 +221,7 @@ impl Transaction {
 //todo fix it
 #[allow(clippy::large_enum_variant)]
 pub enum TransactionDataInfo {
+    Genesis(GenesisTransactionInfo),
     Transfer(TransferTransactionInfo),
     Data(DataTransactionInfo),
     Issue(IssueTransactionInfo),
@@ -261,6 +262,7 @@ impl TransactionDataInfo {
 
     pub fn tx_type(&self) -> u8 {
         match self {
+            TransactionDataInfo::Genesis(_) => GenesisTransaction::tx_type(),
             TransactionDataInfo::Transfer(_) => TransferTransaction::tx_type(),
             TransactionDataInfo::Data(_) => DataTransaction::tx_type(),
             TransactionDataInfo::Issue(_) => IssueTransaction::tx_type(),
@@ -284,6 +286,7 @@ impl TransactionDataInfo {
 //todo fix it
 #[allow(clippy::large_enum_variant)]
 pub enum TransactionData {
+    Genesis(GenesisTransaction),
     Transfer(TransferTransaction),
     Reissue(ReissueTransaction),
     Burn(BurnTransaction),
@@ -344,6 +347,7 @@ impl TransactionData {
 
     pub fn tx_type(&self) -> u8 {
         match self {
+            Genesis(_) => GenesisTransaction::tx_type(),
             Transfer(_) => TransferTransaction::tx_type(),
             Data(_) => DataTransaction::tx_type(),
             Issue(_) => IssueTransaction::tx_type(),
@@ -366,11 +370,11 @@ impl TransactionData {
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct SignedTransaction {
     transaction: Transaction,
-    proofs: Vec<Vec<u8>>,
+    proofs: Vec<Proof>,
 }
 
 impl SignedTransaction {
-    pub fn new(transaction: Transaction, proofs: Vec<Vec<u8>>) -> SignedTransaction {
+    pub fn new(transaction: Transaction, proofs: Vec<Proof>) -> SignedTransaction {
         SignedTransaction {
             transaction,
             proofs,
@@ -385,7 +389,7 @@ impl SignedTransaction {
         self.tx().id()
     }
 
-    pub fn proofs(&self) -> Vec<Vec<u8>> {
+    pub fn proofs(&self) -> Vec<Proof> {
         self.proofs.clone()
     }
 

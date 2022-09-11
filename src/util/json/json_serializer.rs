@@ -3,12 +3,11 @@ use serde_json::{Map, Value};
 use crate::error::Result;
 use crate::model::{
     Arg, BurnTransaction, ByteString, CreateAliasTransaction, DataTransaction, ExchangeTransaction,
-    InvokeScriptTransaction, IssueTransaction, LeaseCancelTransaction, LeaseTransaction,
-    MassTransferTransaction, ReissueTransaction, SetAssetScriptTransaction, SetScriptTransaction,
-    SignedTransaction, SponsorFeeTransaction, Transaction, TransactionData, TransferTransaction,
-    UpdateAssetInfoTransaction,
+    GenesisTransaction, InvokeScriptTransaction, IssueTransaction, LeaseCancelTransaction,
+    LeaseTransaction, MassTransferTransaction, ReissueTransaction, SetAssetScriptTransaction,
+    SetScriptTransaction, SignedTransaction, SponsorFeeTransaction, Transaction, TransactionData,
+    TransferTransaction, UpdateAssetInfoTransaction,
 };
-use crate::util::Base58;
 
 pub struct JsonSerializer;
 
@@ -53,6 +52,7 @@ fn add_additional_fields(
     json_props: &mut Map<String, Value>,
 ) -> Result<Map<String, Value>> {
     match tx_data {
+        TransactionData::Genesis(_) => todo!(),
         TransactionData::Transfer(transfer_tx) => {
             json_props.insert(
                 "recipient".to_owned(),
@@ -130,6 +130,7 @@ fn add_additional_fields(
 
 fn tx_type(tx: &Transaction) -> u8 {
     match tx.data() {
+        TransactionData::Genesis(_) => GenesisTransaction::tx_type(),
         TransactionData::Transfer(_) => TransferTransaction::tx_type(),
         TransactionData::Data(_) => DataTransaction::tx_type(),
         TransactionData::Issue(_) => IssueTransaction::tx_type(),
@@ -152,7 +153,7 @@ fn proofs(sign_tx: &SignedTransaction) -> Vec<String> {
     sign_tx
         .proofs()
         .iter()
-        .map(|proof| Base58::encode(proof, false))
+        .map(|proof| proof.encoded())
         .collect()
 }
 
@@ -216,7 +217,7 @@ mod tests {
     use crate::model::account::PublicKey;
     use crate::model::data_entry::DataEntry;
     use crate::model::{
-        Amount, ChainId, DataTransaction, SignedTransaction, Transaction, TransactionData,
+        Amount, ChainId, DataTransaction, Proof, SignedTransaction, Transaction, TransactionData,
     };
     use crate::util::json::json_deserializer::JsonDeserializer;
     use crate::util::{Base58, JsonSerializer};
@@ -256,9 +257,9 @@ mod tests {
                 ChainId::TESTNET.byte(),
             ),
             vec![
-                Base58::decode(
+                Proof::new(Base58::decode(
                     "4nDUCnVw9j9D5bTBSLfFCHR9CtvS32mSdxctccChRAohfLwz3ng3ps5ffUiy4NtRmXG7vDHRMW57ABxzkMW64tzC"
-                ).expect("Failed to decode base58 string")
+                ).expect("Failed to decode base58 string"))
             ],
         );
 
