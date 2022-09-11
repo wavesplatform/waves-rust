@@ -1,0 +1,16 @@
+{
+  "type": 2,
+  "id": "3MBsS7S42PVEM8c1XxLsGsxzhitPsyaazDs1QoE26pCTHdRMYRv7n984wmjSFP863iZ2GR28aunSVvPC8sooEpbP",
+  "fee": 1,
+  "feeAssetId": null,
+  "timestamp": 1465747778592,
+  "sender": "3PAWwWa6GbwcJaFzwqXQN5KQm7H96Y7SHTQ",
+  "senderPublicKey": "7LBopaBdBzQbgqrnwgmgCDhcSTb32MYhE96SnSHcqZC2",
+  "proofs": [
+    "3MBsS7S42PVEM8c1XxLsGsxzhitPsyaazDs1QoE26pCTHdRMYRv7n984wmjSFP863iZ2GR28aunSVvPC8sooEpbP"
+  ],
+  "recipient": "3PP4hNGAJaMqmx9vpdYUHk8owF3mwbUevoz",
+  "amount": 910924657498,
+  "height": 28,
+  "spentComplexity": 0
+}

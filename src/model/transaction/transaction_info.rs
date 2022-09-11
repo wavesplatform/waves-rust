@@ -8,7 +8,7 @@ use crate::model::transaction::TransactionData::Transfer;
 use crate::model::transaction::TransferTransaction;
 use crate::model::TransactionData::{
     Burn, CreateAlias, Data, Exchange, Genesis, InvokeScript, Issue, Lease, LeaseCancel,
-    MassTransfer, Reissue, SetAssetScript, SetScript, SponsorFee, UpdateAssetInfo,
+    MassTransfer, Payment, Reissue, SetAssetScript, SetScript, SponsorFee, UpdateAssetInfo,
 };
 use crate::model::{
     AssetId, BurnTransaction, BurnTransactionInfo, CreateAliasTransaction,
@@ -16,10 +16,11 @@ use crate::model::{
     GenesisTransaction, GenesisTransactionInfo, Id, InvokeScriptTransaction,
     InvokeScriptTransactionInfo, IssueTransaction, IssueTransactionInfo, LeaseCancelTransaction,
     LeaseCancelTransactionInfo, LeaseTransaction, LeaseTransactionInfo, MassTransferTransaction,
-    MassTransferTransactionInfo, Proof, ReissueTransaction, ReissueTransactionInfo,
-    SetAssetScriptTransaction, SetAssetScriptTransactionInfo, SetScriptTransaction,
-    SetScriptTransactionInfo, SponsorFeeTransaction, SponsorFeeTransactionInfo,
-    TransferTransactionInfo, UpdateAssetInfoTransaction, UpdateAssetInfoTransactionInfo,
+    MassTransferTransactionInfo, PaymentTransaction, PaymentTransactionInfo, Proof,
+    ReissueTransaction, ReissueTransactionInfo, SetAssetScriptTransaction,
+    SetAssetScriptTransactionInfo, SetScriptTransaction, SetScriptTransactionInfo,
+    SponsorFeeTransaction, SponsorFeeTransactionInfo, TransferTransactionInfo,
+    UpdateAssetInfoTransaction, UpdateAssetInfoTransactionInfo,
 };
 use crate::util::{sign_tx, BinarySerializer, Hash, JsonSerializer};
 
@@ -213,7 +214,10 @@ impl Transaction {
     }
 
     pub fn id(&self) -> Result<Id> {
-        Ok(Id::from_bytes(&Hash::blake(&self.bytes()?)?))
+        match self.tx_type {
+            1 | 2 => Ok(Id::from_bytes(&self.bytes()?)),
+            _ => Ok(Id::from_bytes(&Hash::blake(&self.bytes()?)?)),
+        }
     }
 }
 
@@ -222,6 +226,7 @@ impl Transaction {
 #[allow(clippy::large_enum_variant)]
 pub enum TransactionDataInfo {
     Genesis(GenesisTransactionInfo),
+    Payment(PaymentTransactionInfo),
     Transfer(TransferTransactionInfo),
     Data(DataTransactionInfo),
     Issue(IssueTransactionInfo),
@@ -263,6 +268,7 @@ impl TransactionDataInfo {
     pub fn tx_type(&self) -> u8 {
         match self {
             TransactionDataInfo::Genesis(_) => GenesisTransaction::tx_type(),
+            TransactionDataInfo::Payment(_) => PaymentTransaction::tx_type(),
             TransactionDataInfo::Transfer(_) => TransferTransaction::tx_type(),
             TransactionDataInfo::Data(_) => DataTransaction::tx_type(),
             TransactionDataInfo::Issue(_) => IssueTransaction::tx_type(),
@@ -287,6 +293,7 @@ impl TransactionDataInfo {
 #[allow(clippy::large_enum_variant)]
 pub enum TransactionData {
     Genesis(GenesisTransaction),
+    Payment(PaymentTransaction),
     Transfer(TransferTransaction),
     Reissue(ReissueTransaction),
     Burn(BurnTransaction),
@@ -348,6 +355,7 @@ impl TransactionData {
     pub fn tx_type(&self) -> u8 {
         match self {
             Genesis(_) => GenesisTransaction::tx_type(),
+            Payment(_) => PaymentTransaction::tx_type(),
             Transfer(_) => TransferTransaction::tx_type(),
             Data(_) => DataTransaction::tx_type(),
             Issue(_) => IssueTransaction::tx_type(),

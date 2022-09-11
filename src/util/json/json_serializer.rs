@@ -1,13 +1,7 @@
 use serde_json::{Map, Value};
 
 use crate::error::Result;
-use crate::model::{
-    Arg, BurnTransaction, ByteString, CreateAliasTransaction, DataTransaction, ExchangeTransaction,
-    GenesisTransaction, InvokeScriptTransaction, IssueTransaction, LeaseCancelTransaction,
-    LeaseTransaction, MassTransferTransaction, ReissueTransaction, SetAssetScriptTransaction,
-    SetScriptTransaction, SignedTransaction, SponsorFeeTransaction, Transaction, TransactionData,
-    TransferTransaction, UpdateAssetInfoTransaction,
-};
+use crate::model::{Arg, BurnTransaction, ByteString, CreateAliasTransaction, DataTransaction, ExchangeTransaction, GenesisTransaction, InvokeScriptTransaction, IssueTransaction, LeaseCancelTransaction, LeaseTransaction, MassTransferTransaction, PaymentTransaction, ReissueTransaction, SetAssetScriptTransaction, SetScriptTransaction, SignedTransaction, SponsorFeeTransaction, Transaction, TransactionData, TransferTransaction, UpdateAssetInfoTransaction};
 
 pub struct JsonSerializer;
 
@@ -52,7 +46,8 @@ fn add_additional_fields(
     json_props: &mut Map<String, Value>,
 ) -> Result<Map<String, Value>> {
     match tx_data {
-        TransactionData::Genesis(_) => todo!(),
+        TransactionData::Genesis(_) => panic!("broadcasting genesis transaction not implemented"),
+        TransactionData::Payment(_) => panic!("broadcasting payment transaction not implemented"),
         TransactionData::Transfer(transfer_tx) => {
             json_props.insert(
                 "recipient".to_owned(),
@@ -131,6 +126,7 @@ fn add_additional_fields(
 fn tx_type(tx: &Transaction) -> u8 {
     match tx.data() {
         TransactionData::Genesis(_) => GenesisTransaction::tx_type(),
+        TransactionData::Payment(_) => PaymentTransaction::tx_type(),
         TransactionData::Transfer(_) => TransferTransaction::tx_type(),
         TransactionData::Data(_) => DataTransaction::tx_type(),
         TransactionData::Issue(_) => IssueTransaction::tx_type(),
