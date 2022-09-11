@@ -1,5 +1,5 @@
+use waves_rust::api::{Node, Profile};
 use waves_rust::model::Address;
-use waves_rust::node::{Node, Profile};
 
 #[tokio::test]
 async fn get_address_data_by_keys_test() {

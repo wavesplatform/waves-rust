@@ -55,6 +55,8 @@ impl Node {
         self.chain_id
     }
 
+    // ADDRESSES
+
     pub async fn get_addresses(&self) -> Result<Vec<Address>> {
         let get_addresses_url = format!("{}addresses", self.url().as_str());
         let rs = self.get(&get_addresses_url).await?;
@@ -217,6 +219,18 @@ impl Node {
         JsonDeserializer::deserialize_script_meta(rs)
     }
 
+    // ALIAS
+    pub async fn get_aliases_by_address(&self, address: Address) {
+        let get_aliases_by_address_url = format!(
+            "{}alias/by-address/{}",
+            self.url().as_str(),
+            address.encoded()
+        );
+        //let rs = &self.get(&get_aliases_by_address_url).await?;
+
+        //return asType(get("/alias/by-address/" + address.toString()), TypeRef.ALIASES);
+    }
+
     pub async fn get_transaction_info(
         &self,
         transaction_id: &str,
@@ -302,9 +316,9 @@ impl Profile {
 mod tests {
     use ChainId::MAINNET;
 
+    use crate::api::node::{Node, Profile};
     use crate::model::data_entry::DataEntry;
     use crate::model::{ApplicationStatus, ByteString, ChainId};
-    use crate::node::{Node, Profile};
     use crate::util::Base58;
 
     #[tokio::test]

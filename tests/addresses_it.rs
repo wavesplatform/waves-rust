@@ -1,6 +1,6 @@
 use regex::Regex;
-use waves_rust::model::{Address, ByteString, ChainId};
-use waves_rust::node::{Node, Profile};
+use waves_rust::api::{Node, Profile};
+use waves_rust::model::{Address, ByteString};
 
 #[tokio::test]
 async fn get_addresses_test() {

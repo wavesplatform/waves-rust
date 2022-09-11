@@ -1,8 +1,8 @@
+use waves_rust::api::{Node, Profile};
 use waves_rust::model::{
     Amount, AssetId, BurnTransaction, ChainId, IssueTransaction, PrivateKey, ReissueTransaction,
     Transaction, TransactionData,
 };
-use waves_rust::node::{Node, Profile};
 use waves_rust::util::get_current_epoch_millis;
 use waves_rust::waves_proto::invoke_script_result::Burn;
 
