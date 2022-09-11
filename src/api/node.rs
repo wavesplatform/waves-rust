@@ -10,7 +10,10 @@ use serde_json::{Map, Value};
 use crate::model::account::{Address, Balance, BalanceDetails};
 use crate::model::asset::balance::AssetsBalanceResponse;
 use crate::model::data_entry::DataEntry;
-use crate::model::{ChainId, ScriptInfo, ScriptMeta, SignedTransaction, TransactionInfoResponse};
+use crate::model::{
+    Alias, AliasesByAddressResponse, ChainId, ScriptInfo, ScriptMeta, SignedTransaction,
+    TransactionInfoResponse,
+};
 use crate::util::JsonDeserializer;
 
 pub const MAINNET_URL: &str = "https://nodes.wavesnodes.com";
@@ -220,15 +223,24 @@ impl Node {
     }
 
     // ALIAS
-    pub async fn get_aliases_by_address(&self, address: Address) {
+    pub async fn get_aliases_by_address(
+        &self,
+        address: &Address,
+    ) -> Result<AliasesByAddressResponse> {
         let get_aliases_by_address_url = format!(
             "{}alias/by-address/{}",
             self.url().as_str(),
             address.encoded()
         );
-        //let rs = &self.get(&get_aliases_by_address_url).await?;
+        let rs = &self.get(&get_aliases_by_address_url).await?;
+        rs.try_into()
+    }
 
-        //return asType(get("/alias/by-address/" + address.toString()), TypeRef.ALIASES);
+    pub async fn get_address_by_alias(&self, alias: &Alias) -> Result<Address> {
+        let get_address_by_alias_url =
+            format!("{}alias/by-alias/{}", self.url().as_str(), alias.name());
+        let rs = &self.get(&get_address_by_alias_url).await?;
+        Address::from_string(&JsonDeserializer::safe_to_string_from_field(rs, "address")?)
     }
 
     pub async fn get_transaction_info(
