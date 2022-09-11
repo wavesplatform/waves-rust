@@ -243,6 +243,8 @@ impl Node {
         Address::from_string(&JsonDeserializer::safe_to_string_from_field(rs, "address")?)
     }
 
+    // BLOCKCHAIN
+
     pub async fn get_transaction_info(
         &self,
         transaction_id: &str,

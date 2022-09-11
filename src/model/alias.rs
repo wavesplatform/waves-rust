@@ -60,7 +60,7 @@ impl Alias {
         self.full_name.clone()
     }
 
-    pub fn is_valid(chain_id: u8, name: &String) -> bool {
+    pub fn is_valid(chain_id: u8, name: &str) -> bool {
         let name = Self::replace_prefix(chain_id, name);
         Regex::new(&format!(
             r"^[{}]{{{},{}}}$",
