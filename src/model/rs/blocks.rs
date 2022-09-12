@@ -136,16 +136,24 @@ impl TryFrom<&Value> for BlockHeaders {
         let version = JsonDeserializer::safe_to_int_from_field(value, "version")?;
         let timestamp = JsonDeserializer::safe_to_int_from_field(value, "timestamp")?;
         let reference = JsonDeserializer::safe_to_string_from_field(value, "reference")?;
-        let transactions_root =
-            JsonDeserializer::safe_to_string_from_field(value, "transactionsRoot")?;
+        let transactions_root = match value["transactionsRoot"].as_str() {
+            Some(val) => Base58String::from_string(val.to_owned())?,
+            None => Base58String::empty(),
+        };
         let id = JsonDeserializer::safe_to_string_from_field(value, "id")?;
-        let features = JsonDeserializer::safe_to_array_from_field(value, "features")?
-            .iter()
-            .filter_map(|value| value.as_i64())
-            .map(|feature| feature as u32)
-            .collect();
+        let features = match value["features"].as_array() {
+            Some(array) => array
+                .iter()
+                .filter_map(|value| value.as_i64())
+                .map(|feature| feature as u32)
+                .collect(),
+            None => vec![],
+        };
 
-        let desired_reward = JsonDeserializer::safe_to_int_from_field(value, "desiredReward")?;
+        let desired_reward = match value["desiredReward"].as_i64() {
+            Some(reward) => reward,
+            None => 0,
+        };
         let generator = JsonDeserializer::safe_to_string_from_field(value, "generator")?;
         let signature = JsonDeserializer::safe_to_string_from_field(value, "signature")?;
         let blocksize = JsonDeserializer::safe_to_int_from_field(value, "blocksize")?;
@@ -153,15 +161,21 @@ impl TryFrom<&Value> for BlockHeaders {
             JsonDeserializer::safe_to_int_from_field(value, "transactionCount")?;
         let height = JsonDeserializer::safe_to_int_from_field(value, "height")?;
         let total_fee = JsonDeserializer::safe_to_int_from_field(value, "totalFee")?;
-        let reward = JsonDeserializer::safe_to_int_from_field(value, "reward")?;
-        let vrf = JsonDeserializer::safe_to_string_from_field(value, "VRF")?;
+        let reward = match value["reward"].as_i64() {
+            Some(reward) => reward,
+            None => 0,
+        };
 
+        let vrf = match value["VRF"].as_str() {
+            Some(vrf) => vrf,
+            None => "",
+        };
         Ok(BlockHeaders {
             version: version as u8,
             timestamp: timestamp as u64,
             reference: Base58String::from_string(reference)?,
             nxt_consensus: value["nxt-consensus"].borrow().try_into()?,
-            transactions_root: Base58String::from_string(transactions_root)?,
+            transactions_root,
             id: Base58String::from_string(id)?,
             features,
             desired_reward,
@@ -172,7 +186,7 @@ impl TryFrom<&Value> for BlockHeaders {
             height: height as u32,
             total_fee: total_fee as u64,
             reward: reward as u64,
-            vrf: Base58String::from_string(vrf)?,
+            vrf: Base58String::from_string(vrf.to_owned())?,
         })
     }
 }

@@ -12,8 +12,8 @@ use crate::model::account::{Address, Balance, BalanceDetails};
 use crate::model::asset::balance::AssetsBalanceResponse;
 use crate::model::data_entry::DataEntry;
 use crate::model::{
-    Alias, AliasesByAddressResponse, Base58String, BlockHeaders, BlockchainRewards, ByteString,
-    ChainId, ScriptInfo, ScriptMeta, SignedTransaction, TransactionInfoResponse,
+    Alias, AliasesByAddressResponse, Base58String, Block, BlockHeaders, BlockchainRewards,
+    ByteString, ChainId, ScriptInfo, ScriptMeta, SignedTransaction, TransactionInfoResponse,
 };
 use crate::util::JsonDeserializer;
 
@@ -340,6 +340,58 @@ impl Node {
         let get_last_block_headers_url = format!("{}blocks/headers/last", self.url().as_str());
         let rs = &self.get(&get_last_block_headers_url).await?;
         rs.try_into()
+    }
+
+    pub async fn get_block_at_height(&self, height: u32) -> Result<Block> {
+        let get_block_at_height_url = format!("{}blocks/at/{}", self.url().as_str(), height);
+        let rs = &self.get(&get_block_at_height_url).await?;
+        rs.try_into()
+    }
+
+    pub async fn get_block_by_id(&self, block_id: Base58String) -> Result<Block> {
+        let get_block_by_id_url = format!("{}blocks/{}", self.url().as_str(), block_id.encoded());
+        let rs = &self.get(&get_block_by_id_url).await?;
+        rs.try_into()
+    }
+
+    pub async fn get_blocks(&self, from_height: u32, to_height: u32) -> Result<Vec<Block>> {
+        let get_blocks_url = format!(
+            "{}blocks/seq/{}/{}",
+            self.url().as_str(),
+            from_height,
+            to_height
+        );
+        let rs = &self.get(&get_blocks_url).await?;
+        JsonDeserializer::safe_to_array(rs)?
+            .iter()
+            .map(|block| block.try_into())
+            .collect()
+    }
+
+    pub async fn get_last_block(&self) -> Result<Block> {
+        let get_last_block_url = format!("{}blocks/last", self.url().as_str());
+        let rs = &self.get(&get_last_block_url).await?;
+        rs.try_into()
+    }
+
+    pub async fn get_blocks_by_generator(
+        &self,
+        generator: Address,
+        from_height: u32,
+        to_height: u32,
+    ) -> Result<Vec<Block>> {
+        let get_blocks_by_generator_url = format!(
+            "{}blocks/address/{}/{}/{}",
+            self.url().as_str(),
+            generator.encoded(),
+            from_height,
+            to_height
+        );
+        let rs = &self.get(&get_blocks_by_generator_url).await?;
+        JsonDeserializer::safe_to_array(rs)?
+            .iter()
+            .map(|block| block.try_into())
+            .collect()
     }
 
     pub async fn get_transaction_info(

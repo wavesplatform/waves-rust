@@ -1,6 +1,6 @@
 use waves_rust::api::{Node, Profile};
 use waves_rust::error::Result;
-use waves_rust::model::Base58String;
+use waves_rust::model::{Address, Base58String};
 
 #[tokio::test]
 async fn get_height_test() -> Result<()> {
@@ -70,5 +70,59 @@ async fn get_last_block_headers_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
     let block_headers = node.get_last_block_headers().await?;
     println!("{:#?}", block_headers);
+    Ok(())
+}
+
+#[tokio::test]
+async fn get_block_at_height_test() -> Result<()> {
+    let node = Node::from_profile(Profile::TESTNET);
+    let block = node.get_block_at_height(2221645).await?;
+    println!("{:#?}", block);
+    Ok(())
+}
+
+#[tokio::test]
+async fn get_block_by_id_test() -> Result<()> {
+    let node = Node::from_profile(Profile::TESTNET);
+    let block_id =
+        Base58String::from_string("E6uQ1HKHU6eTzHddBTr4Xdif1v6FGr2agxEr7qCgwREY".to_owned())?;
+    let block = node.get_block_by_id(block_id).await?;
+    println!("{:#?}", block);
+    Ok(())
+}
+
+#[tokio::test]
+async fn get_blocks_test() -> Result<()> {
+    let node = Node::from_profile(Profile::TESTNET);
+    let blocks = node.get_blocks(2221640, 2221645).await?;
+    println!("{:#?}", blocks);
+    Ok(())
+}
+
+#[tokio::test]
+async fn get_genesis_block_test() -> Result<()> {
+    let node = Node::from_profile(Profile::TESTNET);
+    let block = node.get_block_at_height(1).await?;
+    println!("{:#?}", block);
+    Ok(())
+}
+
+#[tokio::test]
+async fn get_last_block_test() -> Result<()> {
+    let node = Node::from_profile(Profile::TESTNET);
+    let block = node.get_last_block().await?;
+    println!("{:#?}", block);
+    Ok(())
+}
+
+#[tokio::test]
+async fn get_blocks_by_generator_test() -> Result<()> {
+    let node = Node::from_profile(Profile::TESTNET);
+    let generator = Address::from_string("3Mxv6Dpa1qRuyQBRFg3GwUaf3rcjHqWwNmC")?;
+
+    let block = node
+        .get_blocks_by_generator(generator, 2225770, 2225796)
+        .await?;
+    println!("{:#?}", block);
     Ok(())
 }
