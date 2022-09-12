@@ -14,9 +14,9 @@ pub mod rs;
 pub mod script;
 pub mod state_changes;
 pub mod transaction;
+pub mod transaction_status;
 pub mod transfer;
 pub mod validation;
-pub mod transaction_status;
 
 pub use account::*;
 pub use alias::*;
@@ -33,6 +33,6 @@ pub use rs::*;
 pub use script::*;
 pub use state_changes::*;
 pub use transaction::*;
+pub use transaction_status::*;
 pub use transfer::*;
 pub use validation::*;
-pub use transaction_status::*;
