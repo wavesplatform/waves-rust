@@ -1,0 +1,22 @@
+{
+  "version": 5,
+  "timestamp": 1662965069859,
+  "reference": "FDVU5z5JcjU1rU6BV7MassmFwzfiabxVUBcDxzJjZTNu",
+  "nxt-consensus": {
+    "base-target": 288,
+    "generation-signature": "2DzzTwTrDvNnKa5BnkQyuGJ6rAmCTxrKwQNdAEiRPPiY1WkrCy5ge5FDAWsMPh3eAk3sRQq3iVB8ZVGFkP8uJU65AfR4rkQw687yNcA3wbsDsDjsoyir1nGFCWkA34jv5cUN"
+  },
+  "transactionsRoot": "HW2HdCDGFX1cKQC9VQHPbCi5S87jzB43m8bM1yvbjxN6",
+  "id": "7FjvruZHvR3mi9YvTaiGQ93uvdHbarcL54ynrS6jN1Vq",
+  "features": [3],
+  "desiredReward": -1,
+  "generator": "3Mxv6Dpa1qRuyQBRFg3GwUaf3rcjHqWwNmC",
+  "generatorPublicKey": "GQk2fS6pH1F1qmtd5qHVmY4WeewvP89Xpn1jkseW5ceg",
+  "signature": "3BCrNxGjwoxRMX2vxshN2K5ucSzt8huwvkHK54qWnp6UVQLBKx1TaidWAoxtswWPxbLTdmkWAMrCEdUVUZw4o8Zr",
+  "blocksize": 869,
+  "transactionCount": 1,
+  "height": 2225531,
+  "totalFee": 500000,
+  "reward": 600000000,
+  "VRF": "BaHPQwcWxXPaaUiRgavbEg5hkAvzWdNrLYV3x5JEDgpJ"
+}

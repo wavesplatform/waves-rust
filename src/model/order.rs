@@ -1,5 +1,5 @@
 use crate::error::{Error, Result};
-use crate::model::{Address, Amount, AssetId, Id, PrivateKey, PublicKey};
+use crate::model::{Address, Amount, AssetId, Id, PrivateKey, Proof, PublicKey};
 use crate::util::{sign_order, Base58, BinarySerializer, Hash, JsonDeserializer};
 use crate::waves_proto::order::Sender::SenderPublicKey;
 use crate::waves_proto::{Amount as ProtoAmount, AssetPair, Order as ProtoOrder};
@@ -18,7 +18,8 @@ pub struct OrderInfo {
     price: Amount,
     matcher: PublicKey,
     expiration: u64,
-    proofs: Vec<Vec<u8>>,
+    proofs: Vec<Proof>,
+    //todo
     //eip_712_signature: Option<Vec<u8>>,
 }
 
@@ -67,7 +68,7 @@ impl OrderInfo {
         self.id.clone()
     }
 
-    pub fn proofs(&self) -> Vec<Vec<u8>> {
+    pub fn proofs(&self) -> Vec<Proof> {
         self.proofs.clone()
     }
 }
@@ -98,11 +99,11 @@ impl TryFrom<&Value> for OrderInfo {
 #[derive(Eq, PartialEq, Clone, Debug)]
 pub struct SignedOrder {
     order: Order,
-    proofs: Vec<Vec<u8>>,
+    proofs: Vec<Proof>,
 }
 
 impl SignedOrder {
-    pub fn new(order: Order, proofs: Vec<Vec<u8>>) -> SignedOrder {
+    pub fn new(order: Order, proofs: Vec<Proof>) -> SignedOrder {
         SignedOrder { order, proofs }
     }
 
@@ -110,7 +111,7 @@ impl SignedOrder {
         self.order.clone()
     }
 
-    pub fn proofs(&self) -> Vec<Vec<u8>> {
+    pub fn proofs(&self) -> Vec<Proof> {
         self.proofs.clone()
     }
 
@@ -286,7 +287,7 @@ impl TryFrom<&SignedOrder> for Value {
         );
         order_json.insert("timestamp".to_owned(), order.timestamp().into());
         order_json.insert("expiration".to_owned(), order.expiration().into());
-        let signature = Base58::encode(&signed_order.proofs[0], false);
+        let signature = signed_order.proofs[0].encoded();
         order_json.insert("signature".to_owned(), signature.clone().into());
         order_json.insert("proofs".to_owned(), vec![Value::String(signature)].into());
         Ok(order_json.into())
@@ -310,7 +311,11 @@ impl TryFrom<&SignedOrder> for ProtoOrder {
             expiration: order.expiration() as i64,
             matcher_fee: map_matcher_fee(&order),
             version: order.version() as i32,
-            proofs: signed_order.proofs(),
+            proofs: signed_order
+                .proofs()
+                .iter()
+                .map(|proof| proof.bytes())
+                .collect(),
             //todo price_mode what to do?
             price_mode: 0,
             sender: Some(SenderPublicKey(order.sender().bytes())),
@@ -346,10 +351,9 @@ impl TryFrom<&Value> for SignedOrder {
 
     fn try_from(signed_order_json: &Value) -> Result<Self> {
         let order: Order = signed_order_json.try_into()?;
-        let signature = Base58::decode(&JsonDeserializer::safe_to_string_from_field(
-            signed_order_json,
-            "signature",
-        )?)?;
+        let signature = Proof::new(Base58::decode(
+            &JsonDeserializer::safe_to_string_from_field(signed_order_json, "signature")?,
+        )?);
         Ok(SignedOrder::new(order, vec![signature]))
     }
 }

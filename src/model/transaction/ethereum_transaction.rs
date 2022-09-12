@@ -42,6 +42,35 @@ impl TryFrom<&Value> for EthereumTransactionInfo {
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]
+pub struct EthereumTransaction {
+    bytes: Vec<u8>,
+}
+
+impl EthereumTransaction {
+    pub fn new(bytes: Vec<u8>) -> Self {
+        Self { bytes }
+    }
+
+    pub fn bytes(&self) -> Vec<u8> {
+        self.bytes.clone()
+    }
+
+    pub fn tx_type() -> u8 {
+        TYPE
+    }
+}
+
+impl TryFrom<&Value> for EthereumTransaction {
+    type Error = Error;
+
+    fn try_from(value: &Value) -> Result<Self> {
+        let bytes =
+            hex::decode(&JsonDeserializer::safe_to_string_from_field(value, "bytes")?[2..])?;
+        Ok(EthereumTransaction { bytes })
+    }
+}
+
+#[derive(Clone, Eq, PartialEq, Debug)]
 //todo fix it
 #[allow(clippy::large_enum_variant)]
 pub enum Payload {

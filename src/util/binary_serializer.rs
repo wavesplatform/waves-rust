@@ -1,3 +1,4 @@
+use crate::error::Error::UnsupportedOperation;
 use crate::error::Result;
 use crate::model::data_entry::DataEntry;
 use crate::model::TransactionData::{Data, Exchange, InvokeScript, Issue, Transfer};
@@ -78,6 +79,9 @@ impl BinarySerializer {
                 let proto_update_asset_info: UpdateAssetInfoTransactionData =
                     update_asset_info_tx.try_into()?;
                 ProtoData::UpdateAssetInfo(proto_update_asset_info)
+            }
+            TransactionData::Ethereum(_) => {
+                Err(UnsupportedOperation("ethereum transaction".to_owned()))?
             }
         };
 

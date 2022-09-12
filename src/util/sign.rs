@@ -15,7 +15,7 @@ pub fn sign_order(order: &Order, private_key: &PrivateKey) -> Result<SignedOrder
     let bytes = BinarySerializer::order_body_byte(order);
     Ok(SignedOrder::new(
         order.clone(),
-        vec![private_key.sign(&bytes?)?],
+        vec![Proof::new(private_key.sign(&bytes?)?)],
     ))
 }
 
