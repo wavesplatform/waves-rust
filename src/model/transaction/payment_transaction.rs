@@ -95,7 +95,7 @@ mod tests {
     use std::fs;
 
     #[test]
-    fn test_json_to_genesis_transaction() -> Result<()> {
+    fn test_json_to_payment_transaction() -> Result<()> {
         let data = fs::read_to_string("./tests/resources/payment_transaction_rs.json")
             .expect("Unable to read file");
         let json: &Value = &serde_json::from_str(&data).expect("failed to generate json from str");

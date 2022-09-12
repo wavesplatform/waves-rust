@@ -126,12 +126,19 @@ impl JsonDeserializer {
     }
 
     pub fn safe_to_int_from_field(json: &Value, field_name: &str) -> Result<i64> {
-        let int = json[field_name]
-            .as_i64()
-            .ok_or_else(|| Error::JsonParseError {
-                json: json.to_string(),
-                field: field_name.to_owned(),
-            })?;
+        let int = match json[field_name].as_i64() {
+            Some(int) => int,
+            None => match json[field_name].as_str() {
+                Some(int) => int.parse().map_err(|_| Error::JsonParseError {
+                    json: json.to_string(),
+                    field: field_name.to_owned(),
+                })?,
+                None => Err(Error::JsonParseError {
+                    json: json.to_string(),
+                    field: field_name.to_owned(),
+                })?,
+            },
+        };
         Ok(int)
     }
 
