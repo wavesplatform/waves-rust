@@ -436,8 +436,7 @@ impl TryFrom<&Value> for TransactionInfoResponse {
             match JsonDeserializer::safe_to_string_from_field(value, "applicationStatus")?.as_str()
             {
                 "succeeded" => ApplicationStatus::Succeed,
-                //todo check statuses in wavesJ
-                "scriptExecutionFailed" => ApplicationStatus::ScriptExecutionFailed,
+                "script_execution_failed" => ApplicationStatus::ScriptExecutionFailed,
                 &_ => ApplicationStatus::Unknown,
             }
         };

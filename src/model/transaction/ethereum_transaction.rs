@@ -3,21 +3,22 @@ use crate::model::{Address, Amount, AssetId, Function, StateChanges};
 use crate::util::JsonDeserializer;
 use serde_json::Value;
 use std::borrow::Borrow;
+use std::fmt;
 
 const TYPE: u8 = 18;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct EthereumTransactionInfo {
-    bytes: Vec<u8>,
+    bytes: HexString,
     payload: Payload,
 }
 
 impl EthereumTransactionInfo {
-    pub fn new(bytes: Vec<u8>, payload: Payload) -> Self {
+    pub fn new(bytes: HexString, payload: Payload) -> Self {
         Self { bytes, payload }
     }
 
-    pub fn bytes(&self) -> Vec<u8> {
+    pub fn bytes(&self) -> HexString {
         self.bytes.clone()
     }
 
@@ -35,23 +36,24 @@ impl TryFrom<&Value> for EthereumTransactionInfo {
 
     fn try_from(value: &Value) -> Result<Self> {
         let payload = value["payload"].borrow().try_into()?;
-        let bytes =
-            hex::decode(&JsonDeserializer::safe_to_string_from_field(value, "bytes")?[2..])?;
+        let bytes = HexString::new(hex::decode(
+            &JsonDeserializer::safe_to_string_from_field(value, "bytes")?[2..],
+        )?);
         Ok(EthereumTransactionInfo { bytes, payload })
     }
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct EthereumTransaction {
-    bytes: Vec<u8>,
+    bytes: HexString,
 }
 
 impl EthereumTransaction {
-    pub fn new(bytes: Vec<u8>) -> Self {
+    pub fn new(bytes: HexString) -> Self {
         Self { bytes }
     }
 
-    pub fn bytes(&self) -> Vec<u8> {
+    pub fn bytes(&self) -> HexString {
         self.bytes.clone()
     }
 
@@ -64,8 +66,9 @@ impl TryFrom<&Value> for EthereumTransaction {
     type Error = Error;
 
     fn try_from(value: &Value) -> Result<Self> {
-        let bytes =
-            hex::decode(&JsonDeserializer::safe_to_string_from_field(value, "bytes")?[2..])?;
+        let bytes = HexString::new(hex::decode(
+            &JsonDeserializer::safe_to_string_from_field(value, "bytes")?[2..],
+        )?);
         Ok(EthereumTransaction { bytes })
     }
 }
@@ -192,6 +195,31 @@ impl TryFrom<&Value> for InvokePayload {
     }
 }
 
+#[derive(Clone, Eq, PartialEq)]
+pub struct HexString {
+    bytes: Vec<u8>,
+}
+
+impl fmt::Debug for HexString {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "HexString {{ {} }}", self.encoded())
+    }
+}
+
+impl HexString {
+    pub fn new(bytes: Vec<u8>) -> Self {
+        Self { bytes }
+    }
+
+    pub fn encoded(&self) -> String {
+        hex::encode(self.bytes.clone())
+    }
+
+    pub fn bytes(&self) -> Vec<u8> {
+        self.bytes.clone()
+    }
+}
+
 //todo rm duplicate
 fn map_payment(value: &Value) -> Result<Vec<Amount>> {
     JsonDeserializer::safe_to_array_from_field(value, "payment")?
@@ -225,7 +253,10 @@ mod tests {
 
         let eth_invoke_from_json: EthereumTransactionInfo = json.borrow().try_into().unwrap();
 
-        assert_eq!(INVOKE_BYTES[2..], hex::encode(eth_invoke_from_json.bytes()));
+        assert_eq!(
+            INVOKE_BYTES[2..],
+            hex::encode(eth_invoke_from_json.bytes().bytes())
+        );
 
         let invoke = match eth_invoke_from_json.payload() {
             Payload::Invoke(invoke) => invoke,

@@ -1,7 +1,7 @@
 use crate::error::{Error, Result};
 use crate::model::account::{Address, Balance, BalanceDetails};
 use crate::model::data_entry::DataEntry;
-use crate::model::{ArgMeta, Base64String, ScriptInfo, ScriptMeta};
+use crate::model::{ArgMeta, AssetId, Base64String, ScriptInfo, ScriptMeta};
 
 use serde_json::Value;
 use std::collections::HashMap;
@@ -107,6 +107,14 @@ impl JsonDeserializer {
             })
             .collect();
         Ok(ScriptMeta::new(meta_version, callable_functions))
+    }
+
+    pub fn asset_id_from_json(json: &Value, field_name: &str) -> Result<Option<AssetId>> {
+        let asset_id = match json[field_name].as_str() {
+            Some(asset_id) => Some(AssetId::from_string(asset_id)?),
+            None => None,
+        };
+        Ok(asset_id)
     }
 
     pub fn safe_to_string_from_field(json: &Value, field_name: &str) -> Result<String> {

@@ -1,4 +1,5 @@
 use regex::Regex;
+use std::borrow::Borrow;
 
 use std::str::FromStr;
 use std::time::Duration;
@@ -12,9 +13,9 @@ use crate::model::account::{Address, Balance, BalanceDetails};
 use crate::model::asset::balance::AssetsBalanceResponse;
 use crate::model::data_entry::DataEntry;
 use crate::model::{
-    Alias, AliasesByAddressResponse, Base58String, Block, BlockHeaders, BlockchainRewards,
+    Alias, AliasesByAddressResponse, Amount, Base58String, Block, BlockHeaders, BlockchainRewards,
     ByteString, ChainId, HistoryBalance, Id, LeaseInfo, ScriptInfo, ScriptMeta, SignedTransaction,
-    TransactionInfoResponse, Validation,
+    TransactionInfoResponse, TransactionStatus, Validation,
 };
 use crate::util::JsonDeserializer;
 
@@ -463,17 +464,125 @@ impl Node {
             .collect()
     }
 
+    // TRANSACTIONS
+
+    pub async fn calculate_transaction_fee(
+        &self,
+        transaction: &SignedTransaction,
+    ) -> Result<Amount> {
+        let get_lease_info_url = format!("{}transactions/calculateFee", self.url().as_str());
+        let rs = &self
+            .post(&get_lease_info_url, &transaction.to_json()?)
+            .await?;
+        Ok(Amount::new(
+            JsonDeserializer::safe_to_int_from_field(rs, "feeAmount")? as u64,
+            JsonDeserializer::asset_id_from_json(rs, "feeAssetId")?,
+        ))
+    }
+
+    pub async fn broadcast(&self, signed_tx: &SignedTransaction) -> Result<SignedTransaction> {
+        let broadcast_tx_url = format!("{}transactions/broadcast", self.url().as_str());
+        let rs = &self.post(&broadcast_tx_url, &signed_tx.to_json()?).await?;
+        rs.try_into()
+    }
+
     pub async fn get_transaction_info(
         &self,
-        transaction_id: &str,
+        transaction_id: &Id,
     ) -> Result<TransactionInfoResponse> {
         let get_tx_info_url = format!(
             "{}transactions/info/{}",
             self.url().as_str(),
-            transaction_id
+            transaction_id.encoded()
         );
         let rs = &self.get(&get_tx_info_url).await?;
         rs.try_into()
+    }
+
+    pub async fn get_transactions_by_address(
+        &self,
+        address: &Address,
+        limit: u16,
+        after_tx_id: Option<Id>,
+    ) -> Result<Vec<TransactionInfoResponse>> {
+        let get_tx_info_by_address = format!(
+            "{}transactions/address/{}/limit/{}",
+            self.url().as_str(),
+            address.encoded(),
+            limit
+        );
+        let rs = match after_tx_id {
+            Some(after_id) => {
+                let url_with_cursor =
+                    format!("{}?after={}", &get_tx_info_by_address, after_id.encoded());
+                self.get(&url_with_cursor).await?
+            }
+            None => self.get(&get_tx_info_by_address).await?,
+        };
+        JsonDeserializer::safe_to_array(&JsonDeserializer::safe_to_array(&rs)?[0])?
+            .iter()
+            .map(|tx| tx.try_into())
+            .collect()
+    }
+
+    pub async fn get_transaction_status(&self, transaction_id: &Id) -> Result<TransactionStatus> {
+        let get_tx_status_url = format!(
+            "{}transactions/status?id={}",
+            self.url().as_str(),
+            transaction_id.encoded()
+        );
+        let rs = &self.get(&get_tx_status_url).await?;
+        JsonDeserializer::safe_to_array(rs)?[0].borrow().try_into()
+    }
+
+    pub async fn get_transactions_statuses(
+        &self,
+        transaction_ids: &[Id],
+    ) -> Result<Vec<TransactionStatus>> {
+        let get_tx_status_url = format!("{}transactions/status", self.url().as_str());
+        let mut ids = Map::new();
+        ids.insert(
+            "ids".to_owned(),
+            Array(
+                transaction_ids
+                    .iter()
+                    .map(|id| Value::String(id.encoded()))
+                    .collect(),
+            ),
+        );
+        let rs = &self.post(&get_tx_status_url, &ids.into()).await?;
+        JsonDeserializer::safe_to_array(rs)?
+            .iter()
+            .map(|status| status.try_into())
+            .collect()
+    }
+
+    pub async fn get_unconfirmed_transaction(
+        &self,
+        transaction_id: &Id,
+    ) -> Result<SignedTransaction> {
+        let get_unconfirmed_tx_url = format!(
+            "{}transactions/unconfirmed/info/{}",
+            self.url().as_str(),
+            transaction_id.encoded()
+        );
+        let rs = &self.get(&get_unconfirmed_tx_url).await?;
+        rs.try_into()
+    }
+
+    pub async fn get_unconfirmed_transactions(&self) -> Result<Vec<SignedTransaction>> {
+        let get_unconfirmed_txs_url = format!("{}transactions/unconfirmed", self.url().as_str());
+        let rs = &self.get(&get_unconfirmed_txs_url).await?;
+        JsonDeserializer::safe_to_array(rs)?
+            .iter()
+            .map(|tx| tx.try_into())
+            .collect()
+    }
+
+    pub async fn get_utx_size(&self) -> Result<u32> {
+        let get_utx_size_url = format!("{}transactions/unconfirmed/size", self.url().as_str());
+        let rs = &self.get(&get_utx_size_url).await?;
+        Ok(JsonDeserializer::safe_to_int_from_field(rs, "size")? as u32)
     }
 
     pub async fn get_assets_balance(&self, address: &Address) -> Result<AssetsBalanceResponse> {
@@ -483,12 +592,6 @@ impl Node {
             address.encoded()
         );
         let rs = self.get(&url).await?;
-        rs.try_into()
-    }
-
-    pub async fn broadcast(&self, signed_tx: &SignedTransaction) -> Result<SignedTransaction> {
-        let broadcast_tx_url = format!("{}transactions/broadcast", self.url().as_str());
-        let rs = &self.post(&broadcast_tx_url, &signed_tx.to_json()?).await?;
         rs.try_into()
     }
 
@@ -549,16 +652,17 @@ mod tests {
     use ChainId::MAINNET;
 
     use crate::api::node::{Node, Profile};
+    use crate::error::Result;
     use crate::model::data_entry::DataEntry;
-    use crate::model::{ApplicationStatus, ByteString, ChainId};
+    use crate::model::{ApplicationStatus, ByteString, ChainId, Id};
 
     #[tokio::test]
-    async fn test_get_transfer_transaction_info() {
-        let tx_id = "8YsBZSZ3UmWAo8bCj8RN64BvoQUTdLtd567hXqQCYDVo";
+    async fn test_get_transfer_transaction_info() -> Result<()> {
+        let tx_id = Id::from_string("8YsBZSZ3UmWAo8bCj8RN64BvoQUTdLtd567hXqQCYDVo")?;
 
         let node = Node::from_profile(Profile::MAINNET);
         let transaction_info = node
-            .get_transaction_info(tx_id)
+            .get_transaction_info(&tx_id)
             .await
             .expect("failed to get transaction info");
 
@@ -601,15 +705,16 @@ mod tests {
         );
         assert_eq!(transfer_transaction.amount().asset_id(), None);
         assert_eq!(transfer_transaction.amount().value(), 46095972);
+        Ok(())
     }
 
     #[tokio::test]
-    async fn test_get_data_transaction_info() {
-        let tx_id = "HcPcSma7oWeqy8g3ahhwFDzrq8YK8r739U4WC2ieB5Bs";
+    async fn test_get_data_transaction_info() -> Result<()> {
+        let tx_id = Id::from_string("HcPcSma7oWeqy8g3ahhwFDzrq8YK8r739U4WC2ieB5Bs")?;
 
         let node = Node::from_profile(Profile::MAINNET);
         let transaction_info = node
-            .get_transaction_info(tx_id)
+            .get_transaction_info(&tx_id)
             .await
             .expect("failed to get transaction info");
 
@@ -663,5 +768,6 @@ mod tests {
             }
             _ => panic!("failed"),
         }
+        Ok(())
     }
 }
