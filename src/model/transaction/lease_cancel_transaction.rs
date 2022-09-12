@@ -97,13 +97,14 @@ impl TryFrom<&LeaseCancelTransaction> for LeaseCancelTransactionData {
 
 #[cfg(test)]
 mod tests {
+    use crate::error::Result;
     use crate::model::{LeaseCancelTransactionInfo, LeaseStatus};
     use serde_json::Value;
     use std::borrow::Borrow;
     use std::fs;
 
     #[test]
-    fn test_json_to_lease_cancel_transaction() {
+    fn test_json_to_lease_cancel_transaction() -> Result<()> {
         let data = fs::read_to_string("./tests/resources/lease_cancel_rs.json")
             .expect("Unable to read file");
         let json: Value = serde_json::from_str(&data).expect("failed to generate json from str");
@@ -135,10 +136,13 @@ mod tests {
         assert_eq!(100, lease_info_from_json.amount());
         assert_eq!(2218886, lease_info_from_json.height());
         assert_eq!(LeaseStatus::Canceled, lease_info_from_json.status());
-        assert_eq!(2218925, lease_info_from_json.cancel_height());
+        assert_eq!(Some(2218925), lease_info_from_json.cancel_height());
         assert_eq!(
-            "FoPVrSqzK74bwt8hgCDsEb48HJv7g2nvjeCW5wBoWpXb",
-            lease_info_from_json.cancel_transaction_id().encoded()
+            Some("FoPVrSqzK74bwt8hgCDsEb48HJv7g2nvjeCW5wBoWpXb".to_owned()),
+            lease_info_from_json
+                .cancel_transaction_id()
+                .map(|it| it.encoded())
         );
+        Ok(())
     }
 }

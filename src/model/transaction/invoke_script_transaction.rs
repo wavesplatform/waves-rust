@@ -336,10 +336,10 @@ mod tests {
         assert_eq!(7, lease_info.amount());
         assert_eq!(2217333, lease_info.height());
         assert_eq!(LeaseStatus::Canceled, lease_info.status());
-        assert_eq!(2217333, lease_info.cancel_height());
+        assert_eq!(Some(2217333), lease_info.cancel_height());
         assert_eq!(
-            "4XFVLLMBjBMPwGivgyLhw374kViANoToLAYUdEXWLsBJ",
-            lease_info.cancel_transaction_id().encoded()
+            Some("4XFVLLMBjBMPwGivgyLhw374kViANoToLAYUdEXWLsBJ".to_owned()),
+            lease_info.cancel_transaction_id().map(|it| it.encoded())
         );
 
         let lease_cancels = state_changes.lease_cancels();
@@ -364,10 +364,12 @@ mod tests {
         assert_eq!(7, lease_cancel_info.amount());
         assert_eq!(2217333, lease_cancel_info.height());
         assert_eq!(LeaseStatus::Canceled, lease_cancel_info.status());
-        assert_eq!(2217333, lease_cancel_info.cancel_height());
+        assert_eq!(Some(2217333), lease_cancel_info.cancel_height());
         assert_eq!(
-            "4XFVLLMBjBMPwGivgyLhw374kViANoToLAYUdEXWLsBJ",
-            lease_cancel_info.cancel_transaction_id().encoded()
+            Some("4XFVLLMBjBMPwGivgyLhw374kViANoToLAYUdEXWLsBJ".to_owned()),
+            lease_cancel_info
+                .cancel_transaction_id()
+                .map(|it| it.encoded())
         );
 
         let invokes = state_changes.invokes();
