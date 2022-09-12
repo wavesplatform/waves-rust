@@ -25,7 +25,7 @@ async fn get_leases_info_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
     let lease_id1 = Id::from_string("BiJR8gCxR7crGEdy31jLkYpjpLy98kq3NuxPE8Z2Uk3b")?;
     let lease_id2 = Id::from_string("5EWudZk4xXaqRezrh26zqjbNeAzvEzDATjs4paKdyhGy")?;
-    let leases = node.get_leases_info(&vec![lease_id1, lease_id2]).await?;
+    let leases = node.get_leases_info(&[lease_id1, lease_id2]).await?;
     println!("{:#?}", leases);
     Ok(())
 }
