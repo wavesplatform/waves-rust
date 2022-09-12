@@ -150,10 +150,7 @@ impl TryFrom<&Value> for BlockHeaders {
             None => vec![],
         };
 
-        let desired_reward = match value["desiredReward"].as_i64() {
-            Some(reward) => reward,
-            None => 0,
-        };
+        let desired_reward = value["desiredReward"].as_i64().unwrap_or(0);
         let generator = JsonDeserializer::safe_to_string_from_field(value, "generator")?;
         let signature = JsonDeserializer::safe_to_string_from_field(value, "signature")?;
         let blocksize = JsonDeserializer::safe_to_int_from_field(value, "blocksize")?;
@@ -161,15 +158,9 @@ impl TryFrom<&Value> for BlockHeaders {
             JsonDeserializer::safe_to_int_from_field(value, "transactionCount")?;
         let height = JsonDeserializer::safe_to_int_from_field(value, "height")?;
         let total_fee = JsonDeserializer::safe_to_int_from_field(value, "totalFee")?;
-        let reward = match value["reward"].as_i64() {
-            Some(reward) => reward,
-            None => 0,
-        };
+        let reward = value["reward"].as_i64().unwrap_or(0);
 
-        let vrf = match value["VRF"].as_str() {
-            Some(vrf) => vrf,
-            None => "",
-        };
+        let vrf = value["VRF"].as_str().unwrap_or("");
         Ok(BlockHeaders {
             version: version as u8,
             timestamp: timestamp as u64,

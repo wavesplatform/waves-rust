@@ -1,14 +1,8 @@
-use crate::constants::HASH_LENGTH;
 use crate::error::{Error, Result};
 use crate::model::account::{Address, Balance, BalanceDetails};
 use crate::model::data_entry::DataEntry;
-use crate::model::{
-    Amount, ApplicationStatus, ArgMeta, AssetId, Base64String, DataTransaction,
-    DataTransactionInfo, Id, InvokeScriptTransaction, IssueTransaction, IssueTransactionInfo,
-    Proof, PublicKey, ScriptInfo, ScriptMeta, SignedTransaction, Transaction, TransactionData,
-    TransactionDataInfo, TransactionInfoResponse, TransferTransaction, TransferTransactionInfo,
-};
-use crate::util::Base58;
+use crate::model::{ArgMeta, Base64String, ScriptInfo, ScriptMeta};
+
 use serde_json::Value;
 use std::collections::HashMap;
 

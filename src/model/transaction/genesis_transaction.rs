@@ -90,9 +90,7 @@ impl TryFrom<&Value> for GenesisTransaction {
 #[cfg(test)]
 mod tests {
     use crate::error::Result;
-    use crate::model::{
-        ChainId, GenesisTransactionInfo, SignedTransaction, TransactionInfoResponse,
-    };
+    use crate::model::{GenesisTransactionInfo, SignedTransaction, TransactionInfoResponse};
     use serde_json::Value;
     use std::borrow::Borrow;
     use std::fs;
