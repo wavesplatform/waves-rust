@@ -3,4 +3,7 @@ mod alias_it;
 mod assets;
 mod blockchain_it;
 mod blocks_it;
+mod debug_it;
+mod leases_it;
+mod node_it;
 mod transaction;

@@ -430,7 +430,7 @@ impl TryFrom<&Value> for TransactionInfoResponse {
         let tx_type = JsonDeserializer::safe_to_int_from_field(value, "type")? as u8;
 
         let application_status = if tx_type == 1 || tx_type == 2 {
-            //todo check is genesos always succeed
+            //todo check is genesis always succeed
             ApplicationStatus::Succeed
         } else {
             match JsonDeserializer::safe_to_string_from_field(value, "applicationStatus")?.as_str()
