@@ -65,11 +65,11 @@ impl TryFrom<&Value> for GenesisTransactionInfo {
     type Error = Error;
 
     fn try_from(value: &Value) -> Result<Self> {
-        let amount = JsonDeserializer::safe_to_string_from_field(value, "amount")?;
+        let amount = JsonDeserializer::safe_to_int_from_field(value, "amount")?;
         let recipient = JsonDeserializer::safe_to_string_from_field(value, "recipient")?;
         Ok(GenesisTransactionInfo {
             recipient: Address::from_string(&recipient)?,
-            amount: amount.parse().expect("failed to parse amount from string"),
+            amount: amount as u64,
         })
     }
 }
