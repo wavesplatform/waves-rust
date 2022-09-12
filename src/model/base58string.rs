@@ -1,4 +1,5 @@
 use crate::error::Result;
+use std::fmt;
 use std::fmt::{Display, Formatter};
 
 pub trait ByteString {
@@ -7,9 +8,15 @@ pub trait ByteString {
     fn encoded_with_prefix(&self) -> String;
 }
 
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct Base58String {
     bytes: Vec<u8>,
+}
+
+impl fmt::Debug for Base58String {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "Base58String {{ {} }}", self.encoded())
+    }
 }
 
 impl Base58String {

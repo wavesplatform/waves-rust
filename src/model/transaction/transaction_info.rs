@@ -1,3 +1,4 @@
+use crate::constants::HASH_LENGTH;
 use serde_json::Value;
 
 use crate::error::Error::WrongTransactionType;
@@ -7,22 +8,22 @@ use crate::model::transaction::data_transaction::DataTransaction;
 use crate::model::transaction::TransactionData::Transfer;
 use crate::model::transaction::TransferTransaction;
 use crate::model::TransactionData::{
-    Burn, CreateAlias, Data, Exchange, Genesis, InvokeScript, Issue, Lease, LeaseCancel,
+    Burn, CreateAlias, Data, Ethereum, Exchange, Genesis, InvokeScript, Issue, Lease, LeaseCancel,
     MassTransfer, Payment, Reissue, SetAssetScript, SetScript, SponsorFee, UpdateAssetInfo,
 };
 use crate::model::{
-    AssetId, BurnTransaction, BurnTransactionInfo, CreateAliasTransaction,
-    CreateAliasTransactionInfo, DataTransactionInfo, ExchangeTransaction, ExchangeTransactionInfo,
-    GenesisTransaction, GenesisTransactionInfo, Id, InvokeScriptTransaction,
-    InvokeScriptTransactionInfo, IssueTransaction, IssueTransactionInfo, LeaseCancelTransaction,
-    LeaseCancelTransactionInfo, LeaseTransaction, LeaseTransactionInfo, MassTransferTransaction,
-    MassTransferTransactionInfo, PaymentTransaction, PaymentTransactionInfo, Proof,
-    ReissueTransaction, ReissueTransactionInfo, SetAssetScriptTransaction,
-    SetAssetScriptTransactionInfo, SetScriptTransaction, SetScriptTransactionInfo,
-    SponsorFeeTransaction, SponsorFeeTransactionInfo, TransferTransactionInfo,
-    UpdateAssetInfoTransaction, UpdateAssetInfoTransactionInfo,
+    Address, AssetId, BurnTransaction, BurnTransactionInfo, CreateAliasTransaction,
+    CreateAliasTransactionInfo, DataTransactionInfo, EthereumTransaction, EthereumTransactionInfo,
+    ExchangeTransaction, ExchangeTransactionInfo, GenesisTransaction, GenesisTransactionInfo, Id,
+    InvokeScriptTransaction, InvokeScriptTransactionInfo, IssueTransaction, IssueTransactionInfo,
+    LeaseCancelTransaction, LeaseCancelTransactionInfo, LeaseTransaction, LeaseTransactionInfo,
+    MassTransferTransaction, MassTransferTransactionInfo, PaymentTransaction,
+    PaymentTransactionInfo, Proof, ReissueTransaction, ReissueTransactionInfo,
+    SetAssetScriptTransaction, SetAssetScriptTransactionInfo, SetScriptTransaction,
+    SetScriptTransactionInfo, SponsorFeeTransaction, SponsorFeeTransactionInfo,
+    TransferTransactionInfo, UpdateAssetInfoTransaction, UpdateAssetInfoTransactionInfo,
 };
-use crate::util::{sign_tx, BinarySerializer, Hash, JsonSerializer};
+use crate::util::{sign_tx, Base58, BinarySerializer, Hash, JsonDeserializer, JsonSerializer};
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct TransactionInfoResponse {
@@ -244,6 +245,7 @@ pub enum TransactionDataInfo {
     Exchange(ExchangeTransactionInfo),
     Invoke(InvokeScriptTransactionInfo),
     UpdateAssetInfo(UpdateAssetInfoTransactionInfo),
+    Ethereum(EthereumTransactionInfo),
 }
 
 impl TransactionDataInfo {
@@ -286,6 +288,7 @@ impl TransactionDataInfo {
             TransactionDataInfo::SetAssetScript(_) => SetAssetScriptTransaction::tx_type(),
             TransactionDataInfo::SponsorFee(_) => SponsorFeeTransaction::tx_type(),
             TransactionDataInfo::UpdateAssetInfo(_) => UpdateAssetInfoTransaction::tx_type(),
+            TransactionDataInfo::Ethereum(_) => EthereumTransaction::tx_type(),
         }
     }
 }
@@ -311,6 +314,7 @@ pub enum TransactionData {
     InvokeScript(InvokeScriptTransaction),
     UpdateAssetInfo(UpdateAssetInfoTransaction),
     Exchange(ExchangeTransaction),
+    Ethereum(EthereumTransaction),
 }
 
 impl TransactionData {
@@ -373,6 +377,7 @@ impl TransactionData {
             SetAssetScript(_) => SetAssetScriptTransaction::tx_type(),
             SponsorFee(_) => SponsorFeeTransaction::tx_type(),
             UpdateAssetInfo(_) => UpdateAssetInfoTransaction::tx_type(),
+            Ethereum(_) => EthereumTransaction::tx_type(),
         }
     }
 }
@@ -412,4 +417,160 @@ impl SignedTransaction {
     }
 
     //todo sign
+}
+
+impl TryFrom<&Value> for TransactionInfoResponse {
+    type Error = Error;
+
+    fn try_from(value: &Value) -> Result<Self> {
+        let id = Id::from_string(&JsonDeserializer::safe_to_string_from_field(value, "id")?)?;
+
+        let signed_tx: SignedTransaction = value.try_into()?;
+
+        let tx_type = JsonDeserializer::safe_to_int_from_field(value, "type")? as u8;
+
+        let application_status = if tx_type == 1 || tx_type == 2 {
+            //todo check is genesos always succeed
+            ApplicationStatus::Succeed
+        } else {
+            match JsonDeserializer::safe_to_string_from_field(value, "applicationStatus")?.as_str()
+            {
+                "succeeded" => ApplicationStatus::Succeed,
+                //todo check statuses in wavesJ
+                "scriptExecutionFailed" => ApplicationStatus::ScriptExecutionFailed,
+                &_ => ApplicationStatus::Unknown,
+            }
+        };
+        let height = JsonDeserializer::safe_to_int_from_field(value, "height")? as u32;
+        let transaction_data = match tx_type {
+            1 => TransactionDataInfo::Genesis(value.try_into()?),
+            2 => TransactionDataInfo::Payment(value.try_into()?),
+            3 => TransactionDataInfo::Issue(IssueTransactionInfo::from_json(value)?),
+            4 => TransactionDataInfo::Transfer(TransferTransactionInfo::from_json(value)?),
+            5 => TransactionDataInfo::Reissue(value.try_into()?),
+            6 => TransactionDataInfo::Burn(value.try_into()?),
+            7 => TransactionDataInfo::Exchange(value.try_into()?),
+            8 => TransactionDataInfo::Lease(value.try_into()?),
+            9 => TransactionDataInfo::LeaseCancel(value.try_into()?),
+            10 => TransactionDataInfo::CreateAlias(value.try_into()?),
+            11 => TransactionDataInfo::MassTransfer(value.try_into()?),
+            12 => TransactionDataInfo::Data(DataTransactionInfo::from_json(value)?),
+            13 => TransactionDataInfo::SetScript(value.try_into()?),
+            14 => TransactionDataInfo::SponsorFee(value.try_into()?),
+            15 => TransactionDataInfo::SetAssetScript(value.try_into()?),
+            16 => TransactionDataInfo::Invoke(value.try_into()?),
+            17 => TransactionDataInfo::UpdateAssetInfo(value.try_into()?),
+            18 => TransactionDataInfo::Ethereum(value.try_into()?),
+            _ => panic!("unknown tx type"),
+        };
+        let timestamp = JsonDeserializer::safe_to_int_from_field(value, "timestamp")? as u64;
+
+        let tx = signed_tx.tx();
+        Ok(TransactionInfoResponse::new(
+            id,
+            application_status,
+            transaction_data,
+            tx.fee(),
+            timestamp,
+            tx.public_key(),
+            tx_type,
+            tx.version(),
+            tx.chain_id(),
+            height,
+            signed_tx.proofs(),
+        ))
+    }
+}
+
+impl TryFrom<&Value> for SignedTransaction {
+    type Error = Error;
+
+    fn try_from(value: &Value) -> Result<Self> {
+        let transaction: Transaction = value.try_into()?;
+
+        let proofs_array = match transaction.tx_type() {
+            1 => vec![Value::String(JsonDeserializer::safe_to_string_from_field(
+                value,
+                "signature",
+            )?)],
+            18 => vec![],
+            _ => JsonDeserializer::safe_to_array_from_field(value, "proofs")?,
+        };
+
+        let proofs = proofs_array
+            .iter()
+            .map(|v| {
+                Ok(Proof::new(Base58::decode(
+                    &JsonDeserializer::safe_to_string(v)?,
+                )?))
+            })
+            .collect::<Result<Vec<Proof>>>()?;
+        Ok(SignedTransaction::new(transaction, proofs))
+    }
+}
+
+impl TryFrom<&Value> for Transaction {
+    type Error = Error;
+
+    fn try_from(value: &Value) -> Result<Self> {
+        let tx_type = JsonDeserializer::safe_to_int_from_field(value, "type")? as u8;
+        let fee = JsonDeserializer::safe_to_int_from_field(value, "fee")? as u64;
+        let fee_asset_id = match value["feeAssetId"].as_str() {
+            Some(val) => Some(AssetId::from_string(val)?),
+            None => None,
+        };
+        let transaction_data = match tx_type {
+            1 => Genesis(value.try_into()?),
+            2 => Payment(value.try_into()?),
+            3 => Issue(IssueTransaction::from_json(value)?),
+            4 => Transfer(TransferTransaction::from_json(value)?),
+            5 => Reissue(value.try_into()?),
+            6 => Burn(value.try_into()?),
+            7 => Exchange(value.try_into()?),
+            8 => Lease(value.try_into()?),
+            9 => LeaseCancel(value.try_into()?),
+            10 => CreateAlias(value.try_into()?),
+            11 => MassTransfer(value.try_into()?),
+            12 => Data(DataTransaction::from_json(value)?),
+            13 => SetScript(value.try_into()?),
+            14 => SponsorFee(value.try_into()?),
+            15 => SetAssetScript(value.try_into()?),
+            16 => InvokeScript(InvokeScriptTransaction::from_json(value)?),
+            17 => UpdateAssetInfo(value.try_into()?),
+            18 => Ethereum(value.try_into()?),
+            _ => todo!(),
+        };
+        let timestamp = JsonDeserializer::safe_to_int_from_field(value, "timestamp")? as u64;
+        let public_key = match tx_type {
+            1 => PublicKey::from_bytes(&[0; HASH_LENGTH]),
+            _ => {
+                JsonDeserializer::safe_to_string_from_field(value, "senderPublicKey")?.try_into()?
+            }
+        };
+
+        let chain_id = match tx_type {
+            1 => Address::from_string(&JsonDeserializer::safe_to_string_from_field(
+                value,
+                "recipient",
+            )?)?
+            .chain_id(),
+            _ => Address::from_string(&JsonDeserializer::safe_to_string_from_field(
+                value, "sender",
+            )?)?
+            .chain_id(),
+        };
+
+        let version = match tx_type {
+            1 | 2 => 1_u8,
+            _ => JsonDeserializer::safe_to_int_from_field(value, "version")? as u8,
+        };
+        Ok(Transaction::new(
+            transaction_data,
+            Amount::new(fee, fee_asset_id),
+            timestamp,
+            public_key,
+            version,
+            chain_id,
+        ))
+    }
 }

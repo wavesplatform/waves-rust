@@ -89,32 +89,30 @@ impl TryFrom<&Value> for PaymentTransaction {
 
 #[cfg(test)]
 mod tests {
-    use crate::model::{ChainId, PaymentTransaction};
-    use crate::util::JsonDeserializer;
+    use crate::error::Result;
+    use crate::model::{PaymentTransaction, SignedTransaction, TransactionInfoResponse};
     use serde_json::Value;
-    use std::borrow::Borrow;
     use std::fs;
 
     #[test]
-    fn test_json_to_genesis_transaction() {
+    fn test_json_to_genesis_transaction() -> Result<()> {
         let data = fs::read_to_string("./tests/resources/payment_transaction_rs.json")
             .expect("Unable to read file");
-        let json: Value = serde_json::from_str(&data).expect("failed to generate json from str");
+        let json: &Value = &serde_json::from_str(&data).expect("failed to generate json from str");
 
-        let payment_tx = JsonDeserializer::deserialize_signed_tx(&json, ChainId::TESTNET.byte())
-            .expect("failed to deserialize");
+        let payment_tx: SignedTransaction = json.try_into()?;
 
-        let payment_tx_info = JsonDeserializer::deserialize_tx_info(&json, ChainId::TESTNET.byte())
-            .expect("failed to deserialize");
+        let payment_tx_info: TransactionInfoResponse = json.try_into()?;
 
-        assert_eq!(payment_tx.id().expect("id failed"), payment_tx_info.id());
+        assert_eq!(payment_tx.id()?, payment_tx_info.id());
 
-        let payment_from_json: PaymentTransaction = json.borrow().try_into().unwrap();
+        let payment_from_json: PaymentTransaction = json.try_into().unwrap();
 
         assert_eq!(910924657498, payment_from_json.amount());
         assert_eq!(
             "3PP4hNGAJaMqmx9vpdYUHk8owF3mwbUevoz",
             payment_from_json.recipient().encoded()
         );
+        Ok(())
     }
 }

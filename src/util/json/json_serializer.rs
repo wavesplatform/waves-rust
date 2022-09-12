@@ -2,11 +2,12 @@ use serde_json::{Map, Value};
 
 use crate::error::{Error, Result};
 use crate::model::{
-    Arg, BurnTransaction, ByteString, CreateAliasTransaction, DataTransaction, ExchangeTransaction,
-    GenesisTransaction, InvokeScriptTransaction, IssueTransaction, LeaseCancelTransaction,
-    LeaseTransaction, MassTransferTransaction, PaymentTransaction, ReissueTransaction,
-    SetAssetScriptTransaction, SetScriptTransaction, SignedTransaction, SponsorFeeTransaction,
-    Transaction, TransactionData, TransferTransaction, UpdateAssetInfoTransaction,
+    Arg, BurnTransaction, ByteString, CreateAliasTransaction, DataTransaction, EthereumTransaction,
+    ExchangeTransaction, GenesisTransaction, InvokeScriptTransaction, IssueTransaction,
+    LeaseCancelTransaction, LeaseTransaction, MassTransferTransaction, PaymentTransaction,
+    ReissueTransaction, SetAssetScriptTransaction, SetScriptTransaction, SignedTransaction,
+    SponsorFeeTransaction, Transaction, TransactionData, TransferTransaction,
+    UpdateAssetInfoTransaction,
 };
 
 pub struct JsonSerializer;
@@ -129,6 +130,9 @@ fn add_additional_fields(
             let mut update_asset_info_tx: Map<String, Value> = update_asset_info_tx.try_into()?;
             json_props.append(&mut update_asset_info_tx);
         }
+        TransactionData::Ethereum(_) => Err(Error::UnsupportedOperation(
+            "broadcasting ethereum transaction".to_owned(),
+        ))?,
     };
     Ok(json_props.clone())
 }
@@ -152,6 +156,7 @@ fn tx_type(tx: &Transaction) -> u8 {
         TransactionData::SetAssetScript(_) => SetAssetScriptTransaction::tx_type(),
         TransactionData::SponsorFee(_) => SponsorFeeTransaction::tx_type(),
         TransactionData::UpdateAssetInfo(_) => UpdateAssetInfoTransaction::tx_type(),
+        TransactionData::Ethereum(_) => EthereumTransaction::tx_type(),
     }
 }
 
@@ -220,16 +225,16 @@ fn args_to_json(args: Vec<Arg>, json_args: &mut Vec<Value>) {
 
 #[cfg(test)]
 mod tests {
+    use crate::error::Result;
     use crate::model::account::PublicKey;
     use crate::model::data_entry::DataEntry;
     use crate::model::{
         Amount, ChainId, DataTransaction, Proof, SignedTransaction, Transaction, TransactionData,
     };
-    use crate::util::json::json_deserializer::JsonDeserializer;
     use crate::util::{Base58, JsonSerializer};
 
     #[test]
-    fn test_data_transaction_to_json() {
+    fn test_data_transaction_to_json() -> Result<()> {
         let binary_value: [u8; 12] = [0; 12];
 
         let transaction_data = TransactionData::Data(DataTransaction::new(vec![
@@ -251,8 +256,7 @@ mod tests {
             },
         ]));
 
-        let public_key = PublicKey::from_string("8jDzNuHZwuTTo6WvZMdSoNc8ydY6a7UnxvwHZ8kooMuS")
-            .expect("failed to get public key from string");
+        let public_key = PublicKey::from_string("8jDzNuHZwuTTo6WvZMdSoNc8ydY6a7UnxvwHZ8kooMuS")?;
         let signed_transaction = SignedTransaction::new(
             Transaction::new(
                 transaction_data,
@@ -265,15 +269,13 @@ mod tests {
             vec![
                 Proof::new(Base58::decode(
                     "4nDUCnVw9j9D5bTBSLfFCHR9CtvS32mSdxctccChRAohfLwz3ng3ps5ffUiy4NtRmXG7vDHRMW57ABxzkMW64tzC"
-                ).expect("Failed to decode base58 string"))
+                )?)
             ],
         );
 
-        let json = JsonSerializer::serialize_signed_tx(&signed_transaction)
-            .expect("failed to serialize signed transaction");
-        let signed_tx_from_json =
-            JsonDeserializer::deserialize_signed_tx(&json, ChainId::TESTNET.byte())
-                .expect("Failed to deserialize signed tx");
+        let json = &JsonSerializer::serialize_signed_tx(&signed_transaction)?;
+        let signed_tx_from_json: SignedTransaction = json.try_into()?;
         assert_eq!(signed_transaction, signed_tx_from_json);
+        Ok(())
     }
 }

@@ -239,8 +239,7 @@ mod tests {
         assert_eq!(1665092994929, order_info1.expiration());
         assert_eq!(300000, order_info1.fee().value());
         assert_eq!(None, order_info1.fee().asset_id());
-        let signature = Base58::encode(&order_info1.proofs()[0], false);
-        assert_eq!("2YgYwW6o88K3NXYy39TaUu1bwVkzpbr9oQwSDehnkJskfshC6f9F5vYmY736kEExRGHiDmW4hbuyxuqE8cw8WeJ8", signature);
+        assert_eq!("2YgYwW6o88K3NXYy39TaUu1bwVkzpbr9oQwSDehnkJskfshC6f9F5vYmY736kEExRGHiDmW4hbuyxuqE8cw8WeJ8", &order_info1.proofs()[0].encoded());
 
         let order_info2 = exchange_tx_from_json.order2();
         let chain_id = order_info2.chain_id();
@@ -281,8 +280,7 @@ mod tests {
         assert_eq!(1665092994931, order_info2.expiration());
         assert_eq!(300000, order_info2.fee().value());
         assert_eq!(None, order_info2.fee().asset_id());
-        let signature = Base58::encode(&order_info2.proofs()[0], false);
-        assert_eq!("5Mbvg4kz1rPLBVBWoTcY2e6Zajoqxq6g38WPfvxCMiHmjxm8TPZpLpEitf9SdfGSpBHtAxas2YRe7X4UcmBugDFL", signature);
+        assert_eq!("5Mbvg4kz1rPLBVBWoTcY2e6Zajoqxq6g38WPfvxCMiHmjxm8TPZpLpEitf9SdfGSpBHtAxas2YRe7X4UcmBugDFL", &order_info2.proofs()[0].encoded());
 
         assert_eq!(100, exchange_tx_from_json.amount());
         assert_eq!(1000, exchange_tx_from_json.price());

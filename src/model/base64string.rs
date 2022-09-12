@@ -1,9 +1,16 @@
 use crate::error::Result;
 use crate::model::ByteString;
+use std::fmt;
 
-#[derive(Eq, PartialEq, Clone, Debug)]
+#[derive(Eq, PartialEq, Clone)]
 pub struct Base64String {
     bytes: Vec<u8>,
+}
+
+impl fmt::Debug for Base64String {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Base64String {{ {} }}", self.encoded())
+    }
 }
 
 impl Base64String {

@@ -12,8 +12,8 @@ use crate::model::account::{Address, Balance, BalanceDetails};
 use crate::model::asset::balance::AssetsBalanceResponse;
 use crate::model::data_entry::DataEntry;
 use crate::model::{
-    Alias, AliasesByAddressResponse, BlockchainRewards, ChainId, ScriptInfo, ScriptMeta,
-    SignedTransaction, TransactionInfoResponse,
+    Alias, AliasesByAddressResponse, Base58String, BlockHeaders, BlockchainRewards, ByteString,
+    ChainId, ScriptInfo, ScriptMeta, SignedTransaction, TransactionInfoResponse,
 };
 use crate::util::JsonDeserializer;
 
@@ -259,6 +259,89 @@ impl Node {
         rs.try_into()
     }
 
+    // BLOCKS
+
+    pub async fn get_height(&self) -> Result<u32> {
+        let get_height_url = format!("{}blocks/height", self.url().as_str());
+        let rs = &self.get(&get_height_url).await?;
+        Ok(JsonDeserializer::safe_to_int_from_field(rs, "height")? as u32)
+    }
+
+    pub async fn get_block_height_by_id(&self, block_id: Base58String) -> Result<u32> {
+        let get_block_height_url = format!(
+            "{}blocks/height/{}",
+            self.url().as_str(),
+            block_id.encoded()
+        );
+        let rs = &self.get(&get_block_height_url).await?;
+        Ok(JsonDeserializer::safe_to_int_from_field(rs, "height")? as u32)
+    }
+
+    pub async fn get_block_height_by_timestamp(&self, timestamp: u64) -> Result<u32> {
+        let get_block_height_url = format!(
+            "{}blocks/heightByTimestamp/{}",
+            self.url().as_str(),
+            timestamp
+        );
+        let rs = &self.get(&get_block_height_url).await?;
+        Ok(JsonDeserializer::safe_to_int_from_field(rs, "height")? as u32)
+    }
+
+    pub async fn get_blocks_delay(
+        &self,
+        start_block_id: Base58String,
+        block_num: u32,
+    ) -> Result<u32> {
+        let get_blocks_delay_url = format!(
+            "{}blocks/delay/{}/{}",
+            self.url().as_str(),
+            start_block_id.encoded(),
+            block_num
+        );
+        let rs = &self.get(&get_blocks_delay_url).await?;
+        Ok(JsonDeserializer::safe_to_int_from_field(rs, "delay")? as u32)
+    }
+
+    pub async fn get_block_headers_at_height(&self, height: u32) -> Result<BlockHeaders> {
+        let get_block_headers_url = format!("{}blocks/headers/at/{}", self.url().as_str(), height);
+        let rs = &self.get(&get_block_headers_url).await?;
+        rs.try_into()
+    }
+
+    pub async fn get_block_headers_by_id(&self, block_id: Base58String) -> Result<BlockHeaders> {
+        let get_block_headers_url = format!(
+            "{}blocks/headers/{}",
+            self.url().as_str(),
+            block_id.encoded()
+        );
+        let rs = &self.get(&get_block_headers_url).await?;
+        rs.try_into()
+    }
+
+    pub async fn get_blocks_headers_seq(
+        &self,
+        from_height: u32,
+        to_height: u32,
+    ) -> Result<Vec<BlockHeaders>> {
+        let get_blocks_headers_seq_url = format!(
+            "{}blocks/headers/seq/{}/{}",
+            self.url().as_str(),
+            from_height,
+            to_height
+        );
+        let rs = &self.get(&get_blocks_headers_seq_url).await?;
+        JsonDeserializer::safe_to_array(rs)?
+            .iter()
+            .map(|block| block.try_into())
+            .collect()
+    }
+
+    pub async fn get_last_block_headers(&self) -> Result<BlockHeaders> {
+        let get_last_block_headers_url = format!("{}blocks/headers/last", self.url().as_str());
+        let rs = &self.get(&get_last_block_headers_url).await?;
+        rs.try_into()
+    }
+
     pub async fn get_transaction_info(
         &self,
         transaction_id: &str,
@@ -268,8 +351,8 @@ impl Node {
             self.url().as_str(),
             transaction_id
         );
-        let rs = self.get(&get_tx_info_url).await?;
-        JsonDeserializer::deserialize_tx_info(&rs, self.chain_id)
+        let rs = &self.get(&get_tx_info_url).await?;
+        rs.try_into()
     }
 
     pub async fn get_assets_balance(&self, address: &Address) -> Result<AssetsBalanceResponse> {
@@ -284,8 +367,8 @@ impl Node {
 
     pub async fn broadcast(&self, signed_tx: &SignedTransaction) -> Result<SignedTransaction> {
         let broadcast_tx_url = format!("{}transactions/broadcast", self.url().as_str());
-        let rs = self.post(&broadcast_tx_url, &signed_tx.to_json()?).await?;
-        JsonDeserializer::deserialize_signed_tx(&rs, signed_tx.tx().chain_id())
+        let rs = &self.post(&broadcast_tx_url, &signed_tx.to_json()?).await?;
+        rs.try_into()
     }
 
     async fn get(&self, url: &str) -> Result<Value> {
