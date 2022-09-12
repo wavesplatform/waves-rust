@@ -13,7 +13,8 @@ use crate::model::asset::balance::AssetsBalanceResponse;
 use crate::model::data_entry::DataEntry;
 use crate::model::{
     Alias, AliasesByAddressResponse, Base58String, Block, BlockHeaders, BlockchainRewards,
-    ByteString, ChainId, ScriptInfo, ScriptMeta, SignedTransaction, TransactionInfoResponse,
+    ByteString, ChainId, HistoryBalance, Id, LeaseInfo, ScriptInfo, ScriptMeta, SignedTransaction,
+    TransactionInfoResponse, Validation,
 };
 use crate::util::JsonDeserializer;
 
@@ -267,7 +268,7 @@ impl Node {
         Ok(JsonDeserializer::safe_to_int_from_field(rs, "height")? as u32)
     }
 
-    pub async fn get_block_height_by_id(&self, block_id: Base58String) -> Result<u32> {
+    pub async fn get_block_height_by_id(&self, block_id: &Base58String) -> Result<u32> {
         let get_block_height_url = format!(
             "{}blocks/height/{}",
             self.url().as_str(),
@@ -289,7 +290,7 @@ impl Node {
 
     pub async fn get_blocks_delay(
         &self,
-        start_block_id: Base58String,
+        start_block_id: &Base58String,
         block_num: u32,
     ) -> Result<u32> {
         let get_blocks_delay_url = format!(
@@ -308,7 +309,7 @@ impl Node {
         rs.try_into()
     }
 
-    pub async fn get_block_headers_by_id(&self, block_id: Base58String) -> Result<BlockHeaders> {
+    pub async fn get_block_headers_by_id(&self, block_id: &Base58String) -> Result<BlockHeaders> {
         let get_block_headers_url = format!(
             "{}blocks/headers/{}",
             self.url().as_str(),
@@ -348,7 +349,7 @@ impl Node {
         rs.try_into()
     }
 
-    pub async fn get_block_by_id(&self, block_id: Base58String) -> Result<Block> {
+    pub async fn get_block_by_id(&self, block_id: &Base58String) -> Result<Block> {
         let get_block_by_id_url = format!("{}blocks/{}", self.url().as_str(), block_id.encoded());
         let rs = &self.get(&get_block_by_id_url).await?;
         rs.try_into()
@@ -376,7 +377,7 @@ impl Node {
 
     pub async fn get_blocks_by_generator(
         &self,
-        generator: Address,
+        generator: &Address,
         from_height: u32,
         to_height: u32,
     ) -> Result<Vec<Block>> {
@@ -391,6 +392,74 @@ impl Node {
         JsonDeserializer::safe_to_array(rs)?
             .iter()
             .map(|block| block.try_into())
+            .collect()
+    }
+
+    // NODE
+    pub async fn get_version(&self) -> Result<String> {
+        let get_version_url = format!("{}node/version", self.url().as_str(),);
+        let rs = &self.get(&get_version_url).await?;
+        JsonDeserializer::safe_to_string_from_field(rs, "version")
+    }
+
+    // DEBUG
+    pub async fn get_balance_history(&self, address: &Address) -> Result<Vec<HistoryBalance>> {
+        let get_balance_history_url = format!(
+            "{}debug/balances/history/{}",
+            self.url().as_str(),
+            address.encoded()
+        );
+        let rs = &self.get(&get_balance_history_url).await?;
+        JsonDeserializer::safe_to_array(rs)?
+            .iter()
+            .map(|balance| balance.try_into())
+            .collect()
+    }
+
+    pub async fn validate_transaction(&self, signed_tx: &SignedTransaction) -> Result<Validation> {
+        let validate_url = format!("{}debug/validate", self.url().as_str());
+        let rs = &self.post(&validate_url, &signed_tx.to_json()?).await?;
+        rs.try_into()
+    }
+
+    // LEASING
+
+    pub async fn get_active_leases(&self, address: &Address) -> Result<Vec<LeaseInfo>> {
+        let get_active_leases_url = format!(
+            "{}leasing/active/{}",
+            self.url().as_str(),
+            address.encoded()
+        );
+        let rs = &self.get(&get_active_leases_url).await?;
+        JsonDeserializer::safe_to_array(rs)?
+            .iter()
+            .map(|lease| lease.try_into())
+            .collect()
+    }
+
+    pub async fn get_lease_info(&self, lease_id: &Id) -> Result<LeaseInfo> {
+        let get_lease_info_url =
+            format!("{}leasing/info/{}", self.url().as_str(), lease_id.encoded());
+        let rs = &self.get(&get_lease_info_url).await?;
+        rs.try_into()
+    }
+
+    pub async fn get_leases_info(&self, lease_ids: &[Id]) -> Result<Vec<LeaseInfo>> {
+        let get_leases_info_url = format!("{}leasing/info", self.url().as_str());
+        let mut ids: Map<String, Value> = Map::new();
+        ids.insert(
+            "ids".to_owned(),
+            Array(
+                lease_ids
+                    .iter()
+                    .map(|it| Value::String(it.encoded()))
+                    .collect(),
+            ),
+        );
+        let rs = &self.post(&get_leases_info_url, &ids.into()).await?;
+        JsonDeserializer::safe_to_array(rs)?
+            .iter()
+            .map(|lease| lease.try_into())
             .collect()
     }
 

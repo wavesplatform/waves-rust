@@ -12,8 +12,8 @@ pub struct LeaseInfo {
     amount: u64,
     height: u32,
     status: LeaseStatus,
-    cancel_height: u32,
-    cancel_transaction_id: Id,
+    cancel_height: Option<u32>,
+    cancel_transaction_id: Option<Id>,
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -26,8 +26,8 @@ impl LeaseInfo {
         amount: u64,
         height: u32,
         status: LeaseStatus,
-        cancel_height: u32,
-        cancel_transaction_id: Id,
+        cancel_height: Option<u32>,
+        cancel_transaction_id: Option<Id>,
     ) -> LeaseInfo {
         LeaseInfo {
             id,
@@ -70,11 +70,11 @@ impl LeaseInfo {
         self.status.clone()
     }
 
-    pub fn cancel_height(&self) -> u32 {
+    pub fn cancel_height(&self) -> Option<u32> {
         self.cancel_height
     }
 
-    pub fn cancel_transaction_id(&self) -> Id {
+    pub fn cancel_transaction_id(&self) -> Option<Id> {
         self.cancel_transaction_id.clone()
     }
 }
@@ -101,10 +101,11 @@ impl TryFrom<&Value> for LeaseInfo {
             "canceled" => LeaseStatus::Canceled,
             _ => panic!("unknown lease type"),
         };
-        let cancel_height = JsonDeserializer::safe_to_int_from_field(value, "cancelHeight")?;
-        let cancel_tx_id =
-            JsonDeserializer::safe_to_string_from_field(value, "cancelTransactionId")?;
-
+        let cancel_height = value["cancelHeight"].as_i64();
+        let cancel_tx_id = match value["cancelTransactionId"].as_str() {
+            Some(id) => Some(Id::from_string(id)?),
+            None => None,
+        };
         Ok(LeaseInfo {
             id: Id::from_string(&id)?,
             origin_transaction_id: Id::from_string(&origin_tx_id)?,
@@ -113,8 +114,8 @@ impl TryFrom<&Value> for LeaseInfo {
             amount: amount as u64,
             height: height as u32,
             status,
-            cancel_height: cancel_height as u32,
-            cancel_transaction_id: Id::from_string(&cancel_tx_id)?,
+            cancel_height: cancel_height.map(|it| it as u32),
+            cancel_transaction_id: cancel_tx_id,
         })
     }
 }

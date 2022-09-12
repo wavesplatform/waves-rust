@@ -15,7 +15,7 @@ async fn get_block_height_by_id_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
     let block_id =
         Base58String::from_string("oReBHRjMcUKqZxH6iVhthxQ72QndBFtfLHngV8aGW9y".to_owned())?;
-    let height = node.get_block_height_by_id(block_id).await?;
+    let height = node.get_block_height_by_id(&block_id).await?;
     println!("{}", height);
     Ok(())
 }
@@ -34,7 +34,7 @@ async fn get_blocks_delay_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
     let block_id =
         Base58String::from_string("oReBHRjMcUKqZxH6iVhthxQ72QndBFtfLHngV8aGW9y".to_owned())?;
-    let delay = node.get_blocks_delay(block_id, 3).await?;
+    let delay = node.get_blocks_delay(&block_id, 3).await?;
     println!("{}", delay);
     Ok(())
 }
@@ -52,7 +52,7 @@ async fn get_block_headers_by_id_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
     let block_id =
         Base58String::from_string("oReBHRjMcUKqZxH6iVhthxQ72QndBFtfLHngV8aGW9y".to_owned())?;
-    let headers = node.get_block_headers_by_id(block_id).await?;
+    let headers = node.get_block_headers_by_id(&block_id).await?;
     println!("{:#?}", headers);
     Ok(())
 }
@@ -87,7 +87,7 @@ async fn get_block_by_id_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
     let block_id =
         Base58String::from_string("E6uQ1HKHU6eTzHddBTr4Xdif1v6FGr2agxEr7qCgwREY".to_owned())?;
-    let block = node.get_block_by_id(block_id).await?;
+    let block = node.get_block_by_id(&block_id).await?;
     println!("{:#?}", block);
     Ok(())
 }
@@ -115,7 +115,7 @@ async fn get_blocks_by_generator_test() -> Result<()> {
     let generator = Address::from_string("3Mxv6Dpa1qRuyQBRFg3GwUaf3rcjHqWwNmC")?;
 
     let block = node
-        .get_blocks_by_generator(generator, 2225770, 2225796)
+        .get_blocks_by_generator(&generator, 2225770, 2225796)
         .await?;
     println!("{:#?}", block);
     Ok(())
