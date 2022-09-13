@@ -67,6 +67,10 @@ impl IssueTransactionInfo {
         TYPE
     }
 
+    pub fn asset_id(&self) -> AssetId {
+        self.asset_id.clone()
+    }
+
     pub fn name(&self) -> String {
         self.name.clone()
     }

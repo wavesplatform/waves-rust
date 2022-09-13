@@ -292,7 +292,7 @@ impl Node {
             self.url().as_str(),
             address.encoded()
         );
-        let rs = self.get(&url).await?;
+        let rs = &self.get(&url).await?;
         rs.try_into()
     }
 

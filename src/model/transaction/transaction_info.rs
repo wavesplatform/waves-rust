@@ -426,14 +426,15 @@ impl TryFrom<&Value> for TransactionInfoResponse {
         let tx_type = JsonDeserializer::safe_to_int_from_field(value, "type")? as u8;
 
         let application_status = if tx_type == 1 || tx_type == 2 {
-            //todo check is genesis always succeed
-            ApplicationStatus::Succeed
+            ApplicationStatus::Unknown
         } else {
-            match JsonDeserializer::safe_to_string_from_field(value, "applicationStatus")?.as_str()
-            {
-                "succeeded" => ApplicationStatus::Succeed,
-                "script_execution_failed" => ApplicationStatus::ScriptExecutionFailed,
-                &_ => ApplicationStatus::Unknown,
+            match value["applicationStatus"].as_str() {
+                Some(status) => match status {
+                    "succeeded" => ApplicationStatus::Succeed,
+                    "script_execution_failed" => ApplicationStatus::ScriptExecutionFailed,
+                    &_ => ApplicationStatus::Unknown,
+                },
+                None => ApplicationStatus::Unknown,
             }
         };
         let height = JsonDeserializer::safe_to_int_from_field(value, "height")? as u32;
