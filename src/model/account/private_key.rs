@@ -1,6 +1,7 @@
 use crate::constants::{HASH_LENGTH, SIGNATURE_LENGTH};
 use crate::error::{Error, Result};
 use crate::model::account::PublicKey;
+use crate::model::ByteString;
 use crate::util::{Base58, Crypto};
 use curve25519_dalek::montgomery::MontgomeryPoint;
 use ed25519_dalek::{PublicKey as EdPublicKey, Signature, Verifier};
@@ -83,6 +84,7 @@ impl PrivateKey {
 #[cfg(test)]
 mod tests {
     use crate::model::account::PrivateKey;
+    use crate::model::ByteString;
 
     #[test]
     fn test_private_key_from_seed() {

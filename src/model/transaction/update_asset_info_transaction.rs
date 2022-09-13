@@ -1,5 +1,5 @@
 use crate::error::{Error, Result};
-use crate::model::AssetId;
+use crate::model::{AssetId, ByteString};
 use crate::util::JsonDeserializer;
 use crate::waves_proto::UpdateAssetInfoTransactionData;
 use serde_json::{Map, Value};
@@ -126,7 +126,7 @@ impl TryFrom<&UpdateAssetInfoTransaction> for UpdateAssetInfoTransactionData {
 
 #[cfg(test)]
 mod tests {
-    use crate::model::UpdateAssetInfoTransactionInfo;
+    use crate::model::{ByteString, UpdateAssetInfoTransactionInfo};
     use serde_json::Value;
     use std::borrow::Borrow;
     use std::fs;

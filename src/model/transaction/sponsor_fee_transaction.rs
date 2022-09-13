@@ -1,5 +1,5 @@
 use crate::error::{Error, Result};
-use crate::model::AssetId;
+use crate::model::{AssetId, ByteString};
 use crate::util::JsonDeserializer;
 use crate::waves_proto::Amount as ProtoAmount;
 use crate::waves_proto::SponsorFeeTransactionData;
@@ -117,7 +117,7 @@ impl TryFrom<&SponsorFeeTransaction> for SponsorFeeTransactionData {
 
 #[cfg(test)]
 mod tests {
-    use crate::model::SponsorFeeTransaction;
+    use crate::model::{ByteString, SponsorFeeTransaction};
     use serde_json::Value;
     use std::borrow::Borrow;
     use std::fs;

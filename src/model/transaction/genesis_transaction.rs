@@ -1,5 +1,5 @@
 use crate::error::{Error, Result};
-use crate::model::Address;
+use crate::model::{Address, ByteString};
 use crate::util::JsonDeserializer;
 use crate::waves_proto::GenesisTransactionData;
 use serde_json::Value;
@@ -90,7 +90,9 @@ impl TryFrom<&Value> for GenesisTransaction {
 #[cfg(test)]
 mod tests {
     use crate::error::Result;
-    use crate::model::{GenesisTransactionInfo, SignedTransaction, TransactionInfoResponse};
+    use crate::model::{
+        ByteString, GenesisTransactionInfo, SignedTransaction, TransactionInfoResponse,
+    };
     use serde_json::Value;
     use std::borrow::Borrow;
     use std::fs;

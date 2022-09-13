@@ -1,10 +1,12 @@
 use crate::error::{Error, Result};
 use crate::model::account::PublicKey;
+use crate::model::ByteString;
 use crate::util::{Base58, Crypto, JsonDeserializer};
 use serde_json::Value;
 use std::fmt;
+use std::hash::Hash;
 
-#[derive(Eq, PartialEq, Clone)]
+#[derive(Eq, PartialEq, Clone, Hash)]
 pub struct Address {
     bytes: Vec<u8>,
 }
@@ -25,18 +27,10 @@ impl Address {
         })
     }
 
-    pub fn encoded(&self) -> String {
-        Base58::encode(&self.bytes, false)
-    }
-
     pub fn from_string(address: &str) -> Result<Address> {
         Ok(Address {
             bytes: Base58::decode(address)?,
         })
-    }
-
-    pub fn bytes(&self) -> Vec<u8> {
-        self.bytes.clone()
     }
 
     pub fn chain_id(&self) -> u8 {
@@ -45,6 +39,20 @@ impl Address {
 
     pub fn public_key_hash(&self) -> Vec<u8> {
         self.bytes[2..22].to_vec()
+    }
+}
+
+impl ByteString for Address {
+    fn bytes(&self) -> Vec<u8> {
+        self.bytes.clone()
+    }
+
+    fn encoded(&self) -> String {
+        Base58::encode(&self.bytes, false)
+    }
+
+    fn encoded_with_prefix(&self) -> String {
+        Base58::encode(&self.bytes, true)
     }
 }
 
@@ -60,7 +68,7 @@ impl TryFrom<&Value> for Address {
 #[cfg(test)]
 mod tests {
     use crate::model::account::{Address, PrivateKey};
-    use crate::model::ChainId;
+    use crate::model::{ByteString, ChainId};
 
     #[test]
     fn test_address_from_public_key() {

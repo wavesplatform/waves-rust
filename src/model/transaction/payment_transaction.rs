@@ -1,5 +1,5 @@
 use crate::error::{Error, Result};
-use crate::model::Address;
+use crate::model::{Address, ByteString};
 use crate::util::JsonDeserializer;
 use crate::waves_proto::PaymentTransactionData;
 use serde_json::Value;
@@ -90,7 +90,9 @@ impl TryFrom<&Value> for PaymentTransaction {
 #[cfg(test)]
 mod tests {
     use crate::error::Result;
-    use crate::model::{PaymentTransaction, SignedTransaction, TransactionInfoResponse};
+    use crate::model::{
+        ByteString, PaymentTransaction, SignedTransaction, TransactionInfoResponse,
+    };
     use serde_json::Value;
     use std::fs;
 

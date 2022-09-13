@@ -23,7 +23,9 @@ pub fn sign_order(order: &Order, private_key: &PrivateKey) -> Result<SignedOrder
 mod tests {
     use crate::model::account::PrivateKey;
     use crate::model::data_entry::DataEntry;
-    use crate::model::{Amount, ChainId, DataTransaction, Transaction, TransactionData};
+    use crate::model::{
+        Amount, ByteString, ChainId, DataTransaction, Transaction, TransactionData,
+    };
     use crate::util::sign_tx;
 
     const SEED_PHRASE: &str = "dwarf chimney miss category orchard organ neck income prevent \

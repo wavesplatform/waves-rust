@@ -1,5 +1,5 @@
 use crate::error::{Error, Result};
-use crate::model::{Amount, AssetId};
+use crate::model::{Amount, AssetId, ByteString};
 use crate::util::JsonDeserializer;
 use crate::waves_proto::{Amount as ProtoAmount, BurnTransactionData};
 use serde_json::{Map, Value};
@@ -111,7 +111,7 @@ impl TryFrom<&BurnTransaction> for BurnTransactionData {
 
 #[cfg(test)]
 mod tests {
-    use crate::model::BurnTransactionInfo;
+    use crate::model::{BurnTransactionInfo, ByteString};
     use serde_json::Value;
     use std::borrow::Borrow;
     use std::fs;

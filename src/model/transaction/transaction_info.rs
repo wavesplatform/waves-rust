@@ -12,7 +12,7 @@ use crate::model::TransactionData::{
     MassTransfer, Payment, Reissue, SetAssetScript, SetScript, SponsorFee, UpdateAssetInfo,
 };
 use crate::model::{
-    Address, AssetId, BurnTransaction, BurnTransactionInfo, CreateAliasTransaction,
+    Address, AssetId, BurnTransaction, BurnTransactionInfo, ByteString, CreateAliasTransaction,
     CreateAliasTransactionInfo, DataTransactionInfo, EthereumTransaction, EthereumTransactionInfo,
     ExchangeTransaction, ExchangeTransactionInfo, GenesisTransaction, GenesisTransactionInfo, Id,
     InvokeScriptTransaction, InvokeScriptTransactionInfo, IssueTransaction, IssueTransactionInfo,

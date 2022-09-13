@@ -1,0 +1,20 @@
+{
+  "assetId": "CVwsbXjXmdYF2q4RCPuQKf7sLGpzhk7BNnYsxGZZJMym",
+  "issueHeight": 2221593,
+  "issueTimestamp": 1662728397110,
+  "issuer": "3Ms6jp75u5qnfmAgWpxbt9xHv7znBp7RHnq",
+  "issuerPublicKey": "ASA4fMdz5FirDREfB34PPi67QxLHMt8tvzRQDT64juiM",
+  "name": "AssetWithScript",
+  "description": "",
+  "decimals": 0,
+  "reissuable": true,
+  "quantity": 10000,
+  "scripted": true,
+  "minSponsoredAssetFee": null,
+  "originTransactionId": "CVwsbXjXmdYF2q4RCPuQKf7sLGpzhk7BNnYsxGZZJMym",
+  "scriptDetails": {
+    "scriptComplexity": 127,
+    "script": "base64:AgQAAAAHbWFzdGVyMQkBAAAAEWFkZHJlc3NGcm9tU3RyaW5nAAAAAQIAAAAQMzMzbWFzdGVyQWRkcmVzcwQAAAAHJG1hdGNoMAUAAAACdHgDCQAAAQAAAAIFAAAAByRtYXRjaDACAAAAE1RyYW5zZmVyVHJhbnNhY3Rpb24EAAAAAXQFAAAAByRtYXRjaDADCQAAAAAAAAIIBQAAAAF0AAAABnNlbmRlcgUAAAAHbWFzdGVyMQYJAAAAAAAAAggFAAAAAXQAAAAJcmVjaXBpZW50BQAAAAdtYXN0ZXIxAwkAAAEAAAACBQAAAAckbWF0Y2gwAgAAABdNYXNzVHJhbnNmZXJUcmFuc2FjdGlvbgQAAAACbXQFAAAAByRtYXRjaDAJAAAAAAAAAggFAAAAAm10AAAABnNlbmRlcgUAAAAHbWFzdGVyMQMJAAABAAAAAgUAAAAHJG1hdGNoMAIAAAATRXhjaGFuZ2VUcmFuc2FjdGlvbgcGFLbwIw==",
+    "scriptText": "LET_BLOCK(LET(master1,FUNCTION_CALL(User(addressFromString),List(333masterAddress))),LET_BLOCK(LET($match0,REF(tx)),IF(FUNCTION_CALL(Native(1),List(REF($match0), TransferTransaction)),LET_BLOCK(LET(t,REF($match0)),IF(FUNCTION_CALL(Native(0),List(GETTER(REF(t),sender), REF(master1))),true,FUNCTION_CALL(Native(0),List(GETTER(REF(t),recipient), REF(master1))))),IF(FUNCTION_CALL(Native(1),List(REF($match0), MassTransferTransaction)),LET_BLOCK(LET(mt,REF($match0)),FUNCTION_CALL(Native(0),List(GETTER(REF(mt),sender), REF(master1)))),IF(FUNCTION_CALL(Native(1),List(REF($match0), ExchangeTransaction)),false,true)))))"
+  }
+}

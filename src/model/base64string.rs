@@ -2,7 +2,7 @@ use crate::error::Result;
 use crate::model::ByteString;
 use std::fmt;
 
-#[derive(Eq, PartialEq, Clone)]
+#[derive(Eq, PartialEq, Clone, Hash)]
 pub struct Base64String {
     bytes: Vec<u8>,
 }
@@ -27,6 +27,10 @@ impl Base64String {
         Ok(Base64String {
             bytes: base64::decode(base64str)?,
         })
+    }
+
+    pub fn empty() -> Base64String {
+        Base64String { bytes: vec![] }
     }
 }
 

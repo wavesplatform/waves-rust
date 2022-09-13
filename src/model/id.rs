@@ -1,8 +1,9 @@
 use crate::error::Result;
+use crate::model::ByteString;
 use crate::util::Base58;
 use std::fmt;
 
-#[derive(Clone, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq, Hash)]
 pub struct Id {
     bytes: Vec<u8>,
 }
@@ -23,16 +24,18 @@ impl Id {
     pub fn from_bytes(id: &[u8]) -> Id {
         Id { bytes: id.into() }
     }
+}
 
-    pub fn encoded(&self) -> String {
+impl ByteString for Id {
+    fn bytes(&self) -> Vec<u8> {
+        self.bytes.clone()
+    }
+
+    fn encoded(&self) -> String {
         Base58::encode(&self.bytes, false)
     }
 
-    pub fn encoded_with_prefix(&self) -> String {
+    fn encoded_with_prefix(&self) -> String {
         Base58::encode(&self.bytes, true)
-    }
-
-    pub fn bytes(&self) -> Vec<u8> {
-        self.bytes.clone()
     }
 }
