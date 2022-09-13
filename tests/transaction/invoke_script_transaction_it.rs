@@ -1,8 +1,8 @@
 use waves_rust::api::{Node, Profile};
 
 use waves_rust::model::{
-    Address, Amount, Arg, Base64String, ChainId, Function, InvokeScriptTransaction, PrivateKey,
-    Transaction, TransactionData,
+    Address, Amount, Arg, Base64String, ByteString, ChainId, Function, InvokeScriptTransaction,
+    PrivateKey, Transaction, TransactionData,
 };
 use waves_rust::util::get_current_epoch_millis;
 

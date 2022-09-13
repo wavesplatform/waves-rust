@@ -12,7 +12,7 @@ use serde_json::{Map, Value};
 use crate::model::account::{Address, Balance, BalanceDetails};
 use crate::model::asset::asset_details::AssetDetails;
 use crate::model::asset::asset_distribution::AssetDistribution;
-use crate::model::asset::balance::{AssetBalance, AssetsBalanceResponse};
+use crate::model::asset::balance::{AssetsBalanceResponse};
 use crate::model::data_entry::DataEntry;
 use crate::model::{
     Alias, AliasesByAddressResponse, Amount, AssetId, Base58String, Block, BlockHeaders,

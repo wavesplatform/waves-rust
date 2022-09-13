@@ -1,7 +1,7 @@
 use waves_rust::api::{Node, Profile};
 use waves_rust::model::{
-    Amount, AssetId, ChainId, ExchangeTransaction, Order, OrderType, PrivateKey, Transaction,
-    TransactionData,
+    Amount, AssetId, ByteString, ChainId, ExchangeTransaction, Order, OrderType, PrivateKey,
+    Transaction, TransactionData,
 };
 use waves_rust::util::get_current_epoch_millis;
 
