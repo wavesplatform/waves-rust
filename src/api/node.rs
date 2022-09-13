@@ -66,7 +66,10 @@ impl Node {
     pub async fn get_addresses(&self) -> Result<Vec<Address>> {
         let get_addresses_url = format!("{}addresses", self.url().as_str());
         let rs = self.get(&get_addresses_url).await?;
-        JsonDeserializer::deserialize_addresses(&rs)
+        JsonDeserializer::safe_to_array(&rs)?
+            .iter()
+            .map(|address| address.try_into())
+            .collect()
     }
 
     pub async fn get_addresses_seq(&self, from_index: u64, to_index: u64) -> Result<Vec<Address>> {
@@ -77,7 +80,10 @@ impl Node {
             to_index
         );
         let rs = self.get(&get_addresses_seq_url).await?;
-        JsonDeserializer::deserialize_addresses(&rs)
+        JsonDeserializer::safe_to_array(&rs)?
+            .iter()
+            .map(|address| address.try_into())
+            .collect()
     }
 
     pub async fn get_balance(&self, address: &Address) -> Result<u64> {
@@ -117,8 +123,11 @@ impl Node {
                     .collect(),
             ),
         );
-        let rs = self.post(&get_balances_url, &json_addresses.into()).await?;
-        JsonDeserializer::deserialize_balances(&rs)
+        let rs = &self.post(&get_balances_url, &json_addresses.into()).await?;
+        JsonDeserializer::safe_to_array(rs)?
+            .iter()
+            .map(|balance| balance.try_into())
+            .collect()
     }
 
     pub async fn get_balances_at_height(
@@ -138,8 +147,11 @@ impl Node {
             ),
         );
         json_addresses.insert("height".to_owned(), height.into());
-        let rs = self.post(&get_balances_url, &json_addresses.into()).await?;
-        JsonDeserializer::deserialize_balances(&rs)
+        let rs = &self.post(&get_balances_url, &json_addresses.into()).await?;
+        JsonDeserializer::safe_to_array(rs)?
+            .iter()
+            .map(|balance| balance.try_into())
+            .collect()
     }
 
     pub async fn get_balance_details(&self, address: &Address) -> Result<BalanceDetails> {
@@ -148,8 +160,8 @@ impl Node {
             self.url().as_str(),
             address.encoded()
         );
-        let rs = self.get(&get_balance_details_url).await?;
-        JsonDeserializer::deserialize_balance_details(&rs)
+        let rs = &self.get(&get_balance_details_url).await?;
+        rs.try_into()
     }
 
     pub async fn get_data(&self, address: &Address) -> Result<Vec<DataEntry>> {
@@ -212,7 +224,7 @@ impl Node {
             address.encoded()
         );
         let rs = &self.get(&get_script_info_url).await?;
-        JsonDeserializer::deserialize_script_info(rs)
+        rs.try_into()
     }
 
     pub async fn get_script_meta(&self, address: &Address) -> Result<ScriptMeta> {
@@ -222,7 +234,7 @@ impl Node {
             address.encoded()
         );
         let rs = &self.get(&get_script_meta_url).await?;
-        JsonDeserializer::deserialize_script_meta(rs)
+        rs.try_into()
     }
 
     // ALIAS
@@ -585,6 +597,24 @@ impl Node {
         Ok(JsonDeserializer::safe_to_int_from_field(rs, "size")? as u32)
     }
 
+    // UTILS
+
+    pub async fn compile_script(
+        &self,
+        source: &str,
+        enable_compaction: bool,
+    ) -> Result<ScriptInfo> {
+        let compile_script_url = format!(
+            "{}utils/script/compileCode?compact={}",
+            self.url().as_str(),
+            enable_compaction
+        );
+        let rs = &self
+            .post_plain_text(&compile_script_url, source.to_owned())
+            .await?;
+        rs.try_into()
+    }
+
     pub async fn get_assets_balance(&self, address: &Address) -> Result<AssetsBalanceResponse> {
         let url = format!(
             "{}assets/balance/{}",
@@ -604,6 +634,13 @@ impl Node {
 
     async fn post(&self, url: &str, body: &Value) -> Result<Value> {
         let response = self.http_client.post(url).json(body).send().await?;
+        let rs = response.json().await?;
+        Self::error_check(&rs)?;
+        Ok(rs)
+    }
+
+    async fn post_plain_text(&self, url: &str, body: String) -> Result<Value> {
+        let response = self.http_client.post(url).body(body.clone()).send().await?;
         let rs = response.json().await?;
         Self::error_check(&rs)?;
         Ok(rs)

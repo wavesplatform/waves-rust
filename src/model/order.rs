@@ -209,7 +209,7 @@ impl Order {
     }
 
     pub fn bytes(&self) -> Result<Vec<u8>> {
-        BinarySerializer::order_body_byte(self)
+        BinarySerializer::order_body_bytes(self)
     }
 
     // pub fn eip_712_signature(&self) -> Option<Vec<u8>> {

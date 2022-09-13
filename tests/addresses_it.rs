@@ -1,21 +1,20 @@
 use regex::Regex;
 use waves_rust::api::{Node, Profile};
+use waves_rust::error::Result;
 use waves_rust::model::{Address, ByteString};
 
 #[tokio::test]
 async fn get_addresses_test() {
     let node = Node::from_profile(Profile::TESTNET);
     let addresses = node.get_addresses().await.unwrap();
-    let address = addresses.first().unwrap();
-    println!("{}", address.encoded());
+    println!("{:?}", addresses);
 }
 
 #[tokio::test]
 async fn get_addresses_seq_test() {
     let node = Node::from_profile(Profile::TESTNET);
     let addresses = node.get_addresses_seq(0, 1).await.unwrap();
-    let address = addresses.first().unwrap();
-    println!("{}", address.encoded());
+    println!("{:?}", addresses);
 }
 
 #[tokio::test]
@@ -45,7 +44,7 @@ async fn get_balance_with_confirmation_test() {
 }
 
 #[tokio::test]
-async fn get_balances_test() {
+async fn get_balances_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
     let balances = node
         .get_balances(&[
@@ -53,19 +52,12 @@ async fn get_balances_test() {
             Address::from_string("3MtQQX9NwYH5URGGcS2e6ptEgV7wTFesaRW").unwrap(),
         ])
         .await;
-
-    match balances {
-        Ok(result) => {
-            for balance in result {
-                println!("{:?}", balance);
-            }
-        }
-        Err(err) => println!("{:?}", err),
-    }
+    println!("{:#?}", balances);
+    Ok(())
 }
 
-#[tokio::test]
-async fn get_balances_at_height_test() {
+//#[tokio::test]
+async fn get_balances_at_height_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
     let balances = node
         .get_balances_at_height(
@@ -73,35 +65,21 @@ async fn get_balances_at_height_test() {
                 Address::from_string("3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q").unwrap(),
                 Address::from_string("3MtQQX9NwYH5URGGcS2e6ptEgV7wTFesaRW").unwrap(),
             ],
-            2202560,
+            2224968,
         )
-        .await;
-    match balances {
-        Ok(result) => {
-            for balance in result {
-                println!("{:?}", balance);
-            }
-        }
-        Err(err) => println!("{:?}", err),
-    }
+        .await?;
+    println!("{:#?}", balances);
+    Ok(())
 }
 
 #[tokio::test]
-async fn get_balance_details_test() {
+async fn get_balance_details_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
     let balance_details = node
         .get_balance_details(&Address::from_string("3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q").unwrap())
         .await;
-    match balance_details {
-        Ok(result) => {
-            println!("address: {}", result.address().encoded());
-            println!("available: {}", result.available());
-            println!("regular: {}", result.regular());
-            println!("generating: {}", result.generating());
-            println!("effective: {}", result.effective());
-        }
-        Err(err) => println!("{:?}", err),
-    }
+    println!("{:#?}", balance_details);
+    Ok(())
 }
 
 #[tokio::test]
@@ -183,15 +161,10 @@ async fn get_script_info_test() {
 }
 
 #[tokio::test]
-async fn get_script_meta_test() {
+async fn get_script_meta_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
     let address = Address::from_string("3Mv1HwsRtMjyGKSe5DSDnbT2AoTsXAjtwZS").unwrap();
-    let script_meta = node.get_script_meta(&address).await;
-    match script_meta {
-        Ok(result) => {
-            println!("{}", result.meta_version());
-            println!("{:#?}", result.callable_functions());
-        }
-        Err(err) => println!("{:?}", err),
-    }
+    let script_meta = node.get_script_meta(&address).await?;
+    println!("{:#?}", script_meta);
+    Ok(())
 }

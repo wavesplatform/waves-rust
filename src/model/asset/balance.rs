@@ -104,7 +104,10 @@ impl TryFrom<&Value> for AssetBalance {
         let sponsor_balance: Option<u64> = value["sponsorBalance"].as_u64();
         let quantity = JsonDeserializer::safe_to_int_from_field(value, "quantity")? as u64;
         let issue_transaction = match value["issueTransaction"].as_object() {
-            Some(obj) => Some(IssueTransactionInfo::from_json(&obj.clone().into())?),
+            Some(obj) => {
+                let issue_json: &Value = &obj.clone().into();
+                Some(issue_json.try_into()?)
+            }
             None => None,
         };
         Ok(AssetBalance::new(

@@ -1,6 +1,11 @@
-use crate::error::Result;
+use crate::error::{Error, Result};
 use crate::model::data_entry::DataEntry;
 use crate::util::{Base64, JsonDeserializer};
+use crate::waves_proto::data_transaction_data::data_entry::Value::{
+    BinaryValue, BoolValue, IntValue, StringValue,
+};
+use crate::waves_proto::data_transaction_data::DataEntry as ProtoDataEntry;
+use crate::waves_proto::DataTransactionData;
 use serde_json::{Map, Value};
 
 const TYPE: u8 = 12;
@@ -11,16 +16,6 @@ pub struct DataTransactionInfo {
 }
 
 impl DataTransactionInfo {
-    pub fn from_json(value: &Value) -> Result<DataTransactionInfo> {
-        let data_array = JsonDeserializer::safe_to_array_from_field(value, "data")?;
-        let data = data_array
-            .iter()
-            .map(|entry| entry.try_into())
-            .collect::<Result<Vec<DataEntry>>>()?;
-
-        Ok(DataTransactionInfo { data })
-    }
-
     pub fn new(data: Vec<DataEntry>) -> Self {
         DataTransactionInfo { data }
     }
@@ -31,6 +26,17 @@ impl DataTransactionInfo {
 
     pub fn data(&self) -> Vec<DataEntry> {
         self.data.clone()
+    }
+}
+
+impl TryFrom<&Value> for DataTransactionInfo {
+    type Error = Error;
+
+    fn try_from(value: &Value) -> Result<Self> {
+        let data_transaction: DataTransaction = value.try_into()?;
+        Ok(DataTransactionInfo {
+            data: data_transaction.data(),
+        })
     }
 }
 
@@ -51,8 +57,12 @@ impl DataTransaction {
     pub fn data(&self) -> Vec<DataEntry> {
         self.data.clone()
     }
+}
 
-    pub fn from_json(value: &Value) -> Result<DataTransaction> {
+impl TryFrom<&Value> for DataTransaction {
+    type Error = Error;
+
+    fn try_from(value: &Value) -> Result<Self> {
         let data_array = JsonDeserializer::safe_to_array_from_field(value, "data")?;
         let data = data_array
             .iter()
@@ -60,6 +70,50 @@ impl DataTransaction {
             .collect::<Result<Vec<DataEntry>>>()?;
 
         Ok(DataTransaction { data })
+    }
+}
+
+impl TryFrom<&DataTransaction> for DataTransactionData {
+    type Error = Error;
+
+    fn try_from(value: &DataTransaction) -> Result<Self> {
+        let mut proto_data_entries: Vec<ProtoDataEntry> = vec![];
+        let data_entries = value.data();
+        for data_entry in data_entries {
+            let key = data_entry.key();
+            match data_entry {
+                DataEntry::IntegerEntry { key: _, value } => {
+                    proto_data_entries.push(ProtoDataEntry {
+                        key,
+                        value: Some(IntValue(value)),
+                    });
+                }
+                DataEntry::BooleanEntry { key: _, value } => {
+                    proto_data_entries.push(ProtoDataEntry {
+                        key,
+                        value: Some(BoolValue(value)),
+                    });
+                }
+                DataEntry::BinaryEntry { key: _, value } => {
+                    proto_data_entries.push(ProtoDataEntry {
+                        key,
+                        value: Some(BinaryValue(value)),
+                    })
+                }
+                DataEntry::StringEntry { key: _, value } => {
+                    proto_data_entries.push(ProtoDataEntry {
+                        key,
+                        value: Some(StringValue(value)),
+                    })
+                }
+                DataEntry::DeleteEntry { key: _ } => {
+                    proto_data_entries.push(ProtoDataEntry { key, value: None });
+                }
+            };
+        }
+        Ok(DataTransactionData {
+            data: proto_data_entries,
+        })
     }
 }
 

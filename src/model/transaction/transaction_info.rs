@@ -27,18 +27,17 @@ use crate::util::{sign_tx, Base58, BinarySerializer, Hash, JsonDeserializer, Jso
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct TransactionInfoResponse {
-    id: Id, //+
+    id: Id,
     status: ApplicationStatus,
     data: TransactionDataInfo,
-    fee: Amount,    //+
-    timestamp: u64, //+
-    // todo check flatten for serde_json
+    fee: Amount,    
+    timestamp: u64, 
     public_key: PublicKey,
-    tx_type: u8, //+
+    tx_type: u8,
     version: u8,
     chain_id: u8,
     height: u32,
-    proofs: Vec<Proof>, //+
+    proofs: Vec<Proof>,
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -49,7 +48,6 @@ impl TransactionInfoResponse {
         data: TransactionDataInfo,
         fee: Amount,
         timestamp: u64,
-        // todo check flatten for serde_json
         public_key: PublicKey,
         tx_type: u8,
         version: u8,
@@ -63,7 +61,6 @@ impl TransactionInfoResponse {
             data,
             fee,
             timestamp,
-            // todo check flatten for serde_json
             public_key,
             tx_type,
             version,
@@ -130,7 +127,6 @@ pub struct Transaction {
     data: TransactionData,
     fee: Amount,
     timestamp: u64,
-    // todo check flatten for serde_json
     public_key: PublicKey,
     tx_type: u8,
     version: u8,
@@ -444,8 +440,8 @@ impl TryFrom<&Value> for TransactionInfoResponse {
         let transaction_data = match tx_type {
             1 => TransactionDataInfo::Genesis(value.try_into()?),
             2 => TransactionDataInfo::Payment(value.try_into()?),
-            3 => TransactionDataInfo::Issue(IssueTransactionInfo::from_json(value)?),
-            4 => TransactionDataInfo::Transfer(TransferTransactionInfo::from_json(value)?),
+            3 => TransactionDataInfo::Issue(value.try_into()?),
+            4 => TransactionDataInfo::Transfer(value.try_into()?),
             5 => TransactionDataInfo::Reissue(value.try_into()?),
             6 => TransactionDataInfo::Burn(value.try_into()?),
             7 => TransactionDataInfo::Exchange(value.try_into()?),
@@ -453,7 +449,7 @@ impl TryFrom<&Value> for TransactionInfoResponse {
             9 => TransactionDataInfo::LeaseCancel(value.try_into()?),
             10 => TransactionDataInfo::CreateAlias(value.try_into()?),
             11 => TransactionDataInfo::MassTransfer(value.try_into()?),
-            12 => TransactionDataInfo::Data(DataTransactionInfo::from_json(value)?),
+            12 => TransactionDataInfo::Data(value.try_into()?),
             13 => TransactionDataInfo::SetScript(value.try_into()?),
             14 => TransactionDataInfo::SponsorFee(value.try_into()?),
             15 => TransactionDataInfo::SetAssetScript(value.try_into()?),
@@ -521,8 +517,8 @@ impl TryFrom<&Value> for Transaction {
         let transaction_data = match tx_type {
             1 => Genesis(value.try_into()?),
             2 => Payment(value.try_into()?),
-            3 => Issue(IssueTransaction::from_json(value)?),
-            4 => Transfer(TransferTransaction::from_json(value)?),
+            3 => Issue(value.try_into()?),
+            4 => Transfer(value.try_into()?),
             5 => Reissue(value.try_into()?),
             6 => Burn(value.try_into()?),
             7 => Exchange(value.try_into()?),
@@ -530,7 +526,7 @@ impl TryFrom<&Value> for Transaction {
             9 => LeaseCancel(value.try_into()?),
             10 => CreateAlias(value.try_into()?),
             11 => MassTransfer(value.try_into()?),
-            12 => Data(DataTransaction::from_json(value)?),
+            12 => Data(value.try_into()?),
             13 => SetScript(value.try_into()?),
             14 => SponsorFee(value.try_into()?),
             15 => SetAssetScript(value.try_into()?),
