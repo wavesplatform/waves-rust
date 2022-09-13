@@ -1,8 +1,8 @@
 use crate::error::{Error, Result};
 use crate::model::{Address, Amount, AssetId, Base58String, ByteString};
 use crate::util::{Base58, JsonDeserializer};
+use crate::waves_proto::{recipient, Amount as ProtoAmount, Recipient, TransferTransactionData};
 use serde_json::Value;
-use crate::waves_proto::{Recipient, recipient, TransferTransactionData, Amount as ProtoAmount};
 
 const TYPE: u8 = 4;
 
@@ -14,7 +14,6 @@ pub struct TransferTransactionInfo {
 }
 
 impl TransferTransactionInfo {
-
     pub fn attachment(&self) -> Base58String {
         self.attachment.clone()
     }

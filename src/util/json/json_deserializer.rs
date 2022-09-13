@@ -1,15 +1,13 @@
 use crate::error::{Error, Result};
-use crate::model::account::{Address, Balance, BalanceDetails};
+
 use crate::model::data_entry::DataEntry;
-use crate::model::{ArgMeta, AssetId, Base64String, ScriptInfo, ScriptMeta};
+use crate::model::AssetId;
 
 use serde_json::Value;
-use std::collections::HashMap;
 
 pub struct JsonDeserializer;
 
 impl JsonDeserializer {
-
     pub fn deserialize_data_array(value: &Value) -> Result<Vec<DataEntry>> {
         let data_array = Self::safe_to_array(value)?;
         data_array

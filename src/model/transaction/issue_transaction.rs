@@ -1,8 +1,8 @@
-use crate::error::{Result, Error};
+use crate::error::{Error, Result};
 use crate::model::{AssetId, Base64String, ByteString};
 use crate::util::JsonDeserializer;
-use serde_json::Value;
 use crate::waves_proto::IssueTransactionData;
+use serde_json::Value;
 
 const TYPE: u8 = 3;
 
@@ -124,7 +124,6 @@ pub struct IssueTransaction {
 }
 
 impl IssueTransaction {
-
     pub fn new(
         name: String,
         description: String,
