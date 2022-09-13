@@ -537,7 +537,7 @@ impl TryFrom<&Value> for Transaction {
         };
         let timestamp = JsonDeserializer::safe_to_int_from_field(value, "timestamp")? as u64;
         let public_key = match tx_type {
-            1 => PublicKey::from_bytes(&[0; HASH_LENGTH]),
+            1 => PublicKey::from_bytes(&[0; HASH_LENGTH])?,
             _ => {
                 JsonDeserializer::safe_to_string_from_field(value, "senderPublicKey")?.try_into()?
             }

@@ -67,8 +67,11 @@ impl TryFrom<&Value> for Address {
 
 #[cfg(test)]
 mod tests {
+    use crate::error::Result;
     use crate::model::account::{Address, PrivateKey};
     use crate::model::{ByteString, ChainId};
+    use serde_json::Value;
+    use std::borrow::Borrow;
 
     #[test]
     fn test_address_from_public_key() {
@@ -92,5 +95,30 @@ mod tests {
         let address =
             Address::from_string(expected_address).expect("failed to get address from string");
         assert_eq!(expected_address, address.encoded())
+    }
+
+    #[test]
+    fn test_address_from_json() -> Result<()> {
+        let expected_address = "3MtQQX9NwYH5URGGcS2e6ptEgV7wTFesaRW";
+        let address: Address = Value::String("3MtQQX9NwYH5URGGcS2e6ptEgV7wTFesaRW".to_owned())
+            .borrow()
+            .try_into()?;
+        assert_eq!(expected_address, address.encoded());
+        Ok(())
+    }
+
+    #[test]
+    fn test_byte_string_for_address() -> Result<()> {
+        let address = Address::from_string("3MtQQX9NwYH5URGGcS2e6ptEgV7wTFesaRW")?;
+        let expected_bytes: Vec<u8> = vec![
+            1, 84, 49, 59, 204, 61, 157, 141, 148, 218, 122, 51, 43, 12, 171, 81, 190, 13, 80, 46,
+            88, 199, 218, 79, 208, 145,
+        ];
+        let expected_encoded = "3MtQQX9NwYH5URGGcS2e6ptEgV7wTFesaRW";
+        let expected_encoded_with_prefix = "base58:3MtQQX9NwYH5URGGcS2e6ptEgV7wTFesaRW";
+        assert_eq!(expected_bytes, address.bytes());
+        assert_eq!(expected_encoded, address.encoded());
+        assert_eq!(expected_encoded_with_prefix, address.encoded_with_prefix());
+        Ok(())
     }
 }

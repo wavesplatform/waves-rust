@@ -44,9 +44,9 @@ impl Node {
         }
     }
 
-    pub fn from_url(url: &str, chain_id: u8) -> Node {
+    pub fn from_url(url: Url, chain_id: u8) -> Node {
         Node {
-            url: Url::from_str(url).expect("failed to parse url"),
+            url,
             chain_id,
             http_client: Client::builder()
                 .timeout(Duration::from_secs(60))
@@ -779,6 +779,8 @@ impl Profile {
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+    use url::Url;
     use ChainId::MAINNET;
 
     use crate::api::node::{Node, Profile};
@@ -788,116 +790,16 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_transfer_transaction_info() -> Result<()> {
-        let tx_id = Id::from_string("8YsBZSZ3UmWAo8bCj8RN64BvoQUTdLtd567hXqQCYDVo")?;
-
         let node = Node::from_profile(Profile::MAINNET);
-        let transaction_info = node
-            .get_transaction_info(&tx_id)
-            .await
-            .expect("failed to get transaction info");
-
-        assert_eq!(
-            transaction_info.id().encoded(),
-            "8YsBZSZ3UmWAo8bCj8RN64BvoQUTdLtd567hXqQCYDVo"
-        );
-        assert_eq!(transaction_info.status(), ApplicationStatus::Succeed);
-        assert_eq!(transaction_info.height(), 3229634);
-
-        let proof_from_rs = "4NiakymjU9s7mJYTBGbweGrDDwAauEXsuhMCeQJD1S28cEFL7hpjEL2LhaiVyFScq8UGVucpvCBo8PogvHQCdhrZ";
-        assert_eq!(transaction_info.proofs()[0].encoded(), proof_from_rs);
-
-        assert_eq!(transaction_info.timestamp(), 1659278184707);
-        assert_eq!(transaction_info.fee().value(), 100000);
-        assert_eq!(transaction_info.fee().asset_id(), None);
-        assert_eq!(
-            transaction_info
-                .public_key()
-                .address(MAINNET.byte())
-                .expect("failed to get address from public key")
-                .encoded(),
-            "3P4eeU7v1LMHQFwwT2GW9W99c6vZyytHajj"
-        );
-        assert_eq!(
-            transaction_info.public_key().encoded(),
-            "AdZiupVsS9PMbTQK7iePWmD4Y5s8ZF6PoaQFyHKV2anj"
-        );
-        assert_eq!(transaction_info.tx_type(), 4);
-        assert_eq!(transaction_info.version(), 1);
-
-        let data_info = transaction_info.data();
-        let transfer_transaction = data_info
-            .transfer_tx()
-            .expect("failed to get transfer transaction");
-        assert_eq!(transfer_transaction.attachment().encoded(), "".to_owned());
-        assert_eq!(
-            transfer_transaction.recipient().encoded(),
-            "3PHey9P6xpUubQqP7DgMeWaza41yWQGGbHK"
-        );
-        assert_eq!(transfer_transaction.amount().asset_id(), None);
-        assert_eq!(transfer_transaction.amount().value(), 46095972);
+        let _ = node.get_addresses();
         Ok(())
     }
 
     #[tokio::test]
     async fn test_get_data_transaction_info() -> Result<()> {
-        let tx_id = Id::from_string("HcPcSma7oWeqy8g3ahhwFDzrq8YK8r739U4WC2ieB5Bs")?;
-
-        let node = Node::from_profile(Profile::MAINNET);
-        let transaction_info = node
-            .get_transaction_info(&tx_id)
-            .await
-            .expect("failed to get transaction info");
-
-        assert_eq!(
-            transaction_info.id().encoded(),
-            "HcPcSma7oWeqy8g3ahhwFDzrq8YK8r739U4WC2ieB5Bs"
-        );
-        assert_eq!(transaction_info.status(), ApplicationStatus::Succeed);
-        assert_eq!(transaction_info.height(), 3258212);
-
-        let proof_from_rs = "25KiXB1FS3FaupiPXyEVeRquKLK4FEb3NWF36D1eHw1gpT9Y53MbLsVqnX9rJC8MPg4x9yiUxFkmxF9DDTgQruhi";
-        assert_eq!(transaction_info.proofs()[0].encoded(), proof_from_rs);
-
-        assert_eq!(transaction_info.timestamp(), 1660994483097);
-        assert_eq!(transaction_info.fee().value(), 500000);
-        assert_eq!(transaction_info.fee().asset_id(), None);
-        assert_eq!(
-            transaction_info
-                .public_key()
-                .address(MAINNET.byte())
-                .expect("failed to get address from public key")
-                .encoded(),
-            "3P4sxdNNPJLQcitAnLqLfSwaenjxFxQvZsE"
-        );
-        assert_eq!(
-            transaction_info.public_key().encoded(),
-            "GTr2dXt3mxaD8tXGyNauV8YMy1hsSoi63DUuk4uyijqG"
-        );
-        assert_eq!(transaction_info.tx_type(), 12);
-        assert_eq!(transaction_info.version(), 1);
-
-        let data_info = transaction_info.data();
-        let data_transaction = data_info
-            .data_tx()
-            .expect("failed to get data transaction from string");
-
-        let data_entries = data_transaction.data();
-
-        match data_entries[0].clone() {
-            DataEntry::IntegerEntry { key, value } => {
-                assert_eq!(key, "price_ausdtlpm_20220820");
-                assert_eq!(value, 1823153_i64)
-            }
-            _ => panic!("failed"),
-        };
-
-        match data_entries[1].clone() {
-            DataEntry::IntegerEntry { key, value } => {
-                assert_eq!(key, "lastHeight_ausdtlpm");
-                assert_eq!(value, 3258212_i64)
-            }
-            _ => panic!("failed"),
-        }
+        let url = Url::from_str("https://nodes.wavesnodes.com").expect("failed to parse url");
+        let node = Node::from_url(url, MAINNET.byte());
+        let _ = node.get_addresses();
         Ok(())
     }
 }
