@@ -12,7 +12,7 @@ pub fn sign_tx(transaction: &Transaction, private_key: &PrivateKey) -> Result<Si
 }
 
 pub fn sign_order(order: &Order, private_key: &PrivateKey) -> Result<SignedOrder> {
-    let bytes = BinarySerializer::order_body_byte(order);
+    let bytes = BinarySerializer::order_body_bytes(order);
     Ok(SignedOrder::new(
         order.clone(),
         vec![Proof::new(private_key.sign(&bytes?)?)],

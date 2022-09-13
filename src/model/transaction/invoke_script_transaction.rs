@@ -1,6 +1,8 @@
 use crate::error::{Error, Result};
 use crate::model::{Address, Amount, AssetId, Base64String, StateChanges};
-use crate::util::JsonDeserializer;
+use crate::util::{ByteWriter, JsonDeserializer};
+use crate::waves_proto::InvokeScriptTransactionData;
+use crate::waves_proto::{recipient, Amount as ProtoAmount, Recipient};
 use serde_json::Value;
 use std::borrow::Borrow;
 
@@ -69,6 +71,37 @@ pub struct InvokeScriptTransaction {
     dapp: Address,
     function: Function,
     payment: Vec<Amount>,
+}
+
+impl TryFrom<&InvokeScriptTransaction> for InvokeScriptTransactionData {
+    type Error = Error;
+
+    fn try_from(invoke_tx: &InvokeScriptTransaction) -> Result<Self> {
+        let dapp = Some(Recipient {
+            recipient: Some(recipient::Recipient::PublicKeyHash(
+                invoke_tx.dapp().public_key_hash(),
+            )),
+        });
+        let payments: Vec<ProtoAmount> = invoke_tx
+            .payment()
+            .iter()
+            .map(|amount| {
+                let asset_id = match amount.asset_id() {
+                    Some(asset) => asset.bytes(),
+                    None => vec![],
+                };
+                ProtoAmount {
+                    asset_id,
+                    amount: amount.value() as i64,
+                }
+            })
+            .collect();
+        Ok(InvokeScriptTransactionData {
+            d_app: dapp,
+            function_call: ByteWriter::bytes_from_function(&invoke_tx.function()),
+            payments,
+        })
+    }
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]

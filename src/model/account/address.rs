@@ -1,6 +1,7 @@
-use crate::error::Result;
+use crate::error::{Error, Result};
 use crate::model::account::PublicKey;
-use crate::util::{Base58, Crypto};
+use crate::util::{Base58, Crypto, JsonDeserializer};
+use serde_json::Value;
 use std::fmt;
 
 #[derive(Eq, PartialEq, Clone)]
@@ -44,6 +45,15 @@ impl Address {
 
     pub fn public_key_hash(&self) -> Vec<u8> {
         self.bytes[2..22].to_vec()
+    }
+}
+
+impl TryFrom<&Value> for Address {
+    type Error = Error;
+
+    fn try_from(value: &Value) -> Result<Self> {
+        let string = JsonDeserializer::safe_to_string(value)?;
+        Address::from_string(&string)
     }
 }
 
