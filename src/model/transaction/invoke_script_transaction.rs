@@ -1,5 +1,5 @@
 use crate::error::{Error, Result};
-use crate::model::{Address, Amount, AssetId, Base64String, StateChanges};
+use crate::model::{Address, Amount, AssetId, Base64String, ByteString, StateChanges};
 use crate::util::{ByteWriter, JsonDeserializer};
 use crate::waves_proto::InvokeScriptTransactionData;
 use crate::waves_proto::{recipient, Amount as ProtoAmount, Recipient};

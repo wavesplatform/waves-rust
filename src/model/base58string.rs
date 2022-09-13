@@ -8,7 +8,7 @@ pub trait ByteString {
     fn encoded_with_prefix(&self) -> String;
 }
 
-#[derive(Clone, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq, Hash)]
 pub struct Base58String {
     bytes: Vec<u8>,
 }

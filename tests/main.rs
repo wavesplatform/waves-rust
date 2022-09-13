@@ -1,6 +1,6 @@
 mod addresses_it;
 mod alias_it;
-mod assets;
+pub mod assets_it;
 mod blockchain_it;
 mod blocks_it;
 mod debug_it;

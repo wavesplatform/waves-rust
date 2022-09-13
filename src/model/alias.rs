@@ -8,7 +8,7 @@ const MAX_LENGTH: u8 = 30;
 const ALPHABET: &str = "-.0-9@_a-z";
 const TYPE: u8 = 2;
 
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Clone, Eq, PartialEq, Debug, Hash)]
 pub struct Alias {
     bytes: Vec<u8>,
     name: String,

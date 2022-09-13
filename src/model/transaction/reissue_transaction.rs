@@ -1,5 +1,5 @@
 use crate::error::{Error, Result};
-use crate::model::{Amount, AssetId};
+use crate::model::{Amount, AssetId, ByteString};
 use crate::util::JsonDeserializer;
 use crate::waves_proto::{Amount as ProtoAmount, ReissueTransactionData};
 use serde_json::{Map, Value};
@@ -127,7 +127,7 @@ impl TryFrom<&ReissueTransaction> for ReissueTransactionData {
 
 #[cfg(test)]
 mod tests {
-    use crate::model::ReissueTransactionInfo;
+    use crate::model::{ByteString, ReissueTransactionInfo};
     use serde_json::Value;
     use std::borrow::Borrow;
     use std::fs;

@@ -186,7 +186,7 @@ impl TryFrom<&ExchangeTransaction> for ExchangeTransactionData {
 
 #[cfg(test)]
 mod tests {
-    use crate::model::{ExchangeTransactionInfo, OrderType};
+    use crate::model::{ByteString, ExchangeTransactionInfo, OrderType};
 
     use serde_json::Value;
     use std::borrow::Borrow;

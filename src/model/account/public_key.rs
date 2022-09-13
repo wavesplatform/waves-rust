@@ -1,9 +1,10 @@
 use crate::error::{Error, Result};
 use crate::model::account::Address;
+use crate::model::ByteString;
 use crate::util::Base58;
 use std::fmt;
 
-#[derive(Clone, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq, Hash)]
 pub struct PublicKey {
     bytes: Vec<u8>,
 }
@@ -26,16 +27,22 @@ impl PublicKey {
         Ok(PublicKey { bytes })
     }
 
-    pub fn encoded(&self) -> String {
-        Base58::encode(&self.bytes, false)
+    pub fn address(&self, chain_id: u8) -> Result<Address> {
+        Address::from_public_key(chain_id, self)
     }
+}
 
-    pub fn bytes(&self) -> Vec<u8> {
+impl ByteString for PublicKey {
+    fn bytes(&self) -> Vec<u8> {
         self.bytes.clone()
     }
 
-    pub fn address(&self, chain_id: u8) -> Result<Address> {
-        Address::from_public_key(chain_id, self)
+    fn encoded(&self) -> String {
+        Base58::encode(&self.bytes, false)
+    }
+
+    fn encoded_with_prefix(&self) -> String {
+        Base58::encode(&self.bytes, true)
     }
 }
 
@@ -58,6 +65,7 @@ impl TryFrom<String> for PublicKey {
 #[cfg(test)]
 mod tests {
     use crate::model::account::{PrivateKey, PublicKey};
+    use crate::model::ByteString;
     use crate::util::{Base58, Crypto};
 
     #[test]

@@ -1,5 +1,5 @@
 use crate::error::{Error, Result};
-use crate::model::{Address, Amount, AssetId, Id, PrivateKey, Proof, PublicKey};
+use crate::model::{Address, Amount, AssetId, ByteString, Id, PrivateKey, Proof, PublicKey};
 use crate::util::{sign_order, Base58, BinarySerializer, Hash, JsonDeserializer};
 use crate::waves_proto::order::Sender::SenderPublicKey;
 use crate::waves_proto::{Amount as ProtoAmount, AssetPair, Order as ProtoOrder};

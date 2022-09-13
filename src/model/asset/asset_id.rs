@@ -1,9 +1,10 @@
 use crate::error::{Error, Result};
+use crate::model::ByteString;
 use crate::util::Base58;
 use serde_json::Value;
 use std::fmt;
 
-#[derive(Clone, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq, Hash)]
 pub struct AssetId {
     bytes: Vec<u8>,
 }
@@ -22,18 +23,19 @@ impl AssetId {
     pub fn from_bytes(bytes: Vec<u8>) -> AssetId {
         AssetId { bytes }
     }
+}
 
-    //todo fix
-    pub fn is_waves(&self) -> bool {
-        false
-    }
-
-    pub fn bytes(&self) -> Vec<u8> {
+impl ByteString for AssetId {
+    fn bytes(&self) -> Vec<u8> {
         self.bytes.clone()
     }
 
-    pub fn encoded(&self) -> String {
+    fn encoded(&self) -> String {
         Base58::encode(&self.bytes, false)
+    }
+
+    fn encoded_with_prefix(&self) -> String {
+        Base58::encode(&self.bytes, true)
     }
 }
 

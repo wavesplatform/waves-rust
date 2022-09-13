@@ -10,12 +10,14 @@ use serde_json::Value::Array;
 use serde_json::{Map, Value};
 
 use crate::model::account::{Address, Balance, BalanceDetails};
+use crate::model::asset::asset_details::AssetDetails;
+use crate::model::asset::asset_distribution::AssetDistribution;
 use crate::model::asset::balance::AssetsBalanceResponse;
 use crate::model::data_entry::DataEntry;
 use crate::model::{
-    Alias, AliasesByAddressResponse, Amount, Base58String, Block, BlockHeaders, BlockchainRewards,
-    ByteString, ChainId, HistoryBalance, Id, LeaseInfo, ScriptInfo, ScriptMeta, SignedTransaction,
-    TransactionInfoResponse, TransactionStatus, Validation,
+    Alias, AliasesByAddressResponse, Amount, AssetId, Base58String, Block, BlockHeaders,
+    BlockchainRewards, ByteString, ChainId, HistoryBalance, Id, LeaseInfo, ScriptInfo, ScriptMeta,
+    SignedTransaction, TransactionInfoResponse, TransactionStatus, Validation,
 };
 use crate::util::JsonDeserializer;
 
@@ -256,6 +258,107 @@ impl Node {
             format!("{}alias/by-alias/{}", self.url().as_str(), alias.name());
         let rs = &self.get(&get_address_by_alias_url).await?;
         Address::from_string(&JsonDeserializer::safe_to_string_from_field(rs, "address")?)
+    }
+
+    // ASSETS
+
+    pub async fn get_asset_distribution(
+        &self,
+        asset_id: &AssetId,
+        height: u32,
+        limit: u16,
+        after: Option<Address>,
+    ) -> Result<AssetDistribution> {
+        let url = format!(
+            "{}assets/{}/distribution/{}/limit/{}",
+            self.url().as_str(),
+            asset_id.encoded(),
+            height,
+            limit
+        );
+        let rs = match after {
+            Some(after_address) => {
+                let url_with_cursor = format!("{}?after={}", &url, after_address.encoded());
+                self.get(&url_with_cursor).await?
+            }
+            None => self.get(&url).await?,
+        };
+        rs.borrow().try_into()
+    }
+
+    pub async fn get_assets_balance(&self, address: &Address) -> Result<AssetsBalanceResponse> {
+        let url = format!(
+            "{}assets/balance/{}",
+            self.url().as_str(),
+            address.encoded()
+        );
+        let rs = self.get(&url).await?;
+        rs.try_into()
+    }
+
+    pub async fn get_asset_balance(&self, address: &Address, asset_id: &AssetId) -> Result<u64> {
+        let url = format!(
+            "{}assets/balance/{}/{}",
+            self.url().as_str(),
+            address.encoded(),
+            asset_id.encoded()
+        );
+        let rs = &self.get(&url).await?;
+        Ok(JsonDeserializer::safe_to_int_from_field(rs, "balance")? as u64)
+    }
+
+    pub async fn get_asset_details(&self, asset_id: &AssetId) -> Result<AssetDetails> {
+        let url = format!(
+            "{}assets/details/{}?full=true",
+            self.url().as_str(),
+            asset_id.encoded()
+        );
+        let rs = &self.get(&url).await?;
+        rs.try_into()
+    }
+
+    pub async fn get_assets_details(&self, asset_ids: &[AssetId]) -> Result<Vec<AssetDetails>> {
+        let url = format!("{}assets/details", self.url().as_str());
+        let mut ids: Map<String, Value> = Map::new();
+        ids.insert(
+            "ids".to_owned(),
+            Array(
+                asset_ids
+                    .iter()
+                    .map(|it| Value::String(it.encoded()))
+                    .collect(),
+            ),
+        );
+        let rs = &self.post(&url, &ids.into()).await?;
+        JsonDeserializer::safe_to_array(rs)?
+            .iter()
+            .map(|asset| asset.try_into())
+            .collect()
+    }
+
+    pub async fn get_nft(
+        &self,
+        address: &Address,
+        limit: u16,
+        after: Option<AssetId>,
+    ) -> Result<Vec<AssetDetails>> {
+        let url = format!(
+            "{}assets/nft/{}/limit/{}",
+            self.url().as_str(),
+            address.encoded(),
+            limit
+        );
+        let rs = match after {
+            Some(after_id) => {
+                let url_with_cursor = format!("{}?after={}", &url, after_id.encoded());
+                self.get(&url_with_cursor).await?
+            }
+            None => self.get(&url).await?,
+        };
+        JsonDeserializer::safe_to_array(&rs)?
+            .iter()
+            .map(|asset| asset.try_into())
+            .collect()
     }
 
     // BLOCKCHAIN
@@ -612,16 +715,6 @@ impl Node {
         let rs = &self
             .post_plain_text(&compile_script_url, source.to_owned())
             .await?;
-        rs.try_into()
-    }
-
-    pub async fn get_assets_balance(&self, address: &Address) -> Result<AssetsBalanceResponse> {
-        let url = format!(
-            "{}assets/balance/{}",
-            self.url().as_str(),
-            address.encoded()
-        );
-        let rs = self.get(&url).await?;
         rs.try_into()
     }
 

@@ -1,5 +1,5 @@
 use crate::error::{Error, Result};
-use crate::model::{Address, Amount, AssetId, Function, StateChanges};
+use crate::model::{Address, Amount, AssetId, ByteString, Function, StateChanges};
 use crate::util::JsonDeserializer;
 use serde_json::Value;
 use std::borrow::Borrow;
@@ -195,7 +195,7 @@ impl TryFrom<&Value> for InvokePayload {
     }
 }
 
-#[derive(Clone, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq, Hash)]
 pub struct HexString {
     bytes: Vec<u8>,
 }
@@ -220,6 +220,20 @@ impl HexString {
     }
 }
 
+impl ByteString for HexString {
+    fn bytes(&self) -> Vec<u8> {
+        self.bytes.clone()
+    }
+
+    fn encoded(&self) -> String {
+        hex::encode(self.bytes.clone())
+    }
+
+    fn encoded_with_prefix(&self) -> String {
+        format!("0x{}", self.encoded())
+    }
+}
+
 //todo rm duplicate
 fn map_payment(value: &Value) -> Result<Vec<Amount>> {
     JsonDeserializer::safe_to_array_from_field(value, "payment")?
@@ -238,7 +252,7 @@ fn map_payment(value: &Value) -> Result<Vec<Amount>> {
 #[cfg(test)]
 mod tests {
     use crate::model::data_entry::DataEntry;
-    use crate::model::{Arg, EthereumTransactionInfo, Payload};
+    use crate::model::{Arg, ByteString, EthereumTransactionInfo, Payload};
     use serde_json::Value;
     use std::borrow::Borrow;
     use std::fs;

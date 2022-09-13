@@ -8,7 +8,7 @@ use TransactionData::{
 use crate::error::Error::UnsupportedOperation;
 use crate::error::Result;
 use crate::model::TransactionData::{Data, Exchange, InvokeScript, Issue, Transfer};
-use crate::model::{Order, Transaction, TransactionData};
+use crate::model::{ByteString, Order, Transaction, TransactionData};
 use crate::waves_proto::transaction::Data as ProtoData;
 use crate::waves_proto::{
     Amount as ProtoAmount, Order as ProtoOrder, Transaction as ProtoTransaction,

@@ -1,5 +1,5 @@
 use crate::error::{Error, Result};
-use crate::model::{Id, LeaseInfo};
+use crate::model::{ByteString, Id, LeaseInfo};
 use crate::util::JsonDeserializer;
 use crate::waves_proto::LeaseCancelTransactionData;
 use serde_json::{Map, Value};
@@ -98,7 +98,7 @@ impl TryFrom<&LeaseCancelTransaction> for LeaseCancelTransactionData {
 #[cfg(test)]
 mod tests {
     use crate::error::Result;
-    use crate::model::{LeaseCancelTransactionInfo, LeaseStatus};
+    use crate::model::{ByteString, LeaseCancelTransactionInfo, LeaseStatus};
     use serde_json::Value;
     use std::borrow::Borrow;
     use std::fs;
