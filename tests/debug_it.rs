@@ -6,6 +6,7 @@ use waves_rust::model::{
 };
 use waves_rust::util::get_current_epoch_millis;
 
+#[ignore]
 #[tokio::test]
 async fn get_balance_history_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
@@ -18,6 +19,7 @@ async fn get_balance_history_test() -> Result<()> {
 const SEED_PHRASE: &str = "dwarf chimney miss category orchard organ neck income prevent \
 trigger used census";
 
+#[ignore]
 #[tokio::test]
 async fn validate_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);

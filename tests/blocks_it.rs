@@ -2,6 +2,7 @@ use waves_rust::api::{Node, Profile};
 use waves_rust::error::Result;
 use waves_rust::model::{Address, Base58String};
 
+#[ignore]
 #[tokio::test]
 async fn get_height_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
@@ -10,6 +11,7 @@ async fn get_height_test() -> Result<()> {
     Ok(())
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_block_height_by_id_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
@@ -20,6 +22,7 @@ async fn get_block_height_by_id_test() -> Result<()> {
     Ok(())
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_block_height_by_timestamp_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
@@ -29,6 +32,7 @@ async fn get_block_height_by_timestamp_test() -> Result<()> {
     Ok(())
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_blocks_delay_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
@@ -39,6 +43,7 @@ async fn get_blocks_delay_test() -> Result<()> {
     Ok(())
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_block_headers_at_height_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
@@ -47,6 +52,7 @@ async fn get_block_headers_at_height_test() -> Result<()> {
     Ok(())
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_block_headers_by_id_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
@@ -57,6 +63,7 @@ async fn get_block_headers_by_id_test() -> Result<()> {
     Ok(())
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_blocks_headers_seq_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
@@ -65,6 +72,7 @@ async fn get_blocks_headers_seq_test() -> Result<()> {
     Ok(())
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_last_block_headers_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
@@ -74,7 +82,8 @@ async fn get_last_block_headers_test() -> Result<()> {
 }
 
 //todo proxy error
-//#[tokio::test]
+#[ignore]
+#[tokio::test]
 async fn get_block_at_height_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
     let block = node.get_block_at_height(2221645).await?;
@@ -82,6 +91,7 @@ async fn get_block_at_height_test() -> Result<()> {
     Ok(())
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_block_by_id_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
@@ -93,7 +103,8 @@ async fn get_block_by_id_test() -> Result<()> {
 }
 
 //todo proxy error
-//#[tokio::test]
+#[ignore]
+#[tokio::test]
 async fn get_blocks_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
     let blocks = node.get_blocks(2221643, 2221645).await?;
@@ -101,6 +112,7 @@ async fn get_blocks_test() -> Result<()> {
     Ok(())
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_last_block_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
@@ -109,6 +121,7 @@ async fn get_last_block_test() -> Result<()> {
     Ok(())
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_blocks_by_generator_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);

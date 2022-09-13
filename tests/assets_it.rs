@@ -2,6 +2,7 @@ use waves_rust::api::{Node, Profile};
 use waves_rust::error::Result;
 use waves_rust::model::{Address, AssetId};
 
+#[ignore]
 #[tokio::test]
 async fn get_assets_balance_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
@@ -12,6 +13,7 @@ async fn get_assets_balance_test() -> Result<()> {
     Ok(())
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_asset_distribution_test() -> Result<()> {
     let node = Node::from_profile(Profile::MAINNET);
@@ -25,6 +27,7 @@ async fn get_asset_distribution_test() -> Result<()> {
     Ok(())
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_asset_balance_test() -> Result<()> {
     let node = Node::from_profile(Profile::MAINNET);
@@ -36,6 +39,7 @@ async fn get_asset_balance_test() -> Result<()> {
     Ok(())
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_asset_details_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
@@ -46,6 +50,7 @@ async fn get_asset_details_test() -> Result<()> {
     Ok(())
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_assets_details_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
@@ -57,6 +62,7 @@ async fn get_assets_details_test() -> Result<()> {
     Ok(())
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_nft_test() -> Result<()> {
     let node = Node::from_profile(Profile::MAINNET);

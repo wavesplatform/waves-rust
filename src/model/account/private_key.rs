@@ -111,18 +111,20 @@ mod tests {
         );
 
         assert_eq!(
-            PrivateKey::from_seed(seed_phrase, 0)?.public_key.encoded(),
+            PrivateKey::from_seed(seed_phrase, 0)?
+                .public_key()
+                .encoded(),
             expected_public_key_from_nonce_0
         );
         assert_eq!(
             PrivateKey::from_seed(seed_phrase, 128)?
-                .public_key
+                .public_key()
                 .encoded(),
             expected_public_key_from_nonce_128
         );
         assert_eq!(
             PrivateKey::from_seed(seed_phrase, 255)?
-                .public_key
+                .public_key()
                 .encoded(),
             expected_public_key_from_nonce_255
         );
@@ -132,7 +134,7 @@ mod tests {
     #[test]
     fn test_invalid_signature_size() -> Result<()> {
         let private_key = PrivateKey::from_seed("a", 0)?;
-        let result = private_key.is_signature_valid(&vec![], &[0_u8; 64]);
+        let result = private_key.is_signature_valid(&vec![], &[0_u8; 32]);
         match result {
             Ok(_) => panic!("expected error"),
             Err(err) => match err {

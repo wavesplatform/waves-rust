@@ -61,33 +61,6 @@ impl TryFrom<&Value> for InvokeAction {
     }
 }
 
-////     "invokes": [
-// //       {
-// //         "dApp": "3MFTz4aKdjAMcvFUYFdDv7jPiKtpeUv9r3K",
-// //         "call": {
-// //           "function": "selfCall",
-// //           "args": [
-// //             {
-// //               "type": "Int",
-// //               "value": 1
-// //             }
-// //           ]
-// //         },
-// //         "payment": [],
-// //         "stateChanges": {
-// //           "data": [],
-// //           "transfers": [],
-// //           "issues": [],
-// //           "reissues": [],
-// //           "burns": [],
-// //           "sponsorFees": [],
-// //           "leases": [],
-// //           "leaseCancels": [],
-// //           "invokes": []
-// //         }
-// //       }
-// //     ]
-
 //todo rm copy past
 fn map_payment(value: &Value) -> Result<Vec<Amount>> {
     JsonDeserializer::safe_to_array_from_field(value, "payment")?

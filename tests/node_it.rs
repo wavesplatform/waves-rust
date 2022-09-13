@@ -1,6 +1,7 @@
 use waves_rust::api::{Node, Profile};
 use waves_rust::error::Result;
 
+#[ignore]
 #[tokio::test]
 async fn get_version_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);

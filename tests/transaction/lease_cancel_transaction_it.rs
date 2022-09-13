@@ -11,7 +11,8 @@ trigger used census";
 
 //todo add docker private node
 
-//#[tokio::test]
+#[ignore]
+#[tokio::test]
 async fn broadcast_and_read_test() -> Result<()> {
     let alice = PrivateKey::from_seed(SEED_PHRASE, 0)?;
 
