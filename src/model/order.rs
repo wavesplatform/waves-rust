@@ -272,11 +272,11 @@ impl TryFrom<&SignedOrder> for Value {
         order_json.insert("assetPair".to_owned(), asset_pair_json.into());
         order_json.insert("amount".to_owned(), order.amount().value().into());
         order_json.insert("price".to_owned(), order.price().value().into());
+        order_json.insert("matcherFee".to_owned(), order.fee().value().into());
         order_json.insert(
             "matcherPublicKey".to_owned(),
             order.matcher().encoded().into(),
         );
-        order_json.insert("matcherFee".to_owned(), order.fee().value().into());
         order_json.insert(
             "matcherFeeAssetId".to_owned(),
             order

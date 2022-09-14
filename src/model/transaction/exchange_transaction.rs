@@ -186,10 +186,13 @@ impl TryFrom<&ExchangeTransaction> for ExchangeTransactionData {
 
 #[cfg(test)]
 mod tests {
-    use crate::model::{ByteString, ExchangeTransactionInfo, OrderType};
+    use crate::model::{
+        Amount, AssetId, ByteString, ExchangeTransaction, ExchangeTransactionInfo, Order,
+        OrderType, PrivateKey, Proof, PublicKey, SignedOrder,
+    };
 
     use crate::error::Result;
-    use serde_json::Value;
+    use serde_json::{json, Map, Value};
     use std::borrow::Borrow;
     use std::fs;
 
@@ -291,8 +294,102 @@ mod tests {
 
     #[test]
     fn test_exchange_transaction_to_json() -> Result<()> {
-        let data = fs::read_to_string("./tests/resources/data_transaction_rs.json")
-            .expect("Unable to read file");
+        let buy_order = SignedOrder::new(
+            Order::new(
+            84,
+            4,
+            1662500994929,
+            PublicKey::from_string("9oRf59sSHE2inwF6wraJDPQNsx7ktMKxaKvyFFL8GDrh")?,
+            Amount::new(300000, None),
+            OrderType::Buy,
+            Amount::new(
+                100,
+                Some(AssetId::from_string(
+                    "8bt2MZjuUCJPmfucPfaZPTXqrxmoCHCC8gVnbjZ7bhH6",
+                )?),
+            ),
+            Amount::new(1000, None),
+            PublicKey::from_string("CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt")?,
+            1665092994929,
+            ),
+            vec![Proof::from_string("2YgYwW6o88K3NXYy39TaUu1bwVkzpbr9oQwSDehnkJskfshC6f9F5vYmY736kEExRGHiDmW4hbuyxuqE8cw8WeJ8")?]
+        );
+
+        let sell_order = SignedOrder::new(Order::new(
+            84,
+            4,
+            1662500994931,
+            PublicKey::from_string("CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt")?,
+            Amount::new(300000, None),
+            OrderType::Sell,
+            Amount::new(
+                100,
+                Some(AssetId::from_string(
+                    "8bt2MZjuUCJPmfucPfaZPTXqrxmoCHCC8gVnbjZ7bhH6",
+                )?),
+            ),
+            Amount::new(1000, None),
+            PublicKey::from_string("CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt")?,
+            1665092994931,
+            ),
+        vec![Proof::from_string("5Mbvg4kz1rPLBVBWoTcY2e6Zajoqxq6g38WPfvxCMiHmjxm8TPZpLpEitf9SdfGSpBHtAxas2YRe7X4UcmBugDFL")?]
+        );
+
+        let exchange_transaction =
+            &ExchangeTransaction::new(buy_order, sell_order, 100, 1000, 300000, 300000);
+        let map: Map<String, Value> = exchange_transaction.try_into()?;
+        let json: Value = map.into();
+
+        let expected_json = json!({
+            "order1": {
+                "version": 4,
+                "sender": "3MxjhrvCr1nnDxvNJiCQfSC557gd8QYEhDx",
+                "senderPublicKey": "9oRf59sSHE2inwF6wraJDPQNsx7ktMKxaKvyFFL8GDrh",
+                "matcherPublicKey": "CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt",
+                "assetPair": {
+                  "amountAsset": "8bt2MZjuUCJPmfucPfaZPTXqrxmoCHCC8gVnbjZ7bhH6",
+                  "priceAsset": null
+                },
+                "orderType": "buy",
+                "amount": 100,
+                "price": 1000,
+                "timestamp": 1662500994929_i64,
+                "expiration": 1665092994929_i64,
+                "matcherFee": 300000,
+                "signature": "2YgYwW6o88K3NXYy39TaUu1bwVkzpbr9oQwSDehnkJskfshC6f9F5vYmY736kEExRGHiDmW4hbuyxuqE8cw8WeJ8",
+                "proofs": [
+                  "2YgYwW6o88K3NXYy39TaUu1bwVkzpbr9oQwSDehnkJskfshC6f9F5vYmY736kEExRGHiDmW4hbuyxuqE8cw8WeJ8"
+                ],
+                "matcherFeeAssetId": null,
+            },
+            "order2": {
+              "version": 4,
+              "sender": "3MxtrLkrbcG28uTvmbKmhrwGrR65ooHVYvK",
+              "senderPublicKey": "CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt",
+              "matcherPublicKey": "CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt",
+              "assetPair": {
+                "amountAsset": "8bt2MZjuUCJPmfucPfaZPTXqrxmoCHCC8gVnbjZ7bhH6",
+                "priceAsset": null
+              },
+              "orderType": "sell",
+              "amount": 100,
+              "price": 1000,
+              "timestamp": 1662500994931_i64,
+              "expiration": 1665092994931_i64,
+              "matcherFee": 300000,
+              "signature": "5Mbvg4kz1rPLBVBWoTcY2e6Zajoqxq6g38WPfvxCMiHmjxm8TPZpLpEitf9SdfGSpBHtAxas2YRe7X4UcmBugDFL",
+              "proofs": [
+                "5Mbvg4kz1rPLBVBWoTcY2e6Zajoqxq6g38WPfvxCMiHmjxm8TPZpLpEitf9SdfGSpBHtAxas2YRe7X4UcmBugDFL"
+              ],
+              "matcherFeeAssetId": null,
+            },
+            "amount": 100,
+            "price": 1000,
+            "buyMatcherFee": 300000,
+            "sellMatcherFee": 300000
+        });
+
+        assert_eq!(expected_json, json);
 
         Ok(())
     }
