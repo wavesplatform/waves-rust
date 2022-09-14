@@ -188,6 +188,7 @@ impl TryFrom<&ExchangeTransaction> for ExchangeTransactionData {
 mod tests {
     use crate::model::{ByteString, ExchangeTransactionInfo, OrderType};
 
+    use crate::error::Result;
     use serde_json::Value;
     use std::borrow::Borrow;
     use std::fs;
@@ -286,5 +287,13 @@ mod tests {
         assert_eq!(1000, exchange_tx_from_json.price());
         assert_eq!(300000, exchange_tx_from_json.buy_matcher_fee());
         assert_eq!(300000, exchange_tx_from_json.sell_matcher_fee());
+    }
+
+    #[test]
+    fn test_exchange_transaction_to_json() -> Result<()> {
+        let data = fs::read_to_string("./tests/resources/data_transaction_rs.json")
+            .expect("Unable to read file");
+
+        Ok(())
     }
 }

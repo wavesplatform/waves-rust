@@ -111,27 +111,43 @@ impl TryFrom<&BurnTransaction> for BurnTransactionData {
 
 #[cfg(test)]
 mod tests {
-    use crate::model::{BurnTransactionInfo, ByteString};
-    use serde_json::Value;
+    use crate::error::Result;
+    use crate::model::{Amount, AssetId, BurnTransaction, BurnTransactionInfo, ByteString};
+    use serde_json::{json, Map, Value};
     use std::borrow::Borrow;
     use std::fs;
 
     #[test]
-    fn test_json_to_burn_transaction() {
+    fn test_json_to_burn_transaction() -> Result<()> {
         let data =
             fs::read_to_string("./tests/resources/burn_rs.json").expect("Unable to read file");
         let json: Value = serde_json::from_str(&data).expect("failed to generate json from str");
 
-        let burn_from_json: BurnTransactionInfo = json.borrow().try_into().unwrap();
+        let burn_from_json: BurnTransactionInfo = json.borrow().try_into()?;
 
         assert_eq!(
             "8bt2MZjuUCJPmfucPfaZPTXqrxmoCHCC8gVnbjZ7bhH6",
-            burn_from_json
-                .amount()
-                .asset_id()
-                .expect("failed")
-                .encoded()
+            burn_from_json.amount().asset_id().unwrap().encoded()
         );
         assert_eq!(12, burn_from_json.amount().value());
+        Ok(())
+    }
+
+    #[test]
+    fn test_burn_transaction_to_json() -> Result<()> {
+        let burn_transaction = &BurnTransaction::new(Amount::new(
+            13,
+            Some(AssetId::from_string(
+                "8bt2MZjuUCJPmfucPfaZPTXqrxmoCHCC8gVnbjZ7bhH6",
+            )?),
+        ));
+        let map: Map<String, Value> = burn_transaction.try_into()?;
+        let json: Value = map.into();
+        let expected_json = json!({
+            "amount": 13,
+            "assetId": "8bt2MZjuUCJPmfucPfaZPTXqrxmoCHCC8gVnbjZ7bhH6"
+        });
+        assert_eq!(expected_json, json);
+        Ok(())
     }
 }

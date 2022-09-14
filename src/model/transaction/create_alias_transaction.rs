@@ -81,8 +81,10 @@ impl TryFrom<&CreateAliasTransaction> for CreateAliasTransactionData {
 
 #[cfg(test)]
 mod tests {
-    use crate::model::CreateAliasTransactionInfo;
-    use serde_json::Value;
+    use crate::error::Result;
+    use crate::model::{CreateAliasTransaction, CreateAliasTransactionInfo};
+    use crate::waves_proto::CreateAliasTransactionData;
+    use serde_json::{json, Map, Value};
     use std::borrow::Borrow;
     use std::fs;
 
@@ -96,5 +98,26 @@ mod tests {
             json.borrow().try_into().unwrap();
 
         assert_eq!("alias1662650000377", create_alias_tx_from_json.alias())
+    }
+
+    #[test]
+    fn test_create_alias_transaction_to_proto() -> Result<()> {
+        let alias_transaction = &CreateAliasTransaction::new("alias".to_owned());
+        let proto: CreateAliasTransactionData = alias_transaction.try_into()?;
+        assert_eq!(alias_transaction.alias(), proto.alias);
+        Ok(())
+    }
+
+    #[test]
+    fn test_burn_transaction_to_json() -> Result<()> {
+        let alias_transaction = &CreateAliasTransaction::new("alias".to_owned());
+
+        let map: Map<String, Value> = alias_transaction.try_into()?;
+        let json: Value = map.into();
+        let expected_json = json!({
+            "alias": "alias"
+        });
+        assert_eq!(expected_json, json);
+        Ok(())
     }
 }

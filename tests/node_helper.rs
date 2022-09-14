@@ -1,4 +1,3 @@
-use once_cell::sync::Lazy;
 use std::str::FromStr;
 use testcontainers::core::WaitFor;
 use testcontainers::images::generic::GenericImage;
@@ -43,4 +42,19 @@ async fn hm() {
     let node = Node::from_url(Url::from_str(&url).unwrap(), b'R');
     let addresses = node.get_addresses().await.unwrap();
     println!("{:?}", addresses);
+}
+
+#[test]
+fn cmd() {
+    use std::process::Command;
+
+    let mut list_dir = Command::new("docker")
+        .arg("ps")
+        .arg("-a")
+        .arg("--format")
+        .arg(r#""{{.ID}}""#)
+        .output()
+        .expect("faielr");
+    let vec = String::from_utf8(list_dir.stdout);
+    println!("ls: {:?}", vec);
 }
