@@ -3,7 +3,7 @@ use crate::model::{Address, Amount, AssetId, Base64String, ByteString, StateChan
 use crate::util::{ByteWriter, JsonDeserializer};
 use crate::waves_proto::InvokeScriptTransactionData;
 use crate::waves_proto::{recipient, Amount as ProtoAmount, Recipient};
-use serde_json::Value;
+use serde_json::{Map, Number, Value};
 use std::borrow::Borrow;
 
 const TYPE: u8 = 16;
@@ -238,16 +238,92 @@ fn map_args(value: &Value) -> Result<Vec<Arg>> {
     Ok(args)
 }
 
+impl TryFrom<&InvokeScriptTransaction> for Map<String, Value> {
+    type Error = Error;
+
+    fn try_from(invoke_tx: &InvokeScriptTransaction) -> Result<Self> {
+        let mut json = Map::new();
+        json.insert("dApp".to_owned(), invoke_tx.dapp().encoded().into());
+        let mut call: Map<String, Value> = Map::new();
+        call.insert("function".to_owned(), invoke_tx.function().name().into());
+        let mut args = invoke_tx
+            .function()
+            .args()
+            .iter()
+            .map(|arg| arg.try_into())
+            .collect::<Result<Vec<Value>>>()?;
+        call.insert("args".to_owned(), Value::Array(args));
+        json.insert("call".to_owned(), call.into());
+        let payments: Vec<Value> = invoke_tx
+            .payment()
+            .iter()
+            .map(|arg| {
+                let mut map = Map::new();
+                map.insert("amount".to_owned(), arg.value().into());
+                map.insert(
+                    "assetId".to_owned(),
+                    arg.asset_id().map(|it| it.encoded()).into(),
+                );
+                map.into()
+            })
+            .collect();
+        json.insert("payment".to_owned(), payments.into());
+        Ok(json)
+    }
+}
+
+impl TryFrom<&Arg> for Value {
+    type Error = Error;
+
+    fn try_from(arg: &Arg) -> Result<Self> {
+        let mut arg_map = Map::new();
+        match arg {
+            Arg::Binary(binary) => {
+                arg_map.insert("type".to_owned(), "binary".into());
+                arg_map.insert("value".to_owned(), binary.encoded_with_prefix().into());
+            }
+            Arg::Boolean(boolean) => {
+                arg_map.insert("type".to_owned(), "boolean".into());
+                arg_map.insert("value".to_owned(), Value::Bool(*boolean));
+            }
+            Arg::Integer(integer) => {
+                arg_map.insert("type".to_owned(), "integer".into());
+                arg_map.insert("value".to_owned(), Value::Number(Number::from(*integer)));
+            }
+            Arg::String(string) => {
+                arg_map.insert("type".to_owned(), "string".into());
+                arg_map.insert("value".to_owned(), Value::String(string.to_owned()));
+            }
+            Arg::List(list) => {
+                arg_map.insert("type".to_owned(), "list".into());
+                let list_args = list
+                    .iter()
+                    .map(|arg| arg.try_into())
+                    .collect::<Result<Vec<Value>>>()?;
+                arg_map.insert("value".to_owned(), Value::Array(list_args));
+            }
+        };
+        Ok(arg_map.into())
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use crate::error::Result;
     use crate::model::data_entry::DataEntry;
-    use crate::model::{Arg, Base64String, ByteString, InvokeScriptTransactionInfo, LeaseStatus};
-    use serde_json::Value;
+    use crate::model::{
+        Address, Amount, Arg, AssetId, Base64String, ByteString, Function, InvokeScriptTransaction,
+        InvokeScriptTransactionInfo, LeaseStatus,
+    };
+    use crate::util::ByteWriter;
+    use crate::waves_proto::recipient::Recipient;
+    use crate::waves_proto::InvokeScriptTransactionData;
+    use serde_json::{json, Map, Value};
     use std::borrow::Borrow;
     use std::fs;
 
     #[test]
-    fn test_json_to_invoke_script_transaction() {
+    fn test_json_to_invoke_script_transaction() -> Result<()> {
         let data = fs::read_to_string("./tests/resources/invoke_script_rs.json")
             .expect("Unable to read file");
         let json: Value = serde_json::from_str(&data).expect("failed to generate json from str");
@@ -257,12 +333,66 @@ mod tests {
         let function = invoke_script_from_json.function();
         assert_eq!("checkPointAndPoligon", function.name());
         assert_eq!(
-            "3MQ833eGnNM5dtRWGBaKFpmRfxfrnmeKd9G",
+            true,
             match &function.args()[0] {
+                Arg::Boolean(value) => *value,
+                _ => panic!("wrong type"),
+            }
+        );
+        assert_eq!(
+            "some string",
+            match &function.args()[1] {
                 Arg::String(value) => value,
                 _ => panic!("wrong type"),
             }
         );
+        assert_eq!(
+            123,
+            match &function.args()[2] {
+                Arg::Integer(value) => *value,
+                _ => panic!("wrong type"),
+            }
+        );
+        assert_eq!(
+            "base64:AwUCCw8=",
+            match &function.args()[3] {
+                Arg::Binary(value) => value.encoded_with_prefix(),
+                _ => panic!("wrong type"),
+            }
+        );
+
+        match &function.args()[4] {
+            Arg::List(value) => {
+                match value[0] {
+                    Arg::Integer(int) => {
+                        assert_eq!(int, 123)
+                    }
+                    _ => panic!("wrong type"),
+                }
+                match value[1] {
+                    Arg::Integer(int) => {
+                        assert_eq!(int, 543)
+                    }
+                    _ => panic!("wrong type"),
+                }
+            }
+            _ => panic!("wrong type"),
+        }
+
+        let payments = invoke_script_from_json.payment();
+        assert_eq!(2, payments.len());
+
+        let payment1 = &payments[0];
+        assert_eq!(payment1.asset_id(), None);
+        assert_eq!(payment1.value(), 1);
+        let payment2 = &payments[1];
+        assert_eq!(
+            payment2.asset_id(),
+            Some(AssetId::from_string(
+                "34N9YcEETLWn93qYQ64EsP1x89tSruJU44RrEMSXXEPJ"
+            )?)
+        );
+        assert_eq!(payment2.value(), 2);
 
         let state_changes = invoke_script_from_json.state_changes();
         let data_entries = state_changes.data();
@@ -428,5 +558,128 @@ mod tests {
         );
         assert_eq!("selfCall1", second_invoke.function().name());
         assert_eq!(1, second_invoke.function().args().len());
+        Ok(())
+    }
+
+    #[test]
+    fn test_invoke_script_transaction_to_proto() -> Result<()> {
+        let invoke_script = &InvokeScriptTransaction::new(
+            Address::from_string("3MFTz4aKdjAMcvFUYFdDv7jPiKtpeUv9r3K")?,
+            Function::new("function".to_owned(), vec![Arg::String("123".to_owned())]),
+            vec![Amount::new(
+                1,
+                Some(AssetId::from_string(
+                    "34N9YcEETLWn93qYQ64EsP1x89tSruJU44RrEMSXXEPJ",
+                )?),
+            )],
+        );
+
+        let proto: InvokeScriptTransactionData = invoke_script.try_into()?;
+
+        assert_eq!(
+            proto.function_call,
+            ByteWriter::bytes_from_function(&invoke_script.function())
+        );
+        let proto_d_app = if let Recipient::PublicKeyHash(bytes) =
+            proto.clone().d_app.unwrap().recipient.unwrap()
+        {
+            bytes
+        } else {
+            panic!("expected dapp public key hash")
+        };
+        assert_eq!(proto_d_app, invoke_script.dapp.public_key_hash());
+
+        assert_eq!(
+            proto.payments[0].amount as u64,
+            invoke_script.payment()[0].value()
+        );
+        assert_eq!(
+            &proto.payments[0].asset_id,
+            &invoke_script.payment()[0].asset_id().unwrap().bytes()
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_invoke_script_transaction_to_json() -> Result<()> {
+        let expected_json = json!({
+            "dApp": "3MFTz4aKdjAMcvFUYFdDv7jPiKtpeUv9r3K",
+            "payment": [
+              {
+                "amount": 1,
+                "assetId": null
+              },
+              {
+                "amount": 2,
+                "assetId": "34N9YcEETLWn93qYQ64EsP1x89tSruJU44RrEMSXXEPJ"
+              }
+            ],
+            "call": {
+              "function": "checkPointAndPoligon",
+              "args": [
+                {
+                  "type": "boolean",
+                  "value": true
+                },
+                {
+                  "type": "string",
+                  "value": "some string"
+                },
+                {
+                  "type": "integer",
+                  "value": 123
+                },
+                {
+                  "type": "binary",
+                  "value": "base64:AwUCCw8="
+                },
+                {
+                  "type": "list",
+                  "value": [
+                    {
+                      "type": "integer",
+                      "value": 123
+                    },
+                    {
+                      "type": "integer",
+                      "value": 543
+                    }
+                  ]
+                }
+              ]
+            }
+        });
+
+        let function = Function::new(
+            "checkPointAndPoligon".to_owned(),
+            vec![
+                Arg::Boolean(true),
+                Arg::String("some string".to_owned()),
+                Arg::Integer(123),
+                Arg::Binary(Base64String::from_string("AwUCCw8=")?),
+                Arg::List(vec![Arg::Integer(123), Arg::Integer(543)]),
+            ],
+        );
+        let invoke_script = &InvokeScriptTransaction::new(
+            Address::from_string("3MFTz4aKdjAMcvFUYFdDv7jPiKtpeUv9r3K")?,
+            function,
+            vec![
+                Amount::new(1, None),
+                Amount::new(
+                    2,
+                    Some(AssetId::from_string(
+                        "34N9YcEETLWn93qYQ64EsP1x89tSruJU44RrEMSXXEPJ",
+                    )?),
+                ),
+            ],
+        );
+
+        let map: Map<String, Value> = invoke_script.try_into()?;
+        let json: Value = map.into();
+
+        assert_eq!(expected_json, json);
+
+        Ok(())
     }
 }

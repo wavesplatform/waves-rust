@@ -131,7 +131,7 @@ mod tests {
         );
 
         assert_eq!(
-            transaction.recipient(),
+            transaction.recipient().encoded(),
             "3My3KZgFQ3CrVHgz6vGRt8687sH4oAA1qp8"
         );
         assert_eq!(transaction.amount(), 10);
@@ -141,7 +141,7 @@ mod tests {
 
     #[test]
     fn test_genesis_transaction_to_proto() -> Result<()> {
-        let transaction = GenesisTransaction::new(
+        let transaction = &GenesisTransaction::new(
             Address::from_string("3My3KZgFQ3CrVHgz6vGRt8687sH4oAA1qp8")?,
             10,
         );
@@ -152,12 +152,4 @@ mod tests {
 
         Ok(())
     }
-
-    //[derive(Clone, PartialEq, ::prost::Message)]
-    // pub struct GenesisTransactionData {
-    //     #[prost(bytes="vec", tag="1")]
-    //     pub recipient_address: ::prost::alloc::vec::Vec<u8>,
-    //     #[prost(int64, tag="2")]
-    //     pub amount: i64,
-    // }
 }

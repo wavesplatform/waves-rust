@@ -86,50 +86,41 @@ fn add_additional_fields(
                 issue_tx.script().map(|it| it.encoded()).into(),
             );
         }
-        TransactionData::InvokeScript(invoke_tx) => invoke_to_json(invoke_tx, json_props),
+        TransactionData::InvokeScript(invoke_tx) => {
+            json_props.append(&mut invoke_tx.try_into()?);
+        }
         TransactionData::Exchange(exchange_tx) => {
-            let mut exchange_tx_json: Map<String, Value> = exchange_tx.try_into()?;
-            json_props.append(&mut exchange_tx_json);
+            json_props.append(&mut exchange_tx.try_into()?);
         }
         TransactionData::Reissue(reissue_tx) => {
-            let mut issue_tx_json: Map<String, Value> = reissue_tx.try_into()?;
-            json_props.append(&mut issue_tx_json);
+            json_props.append(&mut reissue_tx.try_into()?);
         }
         TransactionData::Burn(burn_tx) => {
-            let mut burn_tx_json: Map<String, Value> = burn_tx.try_into()?;
-            json_props.append(&mut burn_tx_json);
+            json_props.append(&mut burn_tx.try_into()?);
         }
         TransactionData::Lease(lease_tx) => {
-            let mut lease_tx_json: Map<String, Value> = lease_tx.try_into()?;
-            json_props.append(&mut lease_tx_json);
+            json_props.append(&mut lease_tx.try_into()?);
         }
         TransactionData::LeaseCancel(lease_cancel_tx) => {
-            let mut lease_cancel_tx: Map<String, Value> = lease_cancel_tx.try_into()?;
-            json_props.append(&mut lease_cancel_tx);
+            json_props.append(&mut lease_cancel_tx.try_into()?);
         }
         TransactionData::CreateAlias(create_alias_tx) => {
-            let mut create_alias_tx: Map<String, Value> = create_alias_tx.try_into()?;
-            json_props.append(&mut create_alias_tx);
+            json_props.append(&mut create_alias_tx.try_into()?);
         }
         TransactionData::MassTransfer(mass_transfer_tx) => {
-            let mut mass_transfer_tx: Map<String, Value> = mass_transfer_tx.try_into()?;
-            json_props.append(&mut mass_transfer_tx);
+            json_props.append(&mut mass_transfer_tx.try_into()?);
         }
         TransactionData::SetScript(set_script_tx) => {
-            let mut set_script_tx: Map<String, Value> = set_script_tx.try_into()?;
-            json_props.append(&mut set_script_tx);
+            json_props.append(&mut set_script_tx.try_into()?);
         }
         TransactionData::SetAssetScript(set_asset_script_tx) => {
-            let mut set_asset_script_tx: Map<String, Value> = set_asset_script_tx.try_into()?;
-            json_props.append(&mut set_asset_script_tx);
+            json_props.append(&mut set_asset_script_tx.try_into()?);
         }
         TransactionData::SponsorFee(sponsor_fee_tx) => {
-            let mut sponsor_fee_tx: Map<String, Value> = sponsor_fee_tx.try_into()?;
-            json_props.append(&mut sponsor_fee_tx);
+            json_props.append(&mut sponsor_fee_tx.try_into()?);
         }
         TransactionData::UpdateAssetInfo(update_asset_info_tx) => {
-            let mut update_asset_info_tx: Map<String, Value> = update_asset_info_tx.try_into()?;
-            json_props.append(&mut update_asset_info_tx);
+            json_props.append(&mut update_asset_info_tx.try_into()?);
         }
         TransactionData::Ethereum(_) => Err(Error::UnsupportedOperation(
             "broadcasting ethereum transaction".to_owned(),

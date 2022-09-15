@@ -18,30 +18,6 @@ pub struct IssueTransactionInfo {
 }
 
 impl IssueTransactionInfo {
-    pub fn from_json(value: &Value) -> Result<IssueTransactionInfo> {
-        let name = JsonDeserializer::safe_to_string_from_field(value, "name")?;
-        let description = JsonDeserializer::safe_to_string_from_field(value, "description")?;
-        let quantity = JsonDeserializer::safe_to_int_from_field(value, "quantity")? as u64;
-        let decimals = JsonDeserializer::safe_to_int_from_field(value, "decimals")? as u32;
-        let is_reissuable = JsonDeserializer::safe_to_boolean_from_field(value, "reissuable")?;
-        let script = match value["script"].as_str() {
-            Some(val) => Some(Base64String::from_string(val)?),
-            None => None,
-        };
-        let asset_id = AssetId::from_string(&JsonDeserializer::safe_to_string_from_field(
-            value, "assetId",
-        )?)?;
-
-        Ok(IssueTransactionInfo {
-            asset_id,
-            name,
-            description,
-            quantity,
-            decimals,
-            is_reissuable,
-            script,
-        })
-    }
 
     pub fn new(
         asset_id: AssetId,

@@ -12,13 +12,47 @@
     "4QsEk9oc6m7qESEoke2uBQLoPLyUSHztfjpLi7WNC4yswHvyHEHgpxrVxnz7U2L7iWbTZHeJfm2JhS9tG9z7ioat"
   ],
   "dApp": "3MFTz4aKdjAMcvFUYFdDv7jPiKtpeUv9r3K",
-  "payment": [],
+  "payment": [
+    {
+      "amount": 1,
+      "assetId": null
+    },
+    {
+      "amount": 2,
+      "assetId": "34N9YcEETLWn93qYQ64EsP1x89tSruJU44RrEMSXXEPJ"
+    }
+  ],
   "call": {
     "function": "checkPointAndPoligon",
     "args": [
       {
+        "type": "boolean",
+        "value": true
+      },
+      {
         "type": "string",
-        "value": "3MQ833eGnNM5dtRWGBaKFpmRfxfrnmeKd9G"
+        "value": "some string"
+      },
+      {
+        "type": "integer",
+        "value": 123
+      },
+      {
+        "type": "binary",
+        "value": "base64:AwUCCw8="
+      },
+      {
+        "type": "list",
+        "value": [
+          {
+            "type": "integer",
+            "value": 123
+          },
+          {
+            "type": "integer",
+            "value": 543
+          }
+        ]
       }
     ]
   },
