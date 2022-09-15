@@ -98,8 +98,11 @@ impl TryFrom<&LeaseCancelTransaction> for LeaseCancelTransactionData {
 #[cfg(test)]
 mod tests {
     use crate::error::Result;
-    use crate::model::{ByteString, LeaseCancelTransactionInfo, LeaseStatus};
-    use serde_json::Value;
+    use crate::model::{
+        ByteString, Id, LeaseCancelTransaction, LeaseCancelTransactionInfo, LeaseStatus,
+    };
+    use crate::waves_proto::LeaseCancelTransactionData;
+    use serde_json::{json, Map, Value};
     use std::borrow::Borrow;
     use std::fs;
 
@@ -143,6 +146,32 @@ mod tests {
                 .cancel_transaction_id()
                 .map(|it| it.encoded())
         );
+        Ok(())
+    }
+
+    #[test]
+    fn test_lease_cancel_to_proto() -> Result<()> {
+        let lease_cancel_tx = &LeaseCancelTransaction::new(Id::from_string(
+            "5EWudZk4xXaqRezrh26zqjbNeAzvEzDATjs4paKdyhGy",
+        )?);
+        let proto: LeaseCancelTransactionData = lease_cancel_tx.try_into()?;
+
+        assert_eq!(proto.lease_id, lease_cancel_tx.lease_id().bytes());
+        Ok(())
+    }
+
+    #[test]
+    fn test_issue_tx_to_json() -> Result<()> {
+        let lease_cancel_tx = &LeaseCancelTransaction::new(Id::from_string(
+            "5EWudZk4xXaqRezrh26zqjbNeAzvEzDATjs4paKdyhGy",
+        )?);
+
+        let map: Map<String, Value> = lease_cancel_tx.try_into()?;
+        let json: Value = map.into();
+        let expected_json = json!({
+            "leaseId": "5EWudZk4xXaqRezrh26zqjbNeAzvEzDATjs4paKdyhGy",
+        });
+        assert_eq!(expected_json, json);
         Ok(())
     }
 }
