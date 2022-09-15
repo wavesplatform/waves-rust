@@ -91,8 +91,10 @@ impl TryFrom<&Value> for GenesisTransaction {
 mod tests {
     use crate::error::Result;
     use crate::model::{
-        ByteString, GenesisTransactionInfo, SignedTransaction, TransactionInfoResponse,
+        Address, ByteString, GenesisTransaction, GenesisTransactionInfo, SignedTransaction,
+        TransactionInfoResponse,
     };
+    use crate::waves_proto::GenesisTransactionData;
     use serde_json::Value;
     use std::borrow::Borrow;
     use std::fs;
@@ -120,4 +122,42 @@ mod tests {
         println!("{:#?}", genesis_tx_info);
         Ok(())
     }
+
+    #[test]
+    fn test_create_genesis_transaction() -> Result<()> {
+        let transaction = GenesisTransaction::new(
+            Address::from_string("3My3KZgFQ3CrVHgz6vGRt8687sH4oAA1qp8")?,
+            10,
+        );
+
+        assert_eq!(
+            transaction.recipient(),
+            "3My3KZgFQ3CrVHgz6vGRt8687sH4oAA1qp8"
+        );
+        assert_eq!(transaction.amount(), 10);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_genesis_transaction_to_proto() -> Result<()> {
+        let transaction = GenesisTransaction::new(
+            Address::from_string("3My3KZgFQ3CrVHgz6vGRt8687sH4oAA1qp8")?,
+            10,
+        );
+
+        let proto: GenesisTransactionData = transaction.try_into()?;
+        assert_eq!(transaction.recipient().bytes(), proto.recipient_address);
+        assert_eq!(transaction.amount(), proto.amount as u64);
+
+        Ok(())
+    }
+
+    //[derive(Clone, PartialEq, ::prost::Message)]
+    // pub struct GenesisTransactionData {
+    //     #[prost(bytes="vec", tag="1")]
+    //     pub recipient_address: ::prost::alloc::vec::Vec<u8>,
+    //     #[prost(int64, tag="2")]
+    //     pub amount: i64,
+    // }
 }
