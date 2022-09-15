@@ -8,7 +8,8 @@ use waves_rust::util::get_current_epoch_millis;
 const SEED_PHRASE: &str = "dwarf chimney miss category orchard organ neck income prevent \
 trigger used census";
 
-//#[tokio::test]
+#[ignore]
+#[tokio::test]
 async fn broadcast_and_read_test() {
     let bob = PrivateKey::from_seed("b", 0).expect("failed to get private key from seed phrase");
     let alice = PrivateKey::from_seed("a", 0).expect("failed to get private key from seed phrase");

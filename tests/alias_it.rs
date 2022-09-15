@@ -1,6 +1,7 @@
 use waves_rust::api::{Node, Profile};
 use waves_rust::model::{Address, Alias, ChainId};
 
+#[ignore]
 #[tokio::test]
 async fn get_aliases_by_address_test() {
     let node = Node::from_profile(Profile::TESTNET);
@@ -15,6 +16,7 @@ async fn get_aliases_by_address_test() {
     }
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_address_by_alias_test() {
     let node = Node::from_profile(Profile::TESTNET);

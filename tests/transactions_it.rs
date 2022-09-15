@@ -9,6 +9,7 @@ use waves_rust::util::get_current_epoch_millis;
 const SEED_PHRASE: &str = "dwarf chimney miss category orchard organ neck income prevent \
 trigger used census";
 
+#[ignore]
 #[tokio::test]
 async fn calculate_transaction_fee_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
@@ -34,6 +35,7 @@ async fn calculate_transaction_fee_test() -> Result<()> {
     Ok(())
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_transaction_info_test() -> Result<()> {
     let testnet_node = Node::from_profile(Profile::TESTNET);
@@ -139,6 +141,7 @@ async fn get_transaction_info_test() -> Result<()> {
     Ok(())
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_transactions_by_address_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
@@ -156,6 +159,7 @@ async fn get_transactions_by_address_test() -> Result<()> {
     Ok(())
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_transaction_status_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
@@ -167,6 +171,7 @@ async fn get_transaction_status_test() -> Result<()> {
     Ok(())
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_transactions_statuses_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
@@ -179,7 +184,8 @@ async fn get_transactions_statuses_test() -> Result<()> {
     Ok(())
 }
 
-//#[tokio::test]
+#[ignore]
+#[tokio::test]
 async fn get_unconfirmed_transaction_test() -> Result<()> {
     let node = Node::from_profile(Profile::MAINNET);
 
@@ -190,6 +196,7 @@ async fn get_unconfirmed_transaction_test() -> Result<()> {
     Ok(())
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_unconfirmed_transactions_test() -> Result<()> {
     let node = Node::from_profile(Profile::MAINNET);
@@ -198,6 +205,7 @@ async fn get_unconfirmed_transactions_test() -> Result<()> {
     Ok(())
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_utx_size_test() -> Result<()> {
     let node = Node::from_profile(Profile::MAINNET);

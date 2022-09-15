@@ -1,4 +1,4 @@
-use crate::constants::{HASH_LENGTH, SIGNATURE_LENGTH};
+use crate::constants::SIGNATURE_LENGTH;
 use crate::error::{Error, Result};
 use crate::model::account::PublicKey;
 use crate::model::ByteString;
@@ -8,7 +8,7 @@ use ed25519_dalek::{PublicKey as EdPublicKey, Signature, Verifier};
 
 pub struct PrivateKey {
     // todo add https://docs.rs/secrecy/0.8.0/secrecy/ ?
-    bytes: Vec<u8>,
+    bytes: [u8; 32],
     public_key: PublicKey,
 }
 
@@ -17,19 +17,24 @@ impl PrivateKey {
     pub fn from_seed(seed_phrase: &str, nonce: u8) -> Result<Self> {
         let hash_seed = Crypto::get_account_seed(seed_phrase.as_bytes(), nonce)?;
         let private_key = Crypto::get_private_key(&hash_seed)?;
-        let public_key = PublicKey::from_bytes(&Crypto::get_public_key(&private_key));
+        let public_key = PublicKey::from_bytes(&Crypto::get_public_key(&private_key))?;
         Ok(Self {
             bytes: private_key,
             public_key,
         })
     }
 
-    pub fn encoded(&self) -> String {
-        Base58::encode(&self.bytes, false)
+    pub fn from_bytes(bytes: [u8; 32]) -> Result<Self> {
+        let public_key = PublicKey::from_bytes(&Crypto::get_public_key(&bytes))?;
+        Ok(Self { bytes, public_key })
     }
 
-    pub fn bytes(&self) -> &Vec<u8> {
-        &self.bytes
+    pub fn encoded(&self) -> String {
+        Base58::encode(&self.bytes.to_vec(), false)
+    }
+
+    pub fn bytes(&self) -> [u8; 32] {
+        self.bytes
     }
 
     pub fn public_key(&self) -> PublicKey {
@@ -37,15 +42,7 @@ impl PrivateKey {
     }
 
     pub fn sign(&self, message: &[u8]) -> Result<Vec<u8>> {
-        let private_key: [u8; HASH_LENGTH] =
-            self.bytes
-                .clone()
-                .try_into()
-                .map_err(|_| Error::InvalidBytesLength {
-                    expected_len: HASH_LENGTH,
-                    actual_len: self.bytes.clone().len(),
-                })?;
-        Ok(Crypto::sign(&private_key, message))
+        Ok(Crypto::sign(&self.bytes, message))
     }
 
     pub fn is_signature_valid(&self, message: &[u8], signature: &[u8]) -> Result<bool> {
@@ -83,11 +80,13 @@ impl PrivateKey {
 
 #[cfg(test)]
 mod tests {
+    use crate::error::Error::InvalidBytesLength;
+    use crate::error::Result;
     use crate::model::account::PrivateKey;
     use crate::model::ByteString;
 
     #[test]
-    fn test_private_key_from_seed() {
+    fn test_private_key_from_seed() -> Result<()> {
         let seed_phrase = "blame vacant regret company chase trip grant funny brisk innocent";
 
         let expected_private_key_with_nonce_0 = "3j2aMHzh9azPphzuW7aF3cmUefGEQC9dcWYXYCyoPcJg";
@@ -99,47 +98,56 @@ mod tests {
         let expected_public_key_from_nonce_255 = "esjbpqVWSg8iCaPYQA3SoxZo3oUkdRJSi9tKLoqKQoC";
 
         assert_eq!(
-            PrivateKey::from_seed(seed_phrase, 0)
-                .expect("failed to get private ket from seed phrase")
-                .encoded(),
+            PrivateKey::from_seed(seed_phrase, 0)?.encoded(),
             expected_private_key_with_nonce_0
         );
         assert_eq!(
-            PrivateKey::from_seed(seed_phrase, 128)
-                .expect("failed to get private ket from seed phrase")
-                .encoded(),
+            PrivateKey::from_seed(seed_phrase, 128)?.encoded(),
             expected_private_key_with_nonce_128
         );
         assert_eq!(
-            PrivateKey::from_seed(seed_phrase, 255)
-                .expect("failed to get private ket from seed phrase")
-                .encoded(),
+            PrivateKey::from_seed(seed_phrase, 255)?.encoded(),
             expected_private_key_with_nonce_255
         );
 
         assert_eq!(
-            PrivateKey::from_seed(seed_phrase, 0)
-                .expect("failed to get private ket from seed phrase")
-                .public_key
+            PrivateKey::from_seed(seed_phrase, 0)?
+                .public_key()
                 .encoded(),
             expected_public_key_from_nonce_0
         );
         assert_eq!(
-            PrivateKey::from_seed(seed_phrase, 128)
-                .expect("failed to get private ket from seed phrase")
-                .public_key
+            PrivateKey::from_seed(seed_phrase, 128)?
+                .public_key()
                 .encoded(),
             expected_public_key_from_nonce_128
         );
         assert_eq!(
-            PrivateKey::from_seed(seed_phrase, 255)
-                .expect("failed to get private ket from seed phrase")
-                .public_key
+            PrivateKey::from_seed(seed_phrase, 255)?
+                .public_key()
                 .encoded(),
             expected_public_key_from_nonce_255
         );
+        Ok(())
     }
 
     #[test]
-    fn test_sign_invalid_private_key_size_error() {}
+    fn test_invalid_signature_size() -> Result<()> {
+        let private_key = PrivateKey::from_seed("a", 0)?;
+        let result = private_key.is_signature_valid(&[], &[0_u8; 32]);
+        match result {
+            Ok(_) => panic!("expected error"),
+            Err(err) => match err {
+                InvalidBytesLength { .. } => Ok(()),
+                _ => panic!("expected error"),
+            },
+        }
+    }
+
+    #[test]
+    fn test_private_key_from_bytes() -> Result<()> {
+        let private_key = PrivateKey::from_bytes([0; 32])?;
+        assert_eq!(private_key.bytes(), [0_u8; 32]);
+        Ok(())
+    }
 }

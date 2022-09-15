@@ -200,9 +200,10 @@ impl TryFrom<&Value> for ScriptDetails {
 #[cfg(test)]
 mod tests {
     use crate::error::Result;
-    use crate::model::asset::asset_details::AssetDetails;
-    use crate::model::ByteString;
-    use serde_json::Value;
+    use crate::model::asset::asset_details::{AssetDetails, ScriptDetails};
+    use crate::model::{Base64String, ByteString};
+    use serde_json::{json, Value};
+    use std::borrow::Borrow;
     use std::fs;
 
     #[test]
@@ -245,7 +246,15 @@ mod tests {
             expected_script,
             asset_details.script_details().script().encoded()
         );
+        Ok(())
+    }
 
+    #[test]
+    fn test_if_script_details_null() -> Result<()> {
+        let json = json!({ "scriptDetails": null });
+        let script_details: ScriptDetails = json["scriptDetails"].borrow().try_into()?;
+        assert_eq!(script_details.script(), Base64String::empty());
+        assert_eq!(script_details.complexity(), 0);
         Ok(())
     }
 }

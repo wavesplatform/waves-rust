@@ -1,3 +1,4 @@
+use crate::error::Result;
 use crate::model::ByteString;
 use crate::util::Base58;
 use std::fmt;
@@ -16,6 +17,12 @@ impl fmt::Debug for Proof {
 impl Proof {
     pub fn new(bytes: Vec<u8>) -> Self {
         Self { bytes }
+    }
+
+    pub fn from_string(base58str: &str) -> Result<Self> {
+        Ok(Self {
+            bytes: Base58::decode(base58str)?,
+        })
     }
 }
 

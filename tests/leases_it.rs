@@ -2,6 +2,7 @@ use waves_rust::api::{Node, Profile};
 use waves_rust::error::Result;
 use waves_rust::model::{Address, Id};
 
+#[ignore]
 #[tokio::test]
 async fn get_active_leases_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
@@ -11,6 +12,7 @@ async fn get_active_leases_test() -> Result<()> {
     Ok(())
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_lease_info_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
@@ -20,6 +22,7 @@ async fn get_lease_info_test() -> Result<()> {
     Ok(())
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_leases_info_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);

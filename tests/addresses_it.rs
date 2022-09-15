@@ -3,6 +3,7 @@ use waves_rust::api::{Node, Profile};
 use waves_rust::error::Result;
 use waves_rust::model::{Address, ByteString};
 
+#[ignore]
 #[tokio::test]
 async fn get_addresses_test() {
     let node = Node::from_profile(Profile::TESTNET);
@@ -10,6 +11,7 @@ async fn get_addresses_test() {
     println!("{:?}", addresses);
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_addresses_seq_test() {
     let node = Node::from_profile(Profile::TESTNET);
@@ -17,6 +19,7 @@ async fn get_addresses_seq_test() {
     println!("{:?}", addresses);
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_balance_test() {
     let node = Node::from_profile(Profile::TESTNET);
@@ -27,6 +30,7 @@ async fn get_balance_test() {
     assert_eq!(true, balance > 0)
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_balance_with_confirmation_test() {
     let node = Node::from_profile(Profile::TESTNET);
@@ -43,6 +47,7 @@ async fn get_balance_with_confirmation_test() {
     }
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_balances_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
@@ -56,7 +61,8 @@ async fn get_balances_test() -> Result<()> {
     Ok(())
 }
 
-//#[tokio::test]
+#[ignore]
+#[tokio::test]
 async fn get_balances_at_height_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
     let balances = node
@@ -72,6 +78,7 @@ async fn get_balances_at_height_test() -> Result<()> {
     Ok(())
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_balance_details_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
@@ -82,6 +89,7 @@ async fn get_balance_details_test() -> Result<()> {
     Ok(())
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_address_data_test() {
     let node = Node::from_profile(Profile::TESTNET);
@@ -97,6 +105,7 @@ async fn get_address_data_test() {
     }
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_address_data_by_keys_test() {
     let node = Node::from_profile(Profile::TESTNET);
@@ -113,6 +122,7 @@ async fn get_address_data_by_keys_test() {
     }
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_address_data_by_regex_test() {
     let node = Node::from_profile(Profile::TESTNET);
@@ -128,6 +138,7 @@ async fn get_address_data_by_regex_test() {
     }
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_address_data_by_key_test() {
     let node = Node::from_profile(Profile::TESTNET);
@@ -142,6 +153,7 @@ async fn get_address_data_by_key_test() {
     }
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_script_info_test() {
     let node = Node::from_profile(Profile::TESTNET);
@@ -160,6 +172,7 @@ async fn get_script_info_test() {
     }
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_script_meta_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);

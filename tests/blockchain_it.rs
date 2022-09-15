@@ -1,5 +1,6 @@
 use waves_rust::api::{Node, Profile};
 
+#[ignore]
 #[tokio::test]
 async fn get_blockchain_rewards_test() {
     let node = Node::from_profile(Profile::TESTNET);
@@ -13,6 +14,7 @@ async fn get_blockchain_rewards_test() {
     }
 }
 
+#[ignore]
 #[tokio::test]
 async fn get_blockchain_rewards_at_height_test() {
     let node = Node::from_profile(Profile::TESTNET);

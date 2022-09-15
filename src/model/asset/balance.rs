@@ -13,16 +13,24 @@ impl AssetsBalanceResponse {
     pub fn new(address: Address, balances: Vec<AssetBalance>) -> AssetsBalanceResponse {
         AssetsBalanceResponse { address, balances }
     }
+
+    pub fn address(&self) -> Address {
+        self.address.clone()
+    }
+
+    pub fn balances(&self) -> Vec<AssetBalance> {
+        self.balances.clone()
+    }
 }
 
-impl TryFrom<Value> for AssetsBalanceResponse {
+impl TryFrom<&Value> for AssetsBalanceResponse {
     type Error = Error;
 
-    fn try_from(value: Value) -> Result<Self> {
+    fn try_from(value: &Value) -> Result<Self> {
         let address = Address::from_string(&JsonDeserializer::safe_to_string_from_field(
-            &value, "address",
+            value, "address",
         )?)?;
-        let balances = JsonDeserializer::safe_to_array_from_field(&value, "balances")?
+        let balances = JsonDeserializer::safe_to_array_from_field(value, "balances")?
             .iter()
             .map(|v| v.try_into())
             .collect::<Result<Vec<AssetBalance>>>()?;
@@ -119,5 +127,66 @@ impl TryFrom<&Value> for AssetBalance {
             quantity,
             issue_transaction,
         ))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::error::Result;
+    use crate::model::asset::balance::AssetsBalanceResponse;
+    use crate::model::ByteString;
+    use serde_json::Value;
+    use std::fs;
+
+    #[test]
+    fn test_json_to_assets_balance_response() -> Result<()> {
+        let data = fs::read_to_string("./tests/resources/assets/assets_balance_rs.json")
+            .expect("Unable to read file");
+        let json: &Value = &serde_json::from_str(&data).expect("failed to convert");
+        let assets_balance: AssetsBalanceResponse = json.try_into()?;
+        assert_eq!(
+            "3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q",
+            assets_balance.address().encoded()
+        );
+
+        let balances = assets_balance.balances();
+        let asset_balance1 = &balances[0];
+        assert_eq!(
+            "85gPhjumNgwaMUpGfx9jEQqJMorbEjTQ4EUAHwfoYKjd",
+            asset_balance1.asset_id().encoded()
+        );
+        assert_eq!(false, asset_balance1.reissuable());
+        assert_eq!(None, asset_balance1.min_sponsored_asset_fee());
+        assert_eq!(None, asset_balance1.sponsor_balance());
+        assert_eq!(32, asset_balance1.quantity());
+        assert_eq!(42, asset_balance1.balance());
+        let issue_tx = asset_balance1
+            .issue_transaction()
+            .expect("must not be empty");
+
+        assert_eq!(
+            "85gPhjumNgwaMUpGfx9jEQqJMorbEjTQ4EUAHwfoYKjd",
+            issue_tx.asset_id().encoded()
+        );
+        assert_eq!("test asset", issue_tx.name());
+        assert_eq!(32, issue_tx.quantity());
+        assert_eq!(false, issue_tx.is_reissuable());
+        assert_eq!(3, issue_tx.decimals());
+        assert_eq!("this is test asset", issue_tx.description());
+        assert_eq!(None, issue_tx.script());
+
+        let asset_balance2 = &assets_balance.balances()[1];
+        assert_eq!(
+            "GyH2wqKQcjHtz6KgkUNzUpDYYy1azqZdYHZ2awXHWqYx",
+            asset_balance2.asset_id().encoded()
+        );
+        assert_eq!(false, asset_balance2.reissuable());
+        assert_eq!(Some(1), asset_balance2.min_sponsored_asset_fee());
+        assert_eq!(Some(199900003), asset_balance2.sponsor_balance());
+        assert_eq!(2, asset_balance2.quantity());
+        assert_eq!(None, asset_balance2.issue_transaction());
+        assert_eq!(2, asset_balance2.balance());
+
+        Ok(())
     }
 }

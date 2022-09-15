@@ -35,17 +35,16 @@ impl Hash {
 
 #[cfg(test)]
 mod tests {
+    use crate::error::Result;
     use crate::util::{Base58, Hash};
 
     #[test]
-    fn test_secure_hash() {
+    fn test_secure_hash() -> Result<()> {
         let source = "test".as_bytes().to_vec();
-        let expected_secure = Base58::decode("JDJkZrg24XwvBgBUi6PgpHzrAFgeefb7nU8LJPRR58ga")
-            .expect("failed to decode base58 string");
-        match Hash::secure_hash(&source) {
-            Ok(success) => assert_eq!(success, expected_secure),
-            Err(error) => println!("{:?}", error),
-        };
+        let expected_secure = Base58::decode("JDJkZrg24XwvBgBUi6PgpHzrAFgeefb7nU8LJPRR58ga")?;
+        let secure_hash = Hash::secure_hash(&source)?;
+        assert_eq!(secure_hash, expected_secure);
+        Ok(())
     }
 
     #[test]

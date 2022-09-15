@@ -72,7 +72,8 @@ fn add_additional_fields(
             );
         }
         TransactionData::Data(data_tx) => {
-            json_props.insert("data".to_string(), data_tx.data().into());
+            let mut data_tx_json: Map<String, Value> = data_tx.try_into()?;
+            json_props.append(&mut data_tx_json);
         }
         TransactionData::Issue(issue_tx) => {
             json_props.insert("name".to_string(), issue_tx.name().into());

@@ -1,0 +1,43 @@
+{
+  "address": "3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q",
+  "balances": [
+    {
+      "assetId": "85gPhjumNgwaMUpGfx9jEQqJMorbEjTQ4EUAHwfoYKjd",
+      "reissuable": false,
+      "minSponsoredAssetFee": null,
+      "sponsorBalance": null,
+      "quantity": 32,
+      "issueTransaction": {
+        "type": 3,
+        "id": "85gPhjumNgwaMUpGfx9jEQqJMorbEjTQ4EUAHwfoYKjd",
+        "fee": 100000000,
+        "feeAssetId": null,
+        "timestamp": 1662305845939,
+        "version": 3,
+        "chainId": 84,
+        "sender": "3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q",
+        "senderPublicKey": "8jDzNuHZwuTTo6WvZMdSoNc8ydY6a7UnxvwHZ8kooMuS",
+        "proofs": [
+          "2ffFqpGnJeNrKHcGNNp4DBx36HwNNAYPmDozY4smS3CXAnuACMSNvmeWSW3RMLVTvtz8bVEN527hWrhCZXZC73Tw"
+        ],
+        "assetId": "85gPhjumNgwaMUpGfx9jEQqJMorbEjTQ4EUAHwfoYKjd",
+        "name": "test asset",
+        "quantity": 32,
+        "reissuable": false,
+        "decimals": 3,
+        "description": "this is test asset",
+        "script": null
+      },
+      "balance": 42
+    },
+    {
+      "assetId": "GyH2wqKQcjHtz6KgkUNzUpDYYy1azqZdYHZ2awXHWqYx",
+      "reissuable": false,
+      "minSponsoredAssetFee": 1,
+      "sponsorBalance": 199900003,
+      "quantity": 2,
+      "issueTransaction": null,
+      "balance": 2
+    }
+  ]
+}
