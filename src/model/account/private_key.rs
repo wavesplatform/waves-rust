@@ -81,7 +81,7 @@ impl PrivateKey {
 #[cfg(test)]
 mod tests {
     use crate::error::Error::InvalidBytesLength;
-    use crate::error::{Error, Result};
+    use crate::error::{Result};
     use crate::model::account::PrivateKey;
     use crate::model::ByteString;
 
@@ -134,7 +134,7 @@ mod tests {
     #[test]
     fn test_invalid_signature_size() -> Result<()> {
         let private_key = PrivateKey::from_seed("a", 0)?;
-        let result = private_key.is_signature_valid(&vec![], &[0_u8; 32]);
+        let result = private_key.is_signature_valid(&[], &[0_u8; 32]);
         match result {
             Ok(_) => panic!("expected error"),
             Err(err) => match err {

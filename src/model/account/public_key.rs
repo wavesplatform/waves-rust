@@ -103,15 +103,14 @@ mod tests {
     fn public_key_bytes(seed_phrase: &str, nonce: u8) -> Vec<u8> {
         let bytes = PrivateKey::from_seed(seed_phrase, nonce)
             .expect("failed to get private ket from seed phrase")
-            .bytes()
-            .clone();
+            .bytes();
         println!("{}", Base58::encode(&bytes.to_vec(), false));
         Crypto::get_public_key(&bytes)
     }
 
     #[test]
     fn test_invalid_bytes_len_for_public_key() -> Result<()> {
-        let public_key = PublicKey::from_bytes(&vec![]);
+        let public_key = PublicKey::from_bytes(&[]);
         match public_key {
             Ok(_) => panic!("expected error"),
             Err(err) => match err {

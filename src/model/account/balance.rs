@@ -99,15 +99,14 @@ impl TryFrom<&Value> for BalanceDetails {
     }
 }
 
+#[cfg(test)]
 mod tests {
     use std::borrow::Borrow;
     use std::fs;
 
-    use serde_json::{json, Value};
-
     use crate::error::Result;
-    use crate::model::account::{Address, PrivateKey};
-    use crate::model::{Balance, BalanceDetails, ByteString, ChainId};
+    use crate::model::{Address, Balance, BalanceDetails, ByteString};
+    use serde_json::{json, Value};
 
     #[test]
     fn test_balance_details_from_json() -> Result<()> {

@@ -57,7 +57,7 @@ impl From<AssetId> for Value {
 mod tests {
     use crate::error::Result;
     use crate::model::{AssetId, ByteString};
-    use serde_json::{json, Value};
+    use serde_json::{Value};
 
     #[test]
     fn test_byte_string_for_asset_id() -> Result<()> {

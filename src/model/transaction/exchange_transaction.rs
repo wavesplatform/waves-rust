@@ -188,7 +188,7 @@ impl TryFrom<&ExchangeTransaction> for ExchangeTransactionData {
 mod tests {
     use crate::model::{
         Amount, AssetId, ByteString, ExchangeTransaction, ExchangeTransactionInfo, Order,
-        OrderType, PrivateKey, Proof, PublicKey, SignedOrder,
+        OrderType, Proof, PublicKey, SignedOrder,
     };
 
     use crate::error::Result;
@@ -475,8 +475,7 @@ mod tests {
             buy_order
                 .fee()
                 .asset_id()
-                .map(|it| it.bytes())
-                .unwrap_or(vec![]),
+                .map(|it| it.bytes()).unwrap_or_default(),
             buy_order_proto.clone().matcher_fee.unwrap().asset_id
         );
 
@@ -493,8 +492,7 @@ mod tests {
             buy_order
                 .amount()
                 .asset_id()
-                .map(|it| it.bytes())
-                .unwrap_or(vec![]),
+                .map(|it| it.bytes()).unwrap_or_default(),
             buy_order_proto.clone().asset_pair.unwrap().amount_asset_id
         );
 
@@ -503,8 +501,7 @@ mod tests {
             buy_order
                 .price()
                 .asset_id()
-                .map(|it| it.bytes())
-                .unwrap_or(vec![]),
+                .map(|it| it.bytes()).unwrap_or_default(),
             buy_order_proto.clone().asset_pair.unwrap().price_asset_id
         );
 
@@ -538,8 +535,7 @@ mod tests {
             sell_order
                 .fee()
                 .asset_id()
-                .map(|it| it.bytes())
-                .unwrap_or(vec![]),
+                .map(|it| it.bytes()).unwrap_or_default(),
             sell_order_proto.clone().matcher_fee.unwrap().asset_id
         );
 
@@ -556,8 +552,7 @@ mod tests {
             sell_order
                 .amount()
                 .asset_id()
-                .map(|it| it.bytes())
-                .unwrap_or(vec![]),
+                .map(|it| it.bytes()).unwrap_or_default(),
             sell_order_proto.clone().asset_pair.unwrap().amount_asset_id
         );
 
@@ -566,8 +561,7 @@ mod tests {
             sell_order
                 .price()
                 .asset_id()
-                .map(|it| it.bytes())
-                .unwrap_or(vec![]),
+                .map(|it| it.bytes()).unwrap_or_default(),
             sell_order_proto.clone().asset_pair.unwrap().price_asset_id
         );
 
