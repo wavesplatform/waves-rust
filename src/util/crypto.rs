@@ -28,7 +28,7 @@ impl Crypto {
         Ok(private_key)
     }
 
-    pub fn get_public_key(private_key: &[u8;32]) -> Vec<u8> {
+    pub fn get_public_key(private_key: &[u8; 32]) -> Vec<u8> {
         let mut pk = [0u8; 32];
         pk.copy_from_slice(private_key);
         let ed_pk = &Scalar::from_bits(pk) * &constants::ED25519_BASEPOINT_TABLE;
@@ -154,7 +154,7 @@ mod tests {
         assert_eq!(encoded_address, expected_address)
     }
 
-    fn private_key(seed_phrase: &str, nonce: u8) -> Result<[u8;32]> {
+    fn private_key(seed_phrase: &str, nonce: u8) -> Result<[u8; 32]> {
         let account_seed = Crypto::get_account_seed(seed_phrase.as_bytes(), nonce)
             .expect("failed to get account seed");
         Crypto::get_private_key(&account_seed)

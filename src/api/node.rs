@@ -785,8 +785,8 @@ mod tests {
 
     use crate::api::node::{Node, Profile};
     use crate::error::Result;
-    
-    use crate::model::{ChainId};
+
+    use crate::model::ChainId;
 
     #[tokio::test]
     async fn test_get_transfer_transaction_info() -> Result<()> {

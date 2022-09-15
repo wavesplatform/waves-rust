@@ -134,7 +134,7 @@ impl TryFrom<&Value> for AssetBalance {
 mod tests {
     use crate::error::Result;
     use crate::model::asset::balance::AssetsBalanceResponse;
-    use crate::model::{ByteString};
+    use crate::model::ByteString;
     use serde_json::Value;
     use std::fs;
 

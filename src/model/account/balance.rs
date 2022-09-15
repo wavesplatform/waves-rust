@@ -101,7 +101,7 @@ impl TryFrom<&Value> for BalanceDetails {
 
 #[cfg(test)]
 mod tests {
-    use std::borrow::Borrow;
+
     use std::fs;
 
     use crate::error::Result;

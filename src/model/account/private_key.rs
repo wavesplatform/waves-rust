@@ -1,4 +1,4 @@
-use crate::constants::{SIGNATURE_LENGTH};
+use crate::constants::SIGNATURE_LENGTH;
 use crate::error::{Error, Result};
 use crate::model::account::PublicKey;
 use crate::model::ByteString;
@@ -81,7 +81,7 @@ impl PrivateKey {
 #[cfg(test)]
 mod tests {
     use crate::error::Error::InvalidBytesLength;
-    use crate::error::{Result};
+    use crate::error::Result;
     use crate::model::account::PrivateKey;
     use crate::model::ByteString;
 
