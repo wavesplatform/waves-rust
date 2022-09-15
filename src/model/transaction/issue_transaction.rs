@@ -2,7 +2,7 @@ use crate::error::{Error, Result};
 use crate::model::{AssetId, Base64String, ByteString};
 use crate::util::JsonDeserializer;
 use crate::waves_proto::IssueTransactionData;
-use serde_json::Value;
+use serde_json::{Map, Value};
 
 const TYPE: u8 = 3;
 
@@ -18,7 +18,6 @@ pub struct IssueTransactionInfo {
 }
 
 impl IssueTransactionInfo {
-
     pub fn new(
         asset_id: AssetId,
         name: String,
@@ -193,5 +192,107 @@ impl TryFrom<&Value> for IssueTransaction {
             is_reissuable,
             script,
         })
+    }
+}
+
+impl TryFrom<&IssueTransaction> for Map<String, Value> {
+    type Error = Error;
+
+    fn try_from(issue_tx: &IssueTransaction) -> Result<Self> {
+        let mut json = Map::new();
+        json.insert("name".to_string(), issue_tx.name().into());
+        json.insert("description".to_string(), issue_tx.description().into());
+        json.insert("quantity".to_string(), issue_tx.quantity().into());
+        json.insert("decimals".to_string(), issue_tx.decimals().into());
+        json.insert("reissuable".to_string(), issue_tx.is_reissuable().into());
+        json.insert(
+            "script".to_string(),
+            issue_tx.script().map(|it| it.encoded()).into(),
+        );
+        Ok(json.into())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::error::Result;
+    use crate::model::{
+        Base64String, ByteString, CreateAliasTransaction, CreateAliasTransactionInfo,
+        IssueTransaction, IssueTransactionInfo,
+    };
+    use crate::waves_proto::{CreateAliasTransactionData, IssueTransactionData};
+    use serde_json::{json, Map, Value};
+    use std::borrow::Borrow;
+    use std::fs;
+
+    #[test]
+    fn test_json_to_issue_transaction() {
+        let data = fs::read_to_string("./tests/resources/issue_transaction_rs.json")
+            .expect("Unable to read file");
+        let json: Value = serde_json::from_str(&data).expect("failed to generate json from str");
+
+        let issue_tx_from_json: IssueTransactionInfo = json.borrow().try_into().unwrap();
+
+        assert_eq!(
+            "5HCFX88m6Xxws4SunQuW9ghvYBmk8rK8b6xVCRL8PyAw",
+            issue_tx_from_json.asset_id().encoded()
+        );
+        assert_eq!("test asset", issue_tx_from_json.name());
+        assert_eq!(32, issue_tx_from_json.quantity());
+        assert_eq!(false, issue_tx_from_json.is_reissuable());
+        assert_eq!(3, issue_tx_from_json.decimals());
+        assert_eq!("this is test asset", issue_tx_from_json.description());
+
+        let script = "base64:AgQAAAAHbWFzdGVyMQkBAAAAEWFkZHJlc3NGcm9tU3RyaW5nAAAAAQIAAAAQMzMzbWFzdGVyQWRkcmVzcwQAAAAHJG1hdGNoMAUAAAACdHgDCQAAAQAAAAIFAAAAByRtYXRjaDACAAAAE1RyYW5zZmVyVHJhbnNhY3Rpb24EAAAAAXQFAAAAByRtYXRjaDADCQAAAAAAAAIIBQAAAAF0AAAABnNlbmRlcgUAAAAHbWFzdGVyMQYJAAAAAAAAAggFAAAAAXQAAAAJcmVjaXBpZW50BQAAAAdtYXN0ZXIxAwkAAAEAAAACBQAAAAckbWF0Y2gwAgAAABdNYXNzVHJhbnNmZXJUcmFuc2FjdGlvbgQAAAACbXQFAAAAByRtYXRjaDAJAAAAAAAAAggFAAAAAm10AAAABnNlbmRlcgUAAAAHbWFzdGVyMQMJAAABAAAAAgUAAAAHJG1hdGNoMAIAAAATRXhjaGFuZ2VUcmFuc2FjdGlvbgcGFLbwIw==";
+
+        assert_eq!(
+            script,
+            issue_tx_from_json.script().unwrap().encoded_with_prefix()
+        );
+    }
+
+    #[test]
+    fn test_issue_transaction_to_proto() -> Result<()> {
+        let issue_tx = &IssueTransaction::new(
+            "name".to_owned(),
+            "descr".to_owned(),
+            32,
+            0,
+            false,
+            Some(Base64String::from_bytes(vec![1, 2, 3])),
+        );
+        let proto: IssueTransactionData = issue_tx.try_into()?;
+        assert_eq!(proto.name, issue_tx.name());
+        assert_eq!(proto.description, issue_tx.description());
+        assert_eq!(proto.amount as u64, issue_tx.quantity());
+        assert_eq!(proto.decimals as u32, issue_tx.decimals());
+        assert_eq!(proto.reissuable, issue_tx.is_reissuable());
+        assert_eq!(proto.script, issue_tx.script().unwrap().bytes());
+        Ok(())
+    }
+
+    #[test]
+    fn test_issue_tx_to_json() -> Result<()> {
+        let issue_tx = &IssueTransaction::new(
+            "test asset".to_owned(),
+            "this is test asset".to_owned(),
+            32,
+            3,
+            false,
+            Some(Base64String::from_bytes(vec![1, 2, 3])),
+        );
+
+        let map: Map<String, Value> = issue_tx.try_into()?;
+        let json: Value = map.into();
+        let expected_json = json!({
+            "name": "test asset",
+            "quantity": 32,
+            "reissuable": false,
+            "decimals": 3,
+            "description": "this is test asset",
+            "script": "AQID",
+        });
+        assert_eq!(expected_json, json);
+        Ok(())
     }
 }

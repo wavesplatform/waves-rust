@@ -76,15 +76,7 @@ fn add_additional_fields(
             json_props.append(&mut data_tx_json);
         }
         TransactionData::Issue(issue_tx) => {
-            json_props.insert("name".to_string(), issue_tx.name().into());
-            json_props.insert("description".to_string(), issue_tx.description().into());
-            json_props.insert("quantity".to_string(), issue_tx.quantity().into());
-            json_props.insert("decimals".to_string(), issue_tx.decimals().into());
-            json_props.insert("reissuable".to_string(), issue_tx.is_reissuable().into());
-            json_props.insert(
-                "script".to_string(),
-                issue_tx.script().map(|it| it.encoded()).into(),
-            );
+            json_props.append(&mut issue_tx.try_into()?);
         }
         TransactionData::InvokeScript(invoke_tx) => {
             json_props.append(&mut invoke_tx.try_into()?);
@@ -158,61 +150,6 @@ fn proofs(sign_tx: &SignedTransaction) -> Vec<String> {
         .iter()
         .map(|proof| proof.encoded())
         .collect()
-}
-
-fn invoke_to_json(invoke_tx: &InvokeScriptTransaction, json: &mut Map<String, Value>) {
-    json.insert("dApp".to_owned(), invoke_tx.dapp().encoded().into());
-    let mut call: Map<String, Value> = Map::new();
-    call.insert("function".to_owned(), invoke_tx.function().name().into());
-    let mut args = vec![];
-    args_to_json(invoke_tx.function().args(), &mut args);
-    call.insert("args".to_owned(), Value::Array(args));
-    json.insert("call".to_owned(), call.into());
-    let payments: Vec<Value> = invoke_tx
-        .payment()
-        .iter()
-        .map(|arg| {
-            let mut map = Map::new();
-            map.insert("amount".to_owned(), arg.value().into());
-            map.insert(
-                "assetId".to_owned(),
-                arg.asset_id().map(|it| it.encoded()).into(),
-            );
-            map.into()
-        })
-        .collect();
-    json.insert("payment".to_owned(), payments.into());
-}
-
-fn args_to_json(args: Vec<Arg>, json_args: &mut Vec<Value>) {
-    for arg in args {
-        let mut arg_map = Map::new();
-        match arg {
-            Arg::Binary(binary) => {
-                arg_map.insert("type".to_owned(), "binary".into());
-                arg_map.insert("value".to_owned(), binary.encoded_with_prefix().into());
-            }
-            Arg::Boolean(boolean) => {
-                arg_map.insert("type".to_owned(), "boolean".into());
-                arg_map.insert("value".to_owned(), boolean.into());
-            }
-            Arg::Integer(integer) => {
-                arg_map.insert("type".to_owned(), "integer".into());
-                arg_map.insert("value".to_owned(), integer.into());
-            }
-            Arg::String(string) => {
-                arg_map.insert("type".to_owned(), "string".into());
-                arg_map.insert("value".to_owned(), string.into());
-            }
-            Arg::List(list) => {
-                arg_map.insert("type".to_owned(), "list".into());
-                let mut list_args = vec![];
-                args_to_json(list, &mut list_args);
-                arg_map.insert("value".to_owned(), Value::Array(list_args));
-            }
-        };
-        json_args.push(arg_map.into())
-    }
 }
 
 #[cfg(test)]
