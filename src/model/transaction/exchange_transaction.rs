@@ -192,6 +192,8 @@ mod tests {
     };
 
     use crate::error::Result;
+    use crate::waves_proto::order::Sender;
+    use crate::waves_proto::ExchangeTransactionData;
     use serde_json::{json, Map, Value};
     use std::borrow::Borrow;
     use std::fs;
@@ -390,6 +392,193 @@ mod tests {
         });
 
         assert_eq!(expected_json, json);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_exchange_transaction_to_proto() -> Result<()> {
+        let buy_order = SignedOrder::new(
+            Order::new(
+                84,
+                4,
+                1662500994929,
+                PublicKey::from_string("9oRf59sSHE2inwF6wraJDPQNsx7ktMKxaKvyFFL8GDrh")?,
+                Amount::new(300000, None),
+                OrderType::Buy,
+                Amount::new(
+                    100,
+                    Some(AssetId::from_string(
+                        "8bt2MZjuUCJPmfucPfaZPTXqrxmoCHCC8gVnbjZ7bhH6",
+                    )?),
+                ),
+                Amount::new(1000, None),
+                PublicKey::from_string("CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt")?,
+                1665092994929,
+            ),
+            vec![Proof::from_string("2YgYwW6o88K3NXYy39TaUu1bwVkzpbr9oQwSDehnkJskfshC6f9F5vYmY736kEExRGHiDmW4hbuyxuqE8cw8WeJ8")?]
+        );
+
+        let sell_order = SignedOrder::new(Order::new(
+            84,
+            4,
+            1662500994931,
+            PublicKey::from_string("CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt")?,
+            Amount::new(300000, None),
+            OrderType::Sell,
+            Amount::new(
+                100,
+                Some(AssetId::from_string(
+                    "8bt2MZjuUCJPmfucPfaZPTXqrxmoCHCC8gVnbjZ7bhH6",
+                )?),
+            ),
+            Amount::new(1000, None),
+            PublicKey::from_string("CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt")?,
+            1665092994931,
+        ),
+           vec![Proof::from_string("5Mbvg4kz1rPLBVBWoTcY2e6Zajoqxq6g38WPfvxCMiHmjxm8TPZpLpEitf9SdfGSpBHtAxas2YRe7X4UcmBugDFL")?]
+        );
+
+        let exchange_transaction =
+            &ExchangeTransaction::new(buy_order, sell_order, 100, 1000, 300000, 300000);
+        let proto: ExchangeTransactionData = exchange_transaction.try_into()?;
+
+        assert_eq!(exchange_transaction.amount(), proto.amount as u64);
+        assert_eq!(
+            exchange_transaction.sell_matcher_fee(),
+            proto.sell_matcher_fee as u64
+        );
+        assert_eq!(exchange_transaction.price(), proto.price as u64);
+        assert_eq!(
+            exchange_transaction.buy_matcher_fee(),
+            proto.buy_matcher_fee as u64
+        );
+
+        let buy_order_proto = &proto.orders[0];
+        let buy_order = &exchange_transaction.order1.order();
+        assert_eq!(buy_order.chain_id(), buy_order_proto.chain_id as u8);
+        assert_eq!(buy_order.version(), buy_order_proto.version as u8);
+        assert_eq!(buy_order.timestamp(), buy_order_proto.timestamp as u64);
+        let proto_sender =
+            if let Sender::SenderPublicKey(bytes) = buy_order_proto.clone().sender.unwrap() {
+                bytes
+            } else {
+                panic!("expected sender public key")
+            };
+        assert_eq!(buy_order.sender().bytes(), proto_sender);
+        assert_eq!(buy_order.amount().value(), buy_order_proto.amount as u64);
+        assert_eq!(
+            buy_order.fee().value(),
+            buy_order_proto.clone().matcher_fee.unwrap().amount as u64
+        );
+        assert_eq!(
+            buy_order
+                .fee()
+                .asset_id()
+                .map(|it| it.bytes())
+                .unwrap_or(vec![]),
+            buy_order_proto.clone().matcher_fee.unwrap().asset_id
+        );
+
+        assert_eq!(
+            match buy_order.order_type() {
+                OrderType::Buy => 0,
+                OrderType::Sell => 1,
+            },
+            buy_order_proto.order_side
+        );
+
+        assert_eq!(buy_order.amount().value(), buy_order_proto.amount as u64);
+        assert_eq!(
+            buy_order
+                .amount()
+                .asset_id()
+                .map(|it| it.bytes())
+                .unwrap_or(vec![]),
+            buy_order_proto.clone().asset_pair.unwrap().amount_asset_id
+        );
+
+        assert_eq!(buy_order.price().value(), buy_order_proto.price as u64);
+        assert_eq!(
+            buy_order
+                .price()
+                .asset_id()
+                .map(|it| it.bytes())
+                .unwrap_or(vec![]),
+            buy_order_proto.clone().asset_pair.unwrap().price_asset_id
+        );
+
+        assert_eq!(
+            buy_order.matcher().bytes(),
+            buy_order_proto.matcher_public_key
+        );
+        assert_eq!(
+            exchange_transaction.order1.proofs()[0].bytes(),
+            buy_order_proto.proofs[0]
+        );
+
+        let sell_order_proto = &proto.orders[1];
+        let sell_order = &exchange_transaction.order2().order();
+        assert_eq!(sell_order.chain_id(), sell_order_proto.chain_id as u8);
+        assert_eq!(sell_order.version(), sell_order_proto.version as u8);
+        assert_eq!(sell_order.timestamp(), sell_order_proto.timestamp as u64);
+        let proto_sender =
+            if let Sender::SenderPublicKey(bytes) = sell_order_proto.clone().sender.unwrap() {
+                bytes
+            } else {
+                panic!("expected sender public key")
+            };
+        assert_eq!(sell_order.sender().bytes(), proto_sender);
+        assert_eq!(sell_order.amount().value(), sell_order_proto.amount as u64);
+        assert_eq!(
+            sell_order.fee().value(),
+            sell_order_proto.clone().matcher_fee.unwrap().amount as u64
+        );
+        assert_eq!(
+            sell_order
+                .fee()
+                .asset_id()
+                .map(|it| it.bytes())
+                .unwrap_or(vec![]),
+            sell_order_proto.clone().matcher_fee.unwrap().asset_id
+        );
+
+        assert_eq!(
+            match sell_order.order_type() {
+                OrderType::Buy => 0,
+                OrderType::Sell => 1,
+            },
+            sell_order_proto.order_side
+        );
+
+        assert_eq!(sell_order.amount().value(), sell_order_proto.amount as u64);
+        assert_eq!(
+            sell_order
+                .amount()
+                .asset_id()
+                .map(|it| it.bytes())
+                .unwrap_or(vec![]),
+            sell_order_proto.clone().asset_pair.unwrap().amount_asset_id
+        );
+
+        assert_eq!(sell_order.price().value(), sell_order_proto.price as u64);
+        assert_eq!(
+            sell_order
+                .price()
+                .asset_id()
+                .map(|it| it.bytes())
+                .unwrap_or(vec![]),
+            sell_order_proto.clone().asset_pair.unwrap().price_asset_id
+        );
+
+        assert_eq!(
+            sell_order.matcher().bytes(),
+            sell_order_proto.matcher_public_key
+        );
+        assert_eq!(
+            exchange_transaction.order2.proofs()[0].bytes(),
+            sell_order_proto.proofs[0]
+        );
 
         Ok(())
     }
