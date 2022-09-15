@@ -1,4 +1,4 @@
-use crate::constants::{HASH_LENGTH, SIGNATURE_LENGTH};
+use crate::constants::{SIGNATURE_LENGTH};
 use crate::error::{Error, Result};
 use crate::model::account::PublicKey;
 use crate::model::ByteString;
@@ -34,7 +34,7 @@ impl PrivateKey {
     }
 
     pub fn bytes(&self) -> [u8; 32] {
-        self.bytes.clone()
+        self.bytes
     }
 
     pub fn public_key(&self) -> PublicKey {

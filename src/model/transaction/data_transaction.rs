@@ -147,7 +147,7 @@ impl From<&DataEntry> for Value {
             }
             DataEntry::BinaryEntry { key: _, value } => {
                 map.insert("type".to_string(), "binary".into());
-                map.insert("value".to_string(), Base64::encode(&value, true).into());
+                map.insert("value".to_string(), Base64::encode(value, true).into());
             }
             DataEntry::StringEntry { key: _, value } => {
                 map.insert("type".to_string(), "string".into());

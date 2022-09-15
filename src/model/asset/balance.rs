@@ -1,5 +1,5 @@
 use crate::error::{Error, Result};
-use crate::model::{Address, AssetId, IssueTransactionInfo, TransactionInfoResponse};
+use crate::model::{Address, AssetId, IssueTransactionInfo};
 use crate::util::JsonDeserializer;
 use serde_json::Value;
 
