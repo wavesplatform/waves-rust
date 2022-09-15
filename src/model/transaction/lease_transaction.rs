@@ -110,8 +110,11 @@ impl TryFrom<&LeaseTransaction> for LeaseTransactionData {
 
 #[cfg(test)]
 mod tests {
-    use crate::model::{ByteString, LeaseTransactionInfo};
-    use serde_json::Value;
+    use crate::error::Result;
+    use crate::model::{Address, ByteString, LeaseTransaction, LeaseTransactionInfo};
+    use crate::waves_proto::recipient::Recipient;
+    use crate::waves_proto::LeaseTransactionData;
+    use serde_json::{json, Map, Value};
     use std::borrow::Borrow;
     use std::fs;
 
@@ -128,5 +131,43 @@ mod tests {
             lease_from_json.recipient().encoded()
         );
         assert_eq!(100, lease_from_json.amount());
+    }
+
+    #[test]
+    fn test_lease_transaction_to_proto() -> Result<()> {
+        let lease_tx = &LeaseTransaction::new(
+            Address::from_string("3MxtrLkrbcG28uTvmbKmhrwGrR65ooHVYvK")?,
+            32,
+        );
+        let proto: LeaseTransactionData = lease_tx.try_into()?;
+
+        assert_eq!(proto.amount as u64, lease_tx.amount());
+
+        let proto_recipient = if let Recipient::PublicKeyHash(bytes) =
+            proto.clone().recipient.unwrap().recipient.unwrap()
+        {
+            bytes
+        } else {
+            panic!("expected dapp public key hash")
+        };
+        assert_eq!(proto_recipient, lease_tx.recipient().public_key_hash());
+        Ok(())
+    }
+
+    #[test]
+    fn test_lease_transaction_to_json() -> Result<()> {
+        let lease_tx = &LeaseTransaction::new(
+            Address::from_string("3MxtrLkrbcG28uTvmbKmhrwGrR65ooHVYvK")?,
+            32,
+        );
+
+        let map: Map<String, Value> = lease_tx.try_into()?;
+        let json: Value = map.into();
+        let expected_json = json!({
+            "amount": 32,
+            "recipient": "3MxtrLkrbcG28uTvmbKmhrwGrR65ooHVYvK"
+        });
+        assert_eq!(expected_json, json);
+        Ok(())
     }
 }

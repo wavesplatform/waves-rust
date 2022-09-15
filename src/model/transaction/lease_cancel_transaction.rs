@@ -161,7 +161,7 @@ mod tests {
     }
 
     #[test]
-    fn test_issue_tx_to_json() -> Result<()> {
+    fn test_lease_cancel_to_json() -> Result<()> {
         let lease_cancel_tx = &LeaseCancelTransaction::new(Id::from_string(
             "5EWudZk4xXaqRezrh26zqjbNeAzvEzDATjs4paKdyhGy",
         )?);
