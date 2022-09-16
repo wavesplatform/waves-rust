@@ -117,8 +117,10 @@ impl TryFrom<&SponsorFeeTransaction> for SponsorFeeTransactionData {
 
 #[cfg(test)]
 mod tests {
-    use crate::model::{ByteString, SponsorFeeTransaction};
-    use serde_json::Value;
+    use crate::error::Result;
+    use crate::model::{AssetId, ByteString, SponsorFeeTransaction};
+    use crate::waves_proto::SponsorFeeTransactionData;
+    use serde_json::{json, Map, Value};
     use std::borrow::Borrow;
     use std::fs;
 
@@ -135,5 +137,39 @@ mod tests {
             sponsor_fee_from_json.asset_id().encoded()
         );
         assert_eq!(10, sponsor_fee_from_json.min_sponsored_asset_fee())
+    }
+
+    #[test]
+    fn test_sponsor_fee_to_proto() -> Result<()> {
+        let sponsor_fee_tx = &SponsorFeeTransaction::new(
+            AssetId::from_string("8bt2MZjuUCJPmfucPfaZPTXqrxmoCHCC8gVnbjZ7bhH6")?,
+            100,
+        );
+        let proto: SponsorFeeTransactionData = sponsor_fee_tx.try_into()?;
+
+        let amount = proto.min_fee.unwrap();
+        assert_eq!(
+            amount.amount as u64,
+            sponsor_fee_tx.min_sponsored_asset_fee()
+        );
+        assert_eq!(amount.asset_id, sponsor_fee_tx.asset_id().bytes());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_sponsor_fee_to_json() -> Result<()> {
+        let sponsor_fee_tx = &SponsorFeeTransaction::new(
+            AssetId::from_string("8bt2MZjuUCJPmfucPfaZPTXqrxmoCHCC8gVnbjZ7bhH6")?,
+            100,
+        );
+        let map: Map<String, Value> = sponsor_fee_tx.try_into()?;
+        let json: Value = map.into();
+        let expected_json = json!({
+             "assetId": "8bt2MZjuUCJPmfucPfaZPTXqrxmoCHCC8gVnbjZ7bhH6",
+             "minSponsoredAssetFee": 100
+        });
+        assert_eq!(expected_json, json);
+        Ok(())
     }
 }

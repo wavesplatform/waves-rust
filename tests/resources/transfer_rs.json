@@ -1,0 +1,21 @@
+{
+  "type": 4,
+  "id": "9FYGngVs7GyiV98vmd7wBKpLrqHNZJycVBavpnbL13Ph",
+  "fee": 100000,
+  "feeAssetId": null,
+  "timestamp": 1662471467319,
+  "version": 2,
+  "sender": "3Myqjf1D44wR8Vko4Tr5CwSzRNo2Vg9S7u7",
+  "senderPublicKey": "9oYuF7V66UNpD2AgYHb6t2j9GYrf3c6hRvwtop6uD6Rx",
+  "proofs": [
+    "42WLGw3i3ALcP6cAEYBFwwbaQSiB68kGeAHHHosA5pUaRFNCH3UCTAHPbRMtHfLsweRFxND565fNuGb6cjJRKfD4"
+  ],
+  "recipient": "3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q",
+  "assetId": null,
+  "feeAsset": null,
+  "amount": 200000000,
+  "attachment": "",
+  "height": 2217333,
+  "applicationStatus": "succeeded",
+  "spentComplexity": 0
+}

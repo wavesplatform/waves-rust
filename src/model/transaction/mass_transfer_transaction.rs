@@ -190,8 +190,14 @@ impl TryFrom<&MassTransferTransaction> for MassTransferTransactionData {
 
 #[cfg(test)]
 mod tests {
-    use crate::model::{Address, ByteString, MassTransferTransactionInfo, Transfer};
-    use serde_json::Value;
+    use crate::error::Result;
+    use crate::model::{
+        Address, AssetId, Base58String, ByteString, MassTransferTransaction,
+        MassTransferTransactionInfo, Transfer,
+    };
+    use crate::waves_proto::recipient::Recipient;
+    use crate::waves_proto::MassTransferTransactionData;
+    use serde_json::{json, Map, Value};
     use std::borrow::Borrow;
     use std::fs;
 
@@ -220,5 +226,102 @@ mod tests {
             ),
         ];
         assert_eq!(transfers, mass_transfer_from_json.transfers())
+    }
+
+    #[test]
+    fn test_mass_transfer_to_proto() -> Result<()> {
+        let mass_transfer_tx = &MassTransferTransaction::new(
+            Some(AssetId::from_string(
+                "Atqv59EYzjFGuitKVnMRk6H8FukjoV3ktPorbEys25on",
+            )?),
+            vec![
+                Transfer::new(
+                    Address::from_string("3MxtrLkrbcG28uTvmbKmhrwGrR65ooHVYvK")?,
+                    32,
+                ),
+                Transfer::new(
+                    Address::from_string("3MxjhrvCr1nnDxvNJiCQfSC557gd8QYEhDx")?,
+                    64,
+                ),
+            ],
+            Base58String::from_bytes(vec![1, 2, 3]),
+        );
+        let proto: MassTransferTransactionData = mass_transfer_tx.try_into()?;
+
+        assert_eq!(proto.asset_id, mass_transfer_tx.asset_id().unwrap().bytes());
+        assert_eq!(proto.attachment, mass_transfer_tx.attachment().bytes());
+        let proto_transfer1 = proto.transfers[0].clone();
+        assert_eq!(
+            proto_transfer1.amount as u64,
+            mass_transfer_tx.transfers()[0].amount()
+        );
+
+        let proto_recipient1 = match proto_transfer1.recipient.unwrap().recipient.unwrap() {
+            Recipient::PublicKeyHash(bytes) => bytes,
+            Recipient::Alias(_) => panic!("expected public key hash"),
+        };
+
+        assert_eq!(
+            proto_recipient1,
+            mass_transfer_tx.transfers()[0]
+                .recipient()
+                .public_key_hash()
+        );
+
+        let proto_transfer2 = proto.transfers[1].clone();
+        assert_eq!(
+            proto_transfer2.amount as u64,
+            mass_transfer_tx.transfers()[1].amount()
+        );
+        let proto_recipient2 = match proto_transfer2.recipient.unwrap().recipient.unwrap() {
+            Recipient::PublicKeyHash(bytes) => bytes,
+            Recipient::Alias(_) => panic!("expected public key hash"),
+        };
+        assert_eq!(
+            proto_recipient2,
+            mass_transfer_tx.transfers()[1]
+                .recipient()
+                .public_key_hash()
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn test_mass_transfer_to_json() -> Result<()> {
+        let mass_transfer_tx = &MassTransferTransaction::new(
+            Some(AssetId::from_string(
+                "Atqv59EYzjFGuitKVnMRk6H8FukjoV3ktPorbEys25on",
+            )?),
+            vec![
+                Transfer::new(
+                    Address::from_string("3MxtrLkrbcG28uTvmbKmhrwGrR65ooHVYvK")?,
+                    32,
+                ),
+                Transfer::new(
+                    Address::from_string("3MxjhrvCr1nnDxvNJiCQfSC557gd8QYEhDx")?,
+                    64,
+                ),
+            ],
+            Base58String::from_bytes(vec![1, 2, 3]),
+        );
+
+        let map: Map<String, Value> = mass_transfer_tx.try_into()?;
+        let json: Value = map.into();
+        let expected_json = json!({
+            "assetId": "Atqv59EYzjFGuitKVnMRk6H8FukjoV3ktPorbEys25on",
+            "attachment": "Ldp",
+            "transfers": [
+            {
+                "recipient": "3MxtrLkrbcG28uTvmbKmhrwGrR65ooHVYvK",
+                "amount": 32
+            },
+            {
+                "recipient": "3MxjhrvCr1nnDxvNJiCQfSC557gd8QYEhDx",
+                "amount": 64
+            }
+        ],
+        });
+        assert_eq!(expected_json, json);
+        Ok(())
     }
 }

@@ -127,8 +127,10 @@ impl TryFrom<&ReissueTransaction> for ReissueTransactionData {
 
 #[cfg(test)]
 mod tests {
-    use crate::model::{ByteString, ReissueTransactionInfo};
-    use serde_json::Value;
+    use crate::error::Result;
+    use crate::model::{Amount, AssetId, ByteString, ReissueTransaction, ReissueTransactionInfo};
+    use crate::waves_proto::ReissueTransactionData;
+    use serde_json::{json, Map, Value};
     use std::borrow::Borrow;
     use std::fs;
 
@@ -150,5 +152,51 @@ mod tests {
         );
         assert_eq!(12, reissue_from_json.amount().value());
         assert_eq!(true, reissue_from_json.is_reissuable());
+    }
+
+    #[test]
+    fn test_reissue_to_proto() -> Result<()> {
+        let reissue_tx = &ReissueTransaction::new(
+            Amount::new(
+                32,
+                Some(AssetId::from_string(
+                    "8bt2MZjuUCJPmfucPfaZPTXqrxmoCHCC8gVnbjZ7bhH6",
+                )?),
+            ),
+            true,
+        );
+        let proto: ReissueTransactionData = reissue_tx.try_into()?;
+
+        assert_eq!(proto.reissuable, reissue_tx.is_reissuable());
+        let amount = proto.asset_amount.unwrap();
+        assert_eq!(amount.amount as u64, reissue_tx.amount().value());
+        assert_eq!(
+            amount.asset_id,
+            reissue_tx.amount().asset_id().unwrap().bytes()
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn test_reissue_to_json() -> Result<()> {
+        let reissue_tx = &ReissueTransaction::new(
+            Amount::new(
+                32,
+                Some(AssetId::from_string(
+                    "8bt2MZjuUCJPmfucPfaZPTXqrxmoCHCC8gVnbjZ7bhH6",
+                )?),
+            ),
+            true,
+        );
+
+        let map: Map<String, Value> = reissue_tx.try_into()?;
+        let json: Value = map.into();
+        let expected_json = json!({
+            "assetId": "8bt2MZjuUCJPmfucPfaZPTXqrxmoCHCC8gVnbjZ7bhH6",
+            "quantity": 32,
+            "reissuable": true
+        });
+        assert_eq!(expected_json, json);
+        Ok(())
     }
 }

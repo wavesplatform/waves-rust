@@ -102,8 +102,10 @@ impl TryFrom<&SetAssetScriptTransaction> for SetAssetScriptTransactionData {
 
 #[cfg(test)]
 mod tests {
-    use crate::model::{ByteString, SetAssetScriptTransaction};
-    use serde_json::Value;
+    use crate::error::Result;
+    use crate::model::{AssetId, Base64String, ByteString, SetAssetScriptTransaction};
+    use crate::waves_proto::SetAssetScriptTransactionData;
+    use serde_json::{json, Map, Value};
     use std::borrow::Borrow;
     use std::fs;
 
@@ -126,5 +128,36 @@ mod tests {
             set_script_from_json.script().encoded_with_prefix(),
             COMPILED_ASSET_SCRIPT
         );
+    }
+
+    #[test]
+    fn test_set_asset_script_to_proto() -> Result<()> {
+        let set_asset_script_tx = &SetAssetScriptTransaction::new(
+            AssetId::from_string("CVwsbXjXmdYF2q4RCPuQKf7sLGpzhk7BNnYsxGZZJMym")?,
+            Base64String::from_string(COMPILED_ASSET_SCRIPT)?,
+        );
+        let proto: SetAssetScriptTransactionData = set_asset_script_tx.try_into()?;
+
+        assert_eq!(proto.asset_id, set_asset_script_tx.asset_id().bytes());
+        assert_eq!(proto.script, set_asset_script_tx.script().bytes());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_set_asset_script_to_json() -> Result<()> {
+        let set_asset_script_tx = &SetAssetScriptTransaction::new(
+            AssetId::from_string("CVwsbXjXmdYF2q4RCPuQKf7sLGpzhk7BNnYsxGZZJMym")?,
+            Base64String::from_string(COMPILED_ASSET_SCRIPT)?,
+        );
+
+        let map: Map<String, Value> = set_asset_script_tx.try_into()?;
+        let json: Value = map.into();
+        let expected_json = json!({
+            "assetId": "CVwsbXjXmdYF2q4RCPuQKf7sLGpzhk7BNnYsxGZZJMym",
+            "script": "AgQAAAAHbWFzdGVyMQkBAAAAEWFkZHJlc3NGcm9tU3RyaW5nAAAAAQIAAAAQMzMzbWFzdGVyQWRkcmVzcwQAAAAHJG1hdGNoMAUAAAACdHgDCQAAAQAAAAIFAAAAByRtYXRjaDACAAAAE1RyYW5zZmVyVHJhbnNhY3Rpb24EAAAAAXQFAAAAByRtYXRjaDADCQAAAAAAAAIIBQAAAAF0AAAABnNlbmRlcgUAAAAHbWFzdGVyMQYJAAAAAAAAAggFAAAAAXQAAAAJcmVjaXBpZW50BQAAAAdtYXN0ZXIxAwkAAAEAAAACBQAAAAckbWF0Y2gwAgAAABdNYXNzVHJhbnNmZXJUcmFuc2FjdGlvbgQAAAACbXQFAAAAByRtYXRjaDAJAAAAAAAAAggFAAAAAm10AAAABnNlbmRlcgUAAAAHbWFzdGVyMQMJAAABAAAAAgUAAAAHJG1hdGNoMAIAAAATRXhjaGFuZ2VUcmFuc2FjdGlvbgcGFLbwIw=="
+        });
+        assert_eq!(expected_json, json);
+        Ok(())
     }
 }

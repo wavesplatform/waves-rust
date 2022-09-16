@@ -2,7 +2,7 @@ use serde_json::{Map, Value};
 
 use crate::error::{Error, Result};
 use crate::model::{
-    Arg, BurnTransaction, ByteString, CreateAliasTransaction, DataTransaction, EthereumTransaction,
+    BurnTransaction, ByteString, CreateAliasTransaction, DataTransaction, EthereumTransaction,
     ExchangeTransaction, GenesisTransaction, InvokeScriptTransaction, IssueTransaction,
     LeaseCancelTransaction, LeaseTransaction, MassTransferTransaction, PaymentTransaction,
     ReissueTransaction, SetAssetScriptTransaction, SetScriptTransaction, SignedTransaction,
@@ -60,76 +60,49 @@ fn add_additional_fields(
             "broadcasting payment transaction".to_owned(),
         ))?,
         TransactionData::Transfer(transfer_tx) => {
-            json_props.insert(
-                "recipient".to_owned(),
-                transfer_tx.recipient().encoded().into(),
-            );
-            json_props.insert("amount".to_owned(), transfer_tx.amount().value().into());
-            json_props.insert("assetId".to_owned(), transfer_tx.amount().asset_id().into());
-            json_props.insert(
-                "attachment".to_owned(),
-                transfer_tx.attachment().encoded().into(),
-            );
+            json_props.append(&mut transfer_tx.try_into()?);
         }
         TransactionData::Data(data_tx) => {
-            let mut data_tx_json: Map<String, Value> = data_tx.try_into()?;
-            json_props.append(&mut data_tx_json);
+            json_props.append(&mut data_tx.try_into()?);
         }
         TransactionData::Issue(issue_tx) => {
-            json_props.insert("name".to_string(), issue_tx.name().into());
-            json_props.insert("description".to_string(), issue_tx.description().into());
-            json_props.insert("quantity".to_string(), issue_tx.quantity().into());
-            json_props.insert("decimals".to_string(), issue_tx.decimals().into());
-            json_props.insert("reissuable".to_string(), issue_tx.is_reissuable().into());
-            json_props.insert(
-                "script".to_string(),
-                issue_tx.script().map(|it| it.encoded()).into(),
-            );
+            json_props.append(&mut issue_tx.try_into()?);
         }
-        TransactionData::InvokeScript(invoke_tx) => invoke_to_json(invoke_tx, json_props),
+        TransactionData::InvokeScript(invoke_tx) => {
+            json_props.append(&mut invoke_tx.try_into()?);
+        }
         TransactionData::Exchange(exchange_tx) => {
-            let mut exchange_tx_json: Map<String, Value> = exchange_tx.try_into()?;
-            json_props.append(&mut exchange_tx_json);
+            json_props.append(&mut exchange_tx.try_into()?);
         }
         TransactionData::Reissue(reissue_tx) => {
-            let mut issue_tx_json: Map<String, Value> = reissue_tx.try_into()?;
-            json_props.append(&mut issue_tx_json);
+            json_props.append(&mut reissue_tx.try_into()?);
         }
         TransactionData::Burn(burn_tx) => {
-            let mut burn_tx_json: Map<String, Value> = burn_tx.try_into()?;
-            json_props.append(&mut burn_tx_json);
+            json_props.append(&mut burn_tx.try_into()?);
         }
         TransactionData::Lease(lease_tx) => {
-            let mut lease_tx_json: Map<String, Value> = lease_tx.try_into()?;
-            json_props.append(&mut lease_tx_json);
+            json_props.append(&mut lease_tx.try_into()?);
         }
         TransactionData::LeaseCancel(lease_cancel_tx) => {
-            let mut lease_cancel_tx: Map<String, Value> = lease_cancel_tx.try_into()?;
-            json_props.append(&mut lease_cancel_tx);
+            json_props.append(&mut lease_cancel_tx.try_into()?);
         }
         TransactionData::CreateAlias(create_alias_tx) => {
-            let mut create_alias_tx: Map<String, Value> = create_alias_tx.try_into()?;
-            json_props.append(&mut create_alias_tx);
+            json_props.append(&mut create_alias_tx.try_into()?);
         }
         TransactionData::MassTransfer(mass_transfer_tx) => {
-            let mut mass_transfer_tx: Map<String, Value> = mass_transfer_tx.try_into()?;
-            json_props.append(&mut mass_transfer_tx);
+            json_props.append(&mut mass_transfer_tx.try_into()?);
         }
         TransactionData::SetScript(set_script_tx) => {
-            let mut set_script_tx: Map<String, Value> = set_script_tx.try_into()?;
-            json_props.append(&mut set_script_tx);
+            json_props.append(&mut set_script_tx.try_into()?);
         }
         TransactionData::SetAssetScript(set_asset_script_tx) => {
-            let mut set_asset_script_tx: Map<String, Value> = set_asset_script_tx.try_into()?;
-            json_props.append(&mut set_asset_script_tx);
+            json_props.append(&mut set_asset_script_tx.try_into()?);
         }
         TransactionData::SponsorFee(sponsor_fee_tx) => {
-            let mut sponsor_fee_tx: Map<String, Value> = sponsor_fee_tx.try_into()?;
-            json_props.append(&mut sponsor_fee_tx);
+            json_props.append(&mut sponsor_fee_tx.try_into()?);
         }
         TransactionData::UpdateAssetInfo(update_asset_info_tx) => {
-            let mut update_asset_info_tx: Map<String, Value> = update_asset_info_tx.try_into()?;
-            json_props.append(&mut update_asset_info_tx);
+            json_props.append(&mut update_asset_info_tx.try_into()?);
         }
         TransactionData::Ethereum(_) => Err(Error::UnsupportedOperation(
             "broadcasting ethereum transaction".to_owned(),
@@ -167,61 +140,6 @@ fn proofs(sign_tx: &SignedTransaction) -> Vec<String> {
         .iter()
         .map(|proof| proof.encoded())
         .collect()
-}
-
-fn invoke_to_json(invoke_tx: &InvokeScriptTransaction, json: &mut Map<String, Value>) {
-    json.insert("dApp".to_owned(), invoke_tx.dapp().encoded().into());
-    let mut call: Map<String, Value> = Map::new();
-    call.insert("function".to_owned(), invoke_tx.function().name().into());
-    let mut args = vec![];
-    args_to_json(invoke_tx.function().args(), &mut args);
-    call.insert("args".to_owned(), Value::Array(args));
-    json.insert("call".to_owned(), call.into());
-    let payments: Vec<Value> = invoke_tx
-        .payment()
-        .iter()
-        .map(|arg| {
-            let mut map = Map::new();
-            map.insert("amount".to_owned(), arg.value().into());
-            map.insert(
-                "assetId".to_owned(),
-                arg.asset_id().map(|it| it.encoded()).into(),
-            );
-            map.into()
-        })
-        .collect();
-    json.insert("payment".to_owned(), payments.into());
-}
-
-fn args_to_json(args: Vec<Arg>, json_args: &mut Vec<Value>) {
-    for arg in args {
-        let mut arg_map = Map::new();
-        match arg {
-            Arg::Binary(binary) => {
-                arg_map.insert("type".to_owned(), "binary".into());
-                arg_map.insert("value".to_owned(), binary.encoded_with_prefix().into());
-            }
-            Arg::Boolean(boolean) => {
-                arg_map.insert("type".to_owned(), "boolean".into());
-                arg_map.insert("value".to_owned(), boolean.into());
-            }
-            Arg::Integer(integer) => {
-                arg_map.insert("type".to_owned(), "integer".into());
-                arg_map.insert("value".to_owned(), integer.into());
-            }
-            Arg::String(string) => {
-                arg_map.insert("type".to_owned(), "string".into());
-                arg_map.insert("value".to_owned(), string.into());
-            }
-            Arg::List(list) => {
-                arg_map.insert("type".to_owned(), "list".into());
-                let mut list_args = vec![];
-                args_to_json(list, &mut list_args);
-                arg_map.insert("value".to_owned(), Value::Array(list_args));
-            }
-        };
-        json_args.push(arg_map.into())
-    }
 }
 
 #[cfg(test)]
