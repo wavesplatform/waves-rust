@@ -2,7 +2,7 @@ use serde_json::{Map, Value};
 
 use crate::error::{Error, Result};
 use crate::model::{
-    Arg, BurnTransaction, ByteString, CreateAliasTransaction, DataTransaction, EthereumTransaction,
+    BurnTransaction, ByteString, CreateAliasTransaction, DataTransaction, EthereumTransaction,
     ExchangeTransaction, GenesisTransaction, InvokeScriptTransaction, IssueTransaction,
     LeaseCancelTransaction, LeaseTransaction, MassTransferTransaction, PaymentTransaction,
     ReissueTransaction, SetAssetScriptTransaction, SetScriptTransaction, SignedTransaction,

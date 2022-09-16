@@ -246,7 +246,7 @@ impl TryFrom<&InvokeScriptTransaction> for Map<String, Value> {
         json.insert("dApp".to_owned(), invoke_tx.dapp().encoded().into());
         let mut call: Map<String, Value> = Map::new();
         call.insert("function".to_owned(), invoke_tx.function().name().into());
-        let mut args = invoke_tx
+        let args = invoke_tx
             .function()
             .args()
             .iter()

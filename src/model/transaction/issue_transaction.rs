@@ -209,18 +209,15 @@ impl TryFrom<&IssueTransaction> for Map<String, Value> {
             "script".to_string(),
             issue_tx.script().map(|it| it.encoded()).into(),
         );
-        Ok(json.into())
+        Ok(json)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use crate::error::Result;
-    use crate::model::{
-        Base64String, ByteString, CreateAliasTransaction, CreateAliasTransactionInfo,
-        IssueTransaction, IssueTransactionInfo,
-    };
-    use crate::waves_proto::{CreateAliasTransactionData, IssueTransactionData};
+    use crate::model::{Base64String, ByteString, IssueTransaction, IssueTransactionInfo};
+    use crate::waves_proto::IssueTransactionData;
     use serde_json::{json, Map, Value};
     use std::borrow::Borrow;
     use std::fs;

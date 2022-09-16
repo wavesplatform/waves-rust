@@ -143,13 +143,12 @@ mod tests {
 
         assert_eq!(proto.amount as u64, lease_tx.amount());
 
-        let proto_recipient = if let Recipient::PublicKeyHash(bytes) =
-            proto.clone().recipient.unwrap().recipient.unwrap()
-        {
-            bytes
-        } else {
-            panic!("expected dapp public key hash")
-        };
+        let proto_recipient =
+            if let Recipient::PublicKeyHash(bytes) = proto.recipient.unwrap().recipient.unwrap() {
+                bytes
+            } else {
+                panic!("expected dapp public key hash")
+            };
         assert_eq!(proto_recipient, lease_tx.recipient().public_key_hash());
         Ok(())
     }

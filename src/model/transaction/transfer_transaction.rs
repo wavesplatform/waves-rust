@@ -150,12 +150,9 @@ impl TryFrom<&TransferTransaction> for Map<String, Value> {
 #[cfg(test)]
 mod tests {
     use crate::error::Result;
-    use crate::model::{
-        Address, Amount, AssetId, Base58String, ByteString, SponsorFeeTransaction,
-        TransferTransaction,
-    };
+    use crate::model::{Address, Amount, AssetId, Base58String, ByteString, TransferTransaction};
     use crate::waves_proto::recipient::Recipient;
-    use crate::waves_proto::{SponsorFeeTransactionData, TransferTransactionData};
+    use crate::waves_proto::TransferTransactionData;
     use serde_json::{json, Map, Value};
     use std::borrow::Borrow;
     use std::fs;

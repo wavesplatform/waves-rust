@@ -252,17 +252,11 @@ mod tests {
         assert_eq!(proto.attachment, mass_transfer_tx.attachment().bytes());
         let proto_transfer1 = proto.transfers[0].clone();
         assert_eq!(
-            proto_transfer1.amount.clone() as u64,
+            proto_transfer1.amount as u64,
             mass_transfer_tx.transfers()[0].amount()
         );
 
-        let proto_recipient1 = match proto_transfer1
-            .clone()
-            .recipient
-            .unwrap()
-            .recipient
-            .unwrap()
-        {
+        let proto_recipient1 = match proto_transfer1.recipient.unwrap().recipient.unwrap() {
             Recipient::PublicKeyHash(bytes) => bytes,
             Recipient::Alias(_) => panic!("expected public key hash"),
         };
@@ -279,13 +273,7 @@ mod tests {
             proto_transfer2.amount as u64,
             mass_transfer_tx.transfers()[1].amount()
         );
-        let proto_recipient2 = match proto_transfer2
-            .clone()
-            .recipient
-            .unwrap()
-            .recipient
-            .unwrap()
-        {
+        let proto_recipient2 = match proto_transfer2.recipient.unwrap().recipient.unwrap() {
             Recipient::PublicKeyHash(bytes) => bytes,
             Recipient::Alias(_) => panic!("expected public key hash"),
         };
