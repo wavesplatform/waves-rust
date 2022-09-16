@@ -1,3 +1,4 @@
+use crate::error::Error::UnsupportedOperation;
 use crate::error::{Error, Result};
 use crate::model::{Address, Id};
 use crate::util::JsonDeserializer;
@@ -99,7 +100,7 @@ impl TryFrom<&Value> for LeaseInfo {
         let status = match JsonDeserializer::safe_to_string_from_field(value, "status")?.as_str() {
             "active" => LeaseStatus::Active,
             "canceled" => LeaseStatus::Canceled,
-            _ => panic!("unknown lease type"),
+            _ => return Err(UnsupportedOperation("unknown lease status".to_owned())),
         };
         let cancel_height = value["cancelHeight"].as_i64();
         let cancel_tx_id = match value["cancelTransactionId"].as_str() {

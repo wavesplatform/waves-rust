@@ -1,7 +1,7 @@
 use crate::constants::HASH_LENGTH;
 use serde_json::Value;
 
-use crate::error::Error::WrongTransactionType;
+use crate::error::Error::{UnsupportedOperation, WrongTransactionType};
 use crate::error::{Error, Result};
 use crate::model::account::{PrivateKey, PublicKey};
 use crate::model::transaction::data_transaction::DataTransaction;
@@ -314,46 +314,6 @@ pub enum TransactionData {
 }
 
 impl TransactionData {
-    pub fn transfer_tx(&self) -> Result<&TransferTransaction> {
-        match self {
-            Transfer(tx) => Ok(tx),
-            tx => Err(WrongTransactionType {
-                expected_type: TransferTransaction::tx_type(),
-                actual_type: tx.tx_type(),
-            }),
-        }
-    }
-
-    pub fn data_tx(&self) -> Result<&DataTransaction> {
-        match self {
-            Data(tx) => Ok(tx),
-            tx => Err(WrongTransactionType {
-                expected_type: DataTransaction::tx_type(),
-                actual_type: tx.tx_type(),
-            }),
-        }
-    }
-
-    pub fn issue_tx(&self) -> Result<&IssueTransaction> {
-        match self {
-            Issue(tx) => Ok(tx),
-            tx => Err(WrongTransactionType {
-                expected_type: IssueTransaction::tx_type(),
-                actual_type: tx.tx_type(),
-            }),
-        }
-    }
-
-    pub fn invoke_script_tx(&self) -> Result<&InvokeScriptTransaction> {
-        match self {
-            InvokeScript(tx) => Ok(tx),
-            tx => Err(WrongTransactionType {
-                expected_type: IssueTransaction::tx_type(),
-                actual_type: tx.tx_type(),
-            }),
-        }
-    }
-
     pub fn tx_type(&self) -> u8 {
         match self {
             Genesis(_) => GenesisTransaction::tx_type(),
@@ -457,7 +417,7 @@ impl TryFrom<&Value> for TransactionInfoResponse {
             16 => TransactionDataInfo::Invoke(value.try_into()?),
             17 => TransactionDataInfo::UpdateAssetInfo(value.try_into()?),
             18 => TransactionDataInfo::Ethereum(value.try_into()?),
-            _ => panic!("unknown tx type"),
+            _ => return Err(UnsupportedOperation("unknown tx type".to_owned())),
         };
         let timestamp = JsonDeserializer::safe_to_int_from_field(value, "timestamp")? as u64;
 
@@ -534,7 +494,7 @@ impl TryFrom<&Value> for Transaction {
             16 => InvokeScript(InvokeScriptTransaction::from_json(value)?),
             17 => UpdateAssetInfo(value.try_into()?),
             18 => Ethereum(value.try_into()?),
-            _ => todo!(),
+            _ => return Err(UnsupportedOperation("unknown transaction type".to_owned())),
         };
         let timestamp = JsonDeserializer::safe_to_int_from_field(value, "timestamp")? as u64;
         let public_key = match tx_type {

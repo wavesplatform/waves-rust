@@ -788,18 +788,16 @@ mod tests {
 
     use crate::model::ChainId;
 
-    #[tokio::test]
-    async fn test_get_transfer_transaction_info() -> Result<()> {
-        let node = Node::from_profile(Profile::MAINNET);
-        let _ = node.get_addresses();
+    #[test]
+    fn test_create_node_from_profile() -> Result<()> {
+        let _ = Node::from_profile(Profile::MAINNET);
         Ok(())
     }
 
-    #[tokio::test]
-    async fn test_get_data_transaction_info() -> Result<()> {
+    #[test]
+    fn test_create_node_from_url() -> Result<()> {
         let url = Url::from_str("https://nodes.wavesnodes.com").expect("failed to parse url");
-        let node = Node::from_url(url, MAINNET.byte());
-        let _ = node.get_addresses();
+        let _ = Node::from_url(url, MAINNET.byte());
         Ok(())
     }
 }
