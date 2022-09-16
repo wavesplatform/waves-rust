@@ -173,3 +173,69 @@ impl ArgMeta {
         self.arg_type.clone()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::error::Result;
+    use crate::model::{
+        Address, ApplicationStatus, ArgMeta, ByteString, GenesisTransaction,
+        GenesisTransactionInfo, ScriptInfo, ScriptMeta, SignedTransaction, Status,
+        TransactionInfoResponse, TransactionStatus, Validation,
+    };
+    use crate::waves_proto::GenesisTransactionData;
+    use serde_json::Value;
+    use std::borrow::Borrow;
+    use std::fs;
+
+    #[test]
+    fn test_json_to_script_info() -> Result<()> {
+        let data = fs::read_to_string("./tests/resources/addresses/script_info_rs.json")
+            .expect("Unable to read file");
+        let json: Value = serde_json::from_str(&data).expect("failed to generate json from str");
+
+        let script_info: ScriptInfo = json.borrow().try_into()?;
+
+        assert_eq!(
+            script_info.script().encoded_with_prefix(),
+            "base64:AAIFAAAAAAAAAA=="
+        );
+        assert_eq!(script_info.complexity(), 14);
+        assert_eq!(script_info.verifier_complexity(), 0);
+        assert_eq!(script_info.callable_complexities()["storeData"], 14);
+        assert_eq!(script_info.extra_fee(), 0);
+        assert_eq!(
+            script_info.script_text(),
+            "DApp(DAppMeta(2,Vector(CallableFuncSignature))"
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn test_json_to_script_meta() -> Result<()> {
+        let data = fs::read_to_string("./tests/resources/addresses/script_meta_rs.json")
+            .expect("Unable to read file");
+        let json: Value = serde_json::from_str(&data).expect("failed to generate json from str");
+
+        let script_meta: ScriptMeta = json.borrow().try_into()?;
+
+        assert_eq!(script_meta.meta_version(), 2);
+        let function_args_meta = &script_meta.callable_functions()["storeData"];
+
+        assert_eq!(function_args_meta[0].arg_type, "Boolean");
+        assert_eq!(function_args_meta[0].arg_name, "bool");
+
+        assert_eq!(function_args_meta[1].arg_type, "String");
+        assert_eq!(function_args_meta[1].arg_name, "string");
+
+        assert_eq!(function_args_meta[2].arg_type, "Int");
+        assert_eq!(function_args_meta[2].arg_name, "integer");
+
+        assert_eq!(function_args_meta[3].arg_type, "ByteVector");
+        assert_eq!(function_args_meta[3].arg_name, "binary");
+
+        assert_eq!(function_args_meta[4].arg_type, "List[Int]");
+        assert_eq!(function_args_meta[4].arg_name, "list");
+
+        Ok(())
+    }
+}
