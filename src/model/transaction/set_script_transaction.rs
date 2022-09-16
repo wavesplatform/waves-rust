@@ -86,8 +86,10 @@ impl TryFrom<&SetScriptTransaction> for SetScriptTransactionData {
 
 #[cfg(test)]
 mod tests {
-    use crate::model::{ByteString, SetScriptTransactionInfo};
-    use serde_json::Value;
+    use crate::error::Result;
+    use crate::model::{Base64String, ByteString, SetScriptTransaction, SetScriptTransactionInfo};
+    use crate::waves_proto::SetScriptTransactionData;
+    use serde_json::{json, Map, Value};
     use std::borrow::Borrow;
     use std::fs;
 
@@ -105,5 +107,28 @@ mod tests {
             set_script_from_json.script().encoded_with_prefix(),
             COMPILED_SCRIPT
         );
+    }
+
+    #[test]
+    fn test_set_script_to_proto() -> Result<()> {
+        let set_script_tx = &SetScriptTransaction::new(Base64String::from_string(COMPILED_SCRIPT)?);
+        let proto: SetScriptTransactionData = set_script_tx.try_into()?;
+
+        assert_eq!(proto.script, set_script_tx.script().bytes());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_set_script_to_json() -> Result<()> {
+        let set_script_tx = &SetScriptTransaction::new(Base64String::from_string(COMPILED_SCRIPT)?);
+
+        let map: Map<String, Value> = set_script_tx.try_into()?;
+        let json: Value = map.into();
+        let expected_json = json!({
+            "script": "AAIFAAAAAAAAAAsIAhIHCgUCBAEIEQAAAAAAAAABAAAAA2ludgEAAAAEY2FsbAAAAAUAAAACYnYAAAABYgAAAANpbnQAAAADc3RyAAAABGxpc3QEAAAABWFzc2V0CQAEQgAAAAUCAAAABUFzc2V0AgAAAAAAAAAAAAAAAAEAAAAAAAAAAAAGBAAAAAdhc3NldElkCQAEOAAAAAEFAAAABWFzc2V0BAAAAAVsZWFzZQkABEQAAAACCAUAAAADaW52AAAABmNhbGxlcgAAAAAAAAAABwQAAAAHbGVhc2VJZAkABDkAAAABBQAAAAVsZWFzZQkABEwAAAACCQEAAAALQmluYXJ5RW50cnkAAAACAgAAAANiaW4FAAAAB2Fzc2V0SWQJAARMAAAAAgkBAAAADEJvb2xlYW5FbnRyeQAAAAICAAAABGJvb2wGCQAETAAAAAIJAQAAAAxJbnRlZ2VyRW50cnkAAAACAgAAAANpbnQAAAAAAAABiJQJAARMAAAAAgkBAAAAC1N0cmluZ0VudHJ5AAAAAgIAAAAHYXNzZXRJZAkAAlgAAAABBQAAAAdhc3NldElkCQAETAAAAAIJAQAAAAtTdHJpbmdFbnRyeQAAAAICAAAAB2xlYXNlSWQJAAJYAAAAAQUAAAAHbGVhc2VJZAkABEwAAAACCQEAAAALU3RyaW5nRW50cnkAAAACAgAAAANkZWwCAAAAAAkABEwAAAACCQEAAAALRGVsZXRlRW50cnkAAAABAgAAAANkZWwJAARMAAAAAgUAAAAFYXNzZXQJAARMAAAAAgkBAAAAClNwb25zb3JGZWUAAAACBQAAAAdhc3NldElkAAAAAAAAAAABCQAETAAAAAIJAQAAAAdSZWlzc3VlAAAAAwUAAAAHYXNzZXRJZAAAAAAAAAAABAcJAARMAAAAAgkBAAAABEJ1cm4AAAACBQAAAAdhc3NldElkAAAAAAAAAAADCQAETAAAAAIJAQAAAA5TY3JpcHRUcmFuc2ZlcgAAAAMIBQAAAANpbnYAAAAGY2FsbGVyAAAAAAAAAAACBQAAAAdhc3NldElkCQAETAAAAAIFAAAABWxlYXNlCQAETAAAAAIJAQAAAAtMZWFzZUNhbmNlbAAAAAEJAAQ5AAAAAQUAAAAFbGVhc2UFAAAAA25pbAAAAAD/oHwO"
+        });
+        assert_eq!(expected_json, json);
+        Ok(())
     }
 }

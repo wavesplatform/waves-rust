@@ -8,22 +8,6 @@ use serde_json::Value;
 pub struct JsonDeserializer;
 
 impl JsonDeserializer {
-    pub fn deserialize_data_array(value: &Value) -> Result<Vec<DataEntry>> {
-        let data_array = Self::safe_to_array(value)?;
-        data_array
-            .iter()
-            .map(|entry| entry.try_into())
-            .collect::<Result<Vec<DataEntry>>>()
-    }
-
-    pub fn asset_id_from_json(json: &Value, field_name: &str) -> Result<Option<AssetId>> {
-        let asset_id = match json[field_name].as_str() {
-            Some(asset_id) => Some(AssetId::from_string(asset_id)?),
-            None => None,
-        };
-        Ok(asset_id)
-    }
-
     pub fn safe_to_string_from_field(json: &Value, field_name: &str) -> Result<String> {
         let string = json[field_name]
             .as_str()
@@ -114,5 +98,21 @@ impl JsonDeserializer {
             field: "Vec<Value>".to_owned(),
         })?;
         Ok(array.to_owned())
+    }
+
+    pub fn deserialize_data_array(value: &Value) -> Result<Vec<DataEntry>> {
+        let data_array = Self::safe_to_array(value)?;
+        data_array
+            .iter()
+            .map(|entry| entry.try_into())
+            .collect::<Result<Vec<DataEntry>>>()
+    }
+
+    pub fn asset_id_from_json(json: &Value, field_name: &str) -> Result<Option<AssetId>> {
+        let asset_id = match json[field_name].as_str() {
+            Some(asset_id) => Some(AssetId::from_string(asset_id)?),
+            None => None,
+        };
+        Ok(asset_id)
     }
 }

@@ -126,8 +126,12 @@ impl TryFrom<&UpdateAssetInfoTransaction> for UpdateAssetInfoTransactionData {
 
 #[cfg(test)]
 mod tests {
-    use crate::model::{ByteString, UpdateAssetInfoTransactionInfo};
-    use serde_json::Value;
+    use crate::error::Result;
+    use crate::model::{
+        AssetId, ByteString, UpdateAssetInfoTransaction, UpdateAssetInfoTransactionInfo,
+    };
+    use crate::waves_proto::UpdateAssetInfoTransactionData;
+    use serde_json::{json, Map, Value};
     use std::borrow::Borrow;
     use std::fs;
 
@@ -149,5 +153,39 @@ mod tests {
             "updated description",
             update_asset_info_from_json.description()
         );
+    }
+
+    #[test]
+    fn test_update_asset_to_proto() -> Result<()> {
+        let update_asset_tx = &UpdateAssetInfoTransaction::new(
+            AssetId::from_string("7qhc24Cq53DiaHUzmcaYMUKq8kidaVW8ZAvKrTtADozG")?,
+            "name".to_owned(),
+            "description".to_owned(),
+        );
+        let proto: UpdateAssetInfoTransactionData = update_asset_tx.try_into()?;
+
+        assert_eq!(proto.asset_id, update_asset_tx.asset_id().bytes());
+        assert_eq!(proto.name, update_asset_tx.name());
+        assert_eq!(proto.description, update_asset_tx.description());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_update_asset_to_json() -> Result<()> {
+        let update_asset_tx = &UpdateAssetInfoTransaction::new(
+            AssetId::from_string("7qhc24Cq53DiaHUzmcaYMUKq8kidaVW8ZAvKrTtADozG")?,
+            "name".to_owned(),
+            "description".to_owned(),
+        );
+        let map: Map<String, Value> = update_asset_tx.try_into()?;
+        let json: Value = map.into();
+        let expected_json = json!({
+             "assetId": "7qhc24Cq53DiaHUzmcaYMUKq8kidaVW8ZAvKrTtADozG",
+             "name": "name",
+             "description": "description",
+        });
+        assert_eq!(expected_json, json);
+        Ok(())
     }
 }

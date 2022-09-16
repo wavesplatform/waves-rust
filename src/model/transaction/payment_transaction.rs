@@ -91,8 +91,9 @@ impl TryFrom<&Value> for PaymentTransaction {
 mod tests {
     use crate::error::Result;
     use crate::model::{
-        ByteString, PaymentTransaction, SignedTransaction, TransactionInfoResponse,
+        Address, ByteString, PaymentTransaction, SignedTransaction, TransactionInfoResponse,
     };
+    use crate::waves_proto::PaymentTransactionData;
     use serde_json::Value;
     use std::fs;
 
@@ -115,6 +116,19 @@ mod tests {
             "3PP4hNGAJaMqmx9vpdYUHk8owF3mwbUevoz",
             payment_from_json.recipient().encoded()
         );
+        Ok(())
+    }
+
+    #[test]
+    fn test_payment_to_proto() -> Result<()> {
+        let payment_tx = &PaymentTransaction::new(
+            Address::from_string("3PP4hNGAJaMqmx9vpdYUHk8owF3mwbUevoz")?,
+            32,
+        );
+        let proto: PaymentTransactionData = payment_tx.try_into()?;
+
+        assert_eq!(proto.recipient_address, payment_tx.recipient().bytes());
+        assert_eq!(proto.amount as u64, payment_tx.amount());
         Ok(())
     }
 }

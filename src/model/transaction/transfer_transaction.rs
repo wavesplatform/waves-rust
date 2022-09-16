@@ -2,7 +2,7 @@ use crate::error::{Error, Result};
 use crate::model::{Address, Amount, AssetId, Base58String, ByteString};
 use crate::util::{Base58, JsonDeserializer};
 use crate::waves_proto::{recipient, Amount as ProtoAmount, Recipient, TransferTransactionData};
-use serde_json::Value;
+use serde_json::{Map, Value};
 
 const TYPE: u8 = 4;
 
@@ -125,5 +125,112 @@ impl TryFrom<&Value> for TransferTransaction {
             amount: Amount::new(amount, asset),
             attachment,
         })
+    }
+}
+
+impl TryFrom<&TransferTransaction> for Map<String, Value> {
+    type Error = Error;
+
+    fn try_from(transfer_tx: &TransferTransaction) -> Result<Self> {
+        let mut json = Map::new();
+        json.insert(
+            "recipient".to_owned(),
+            transfer_tx.recipient().encoded().into(),
+        );
+        json.insert("amount".to_owned(), transfer_tx.amount().value().into());
+        json.insert("assetId".to_owned(), transfer_tx.amount().asset_id().into());
+        json.insert(
+            "attachment".to_owned(),
+            transfer_tx.attachment().encoded().into(),
+        );
+        Ok(json)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::error::Result;
+    use crate::model::{
+        Address, Amount, AssetId, Base58String, ByteString, SponsorFeeTransaction,
+        TransferTransaction,
+    };
+    use crate::waves_proto::recipient::Recipient;
+    use crate::waves_proto::{SponsorFeeTransactionData, TransferTransactionData};
+    use serde_json::{json, Map, Value};
+    use std::borrow::Borrow;
+    use std::fs;
+
+    #[test]
+    fn test_json_to_transfer_transaction() {
+        let data =
+            fs::read_to_string("./tests/resources/transfer_rs.json").expect("Unable to read file");
+        let json: Value = serde_json::from_str(&data).expect("failed to generate json from str");
+
+        let transfer_tx_from_json: TransferTransaction = json.borrow().try_into().unwrap();
+
+        assert_eq!(
+            "3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q",
+            transfer_tx_from_json.recipient().encoded()
+        );
+        let amount = transfer_tx_from_json.amount();
+        assert_eq!(None, amount.asset_id());
+        assert_eq!(200000000, amount.value());
+        assert_eq!("", transfer_tx_from_json.attachment().encoded())
+    }
+
+    #[test]
+    fn test_transfer_to_proto() -> Result<()> {
+        let transfer_tx = &TransferTransaction::new(
+            Address::from_string("3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q")?,
+            Amount::new(
+                32,
+                Some(AssetId::from_string(
+                    "8bt2MZjuUCJPmfucPfaZPTXqrxmoCHCC8gVnbjZ7bhH6",
+                )?),
+            ),
+            Base58String::from_bytes(vec![1, 2, 3]),
+        );
+        let proto: TransferTransactionData = transfer_tx.try_into()?;
+
+        let proto_recipient = if let Recipient::PublicKeyHash(bytes) =
+            proto.clone().recipient.unwrap().recipient.unwrap()
+        {
+            bytes
+        } else {
+            panic!("expected dapp public key hash")
+        };
+        assert_eq!(proto_recipient, transfer_tx.recipient().public_key_hash());
+        let amount = proto.amount.unwrap();
+        assert_eq!(amount.amount as u64, transfer_tx.amount().value());
+        assert_eq!(
+            Some(amount.asset_id),
+            transfer_tx.amount().asset_id().map(|it| it.bytes())
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_transfer_to_json() -> Result<()> {
+        let transfer_tx = &TransferTransaction::new(
+            Address::from_string("3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q")?,
+            Amount::new(
+                32,
+                Some(AssetId::from_string(
+                    "8bt2MZjuUCJPmfucPfaZPTXqrxmoCHCC8gVnbjZ7bhH6",
+                )?),
+            ),
+            Base58String::from_bytes(vec![1, 2, 3]),
+        );
+        let map: Map<String, Value> = transfer_tx.try_into()?;
+        let json: Value = map.into();
+        let expected_json = json!({
+             "recipient": "3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q",
+             "assetId": "8bt2MZjuUCJPmfucPfaZPTXqrxmoCHCC8gVnbjZ7bhH6",
+             "amount": 32,
+             "attachment": "Ldp",
+        });
+        assert_eq!(expected_json, json);
+        Ok(())
     }
 }

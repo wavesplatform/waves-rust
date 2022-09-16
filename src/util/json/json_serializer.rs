@@ -60,20 +60,10 @@ fn add_additional_fields(
             "broadcasting payment transaction".to_owned(),
         ))?,
         TransactionData::Transfer(transfer_tx) => {
-            json_props.insert(
-                "recipient".to_owned(),
-                transfer_tx.recipient().encoded().into(),
-            );
-            json_props.insert("amount".to_owned(), transfer_tx.amount().value().into());
-            json_props.insert("assetId".to_owned(), transfer_tx.amount().asset_id().into());
-            json_props.insert(
-                "attachment".to_owned(),
-                transfer_tx.attachment().encoded().into(),
-            );
+            json_props.append(&mut transfer_tx.try_into()?);
         }
         TransactionData::Data(data_tx) => {
-            let mut data_tx_json: Map<String, Value> = data_tx.try_into()?;
-            json_props.append(&mut data_tx_json);
+            json_props.append(&mut data_tx.try_into()?);
         }
         TransactionData::Issue(issue_tx) => {
             json_props.append(&mut issue_tx.try_into()?);
