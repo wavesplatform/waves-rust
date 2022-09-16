@@ -1,3 +1,4 @@
+use crate::error::Error::UnsupportedOperation;
 use crate::error::{Error, Result};
 use crate::model::{Address, Amount, AssetId, ByteString, Id, PrivateKey, Proof, PublicKey};
 use crate::util::{sign_order, Base58, BinarySerializer, Hash, JsonDeserializer};
@@ -366,7 +367,7 @@ impl TryFrom<&Value> for Order {
             match JsonDeserializer::safe_to_string_from_field(order_json, "orderType")?.as_str() {
                 "buy" => OrderType::Buy,
                 "sell" => OrderType::Sell,
-                _ => panic!("unknown order type"),
+                _ => return Err(UnsupportedOperation("unknown order type".to_owned())),
             };
         let version = JsonDeserializer::safe_to_int_from_field(order_json, "version")?;
         let timestamp = JsonDeserializer::safe_to_int_from_field(order_json, "timestamp")?;

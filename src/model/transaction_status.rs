@@ -91,3 +91,35 @@ pub enum Status {
     Confirmed,
     Unknown,
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::error::Result;
+    use crate::model::{
+        Address, ApplicationStatus, ByteString, GenesisTransaction, GenesisTransactionInfo,
+        SignedTransaction, Status, TransactionInfoResponse, TransactionStatus, Validation,
+    };
+    use crate::waves_proto::GenesisTransactionData;
+    use serde_json::Value;
+    use std::borrow::Borrow;
+    use std::fs;
+
+    #[test]
+    fn test_json_to_transaction_status() -> Result<()> {
+        let data = fs::read_to_string("./tests/resources/transaction_status_rs.json")
+            .expect("Unable to read file");
+        let json: Value = serde_json::from_str(&data).expect("failed to generate json from str");
+
+        let transaction_status: TransactionStatus = json.borrow().try_into()?;
+
+        assert_eq!(transaction_status.status(), Status::Confirmed);
+        assert_eq!(transaction_status.height(), 2217333);
+        assert_eq!(transaction_status.confirmation(), 14051);
+        assert_eq!(transaction_status.app_status(), ApplicationStatus::Succeed);
+        assert_eq!(
+            transaction_status.id().encoded(),
+            "4XFVLLMBjBMPwGivgyLhw374kViANoToLAYUdEXWLsBJ"
+        );
+        Ok(())
+    }
+}

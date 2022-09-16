@@ -1,3 +1,4 @@
+use crate::error::Error::UnsupportedOperation;
 use crate::error::{Error, Result};
 use crate::model::{Address, Amount, AssetId, ByteString, Function, StateChanges};
 use crate::util::JsonDeserializer;
@@ -94,7 +95,7 @@ impl TryFrom<&Value> for Payload {
                 let transfer: TransferPayload = value.try_into()?;
                 Ok(Payload::Transfer(transfer))
             }
-            _ => panic!("unknown payload type"),
+            _ => Err(UnsupportedOperation("unknown payload type".to_owned())),
         }
     }
 }

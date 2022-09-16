@@ -1,0 +1,12 @@
+{
+  "address": "3N2yqTEKArWS3ySs2f6t8fpXdjX6cpPuhG8",
+  "script": "base64:AAIFAAAAAAAAAA==",
+  "scriptText": "DApp(DAppMeta(2,Vector(CallableFuncSignature))",
+  "version": 5,
+  "complexity": 14,
+  "verifierComplexity": 0,
+  "callableComplexities": {
+    "storeData": 14
+  },
+  "extraFee": 0
+}

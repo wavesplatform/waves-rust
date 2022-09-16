@@ -7,13 +7,11 @@ use curve25519_dalek::montgomery::MontgomeryPoint;
 use ed25519_dalek::{PublicKey as EdPublicKey, Signature, Verifier};
 
 pub struct PrivateKey {
-    // todo add https://docs.rs/secrecy/0.8.0/secrecy/ ?
     bytes: [u8; 32],
     public_key: PublicKey,
 }
 
 impl PrivateKey {
-    // todo add https://docs.rs/secrecy/0.8.0/secrecy/ ?
     pub fn from_seed(seed_phrase: &str, nonce: u8) -> Result<Self> {
         let hash_seed = Crypto::get_account_seed(seed_phrase.as_bytes(), nonce)?;
         let private_key = Crypto::get_private_key(&hash_seed)?;

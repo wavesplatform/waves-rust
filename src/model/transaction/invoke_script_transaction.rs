@@ -1,3 +1,4 @@
+use crate::error::Error::UnsupportedOperation;
 use crate::error::{Error, Result};
 use crate::model::{Address, Amount, AssetId, Base64String, ByteString, StateChanges};
 use crate::util::{ByteWriter, JsonDeserializer};
@@ -231,7 +232,7 @@ fn map_args(value: &Value) -> Result<Vec<Arg>> {
                 let result = map_args(&arg["value"])?;
                 Arg::List(result)
             }
-            _ => panic!("unknown type"),
+            _ => return Err(UnsupportedOperation("unknown type".to_owned())),
         };
         args.push(arg);
     }

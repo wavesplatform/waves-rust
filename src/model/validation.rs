@@ -45,3 +45,30 @@ impl TryFrom<&Value> for Validation {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::error::Result;
+    use crate::model::{
+        Address, ByteString, GenesisTransaction, GenesisTransactionInfo, SignedTransaction,
+        TransactionInfoResponse, Validation,
+    };
+    use crate::waves_proto::GenesisTransactionData;
+    use serde_json::Value;
+    use std::borrow::Borrow;
+    use std::fs;
+
+    #[test]
+    fn test_json_to_validation() -> Result<()> {
+        let data = fs::read_to_string("./tests/resources/validation_rs.json")
+            .expect("Unable to read file");
+        let json: Value = serde_json::from_str(&data).expect("failed to generate json from str");
+
+        let validation: Validation = json.borrow().try_into()?;
+
+        assert_eq!(validation.valid(), true);
+        assert_eq!(validation.validation_time(), 3);
+        assert_eq!(validation.error().unwrap(), "some error");
+        Ok(())
+    }
+}
