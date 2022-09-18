@@ -177,7 +177,7 @@ impl TryFrom<&Value> for BlockHeaders {
             height: height as u32,
             total_fee: total_fee as u64,
             reward: reward as u64,
-            vrf: Base58String::from_string(&vrf.to_owned())?,
+            vrf: Base58String::from_string(vrf)?,
         })
     }
 }

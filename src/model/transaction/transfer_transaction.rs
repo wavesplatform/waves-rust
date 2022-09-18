@@ -115,7 +115,7 @@ impl TryFrom<&Value> for TransferTransaction {
             None => None,
         };
         let amount = JsonDeserializer::safe_to_int_from_field(value, "amount")? as u64;
-        let attachment = match value["attachment"].as_str().map(|value| value.into()) {
+        let attachment = match value["attachment"].as_str() {
             Some(value) => Base58String::from_string(value)?,
             None => Base58String::empty(),
         };

@@ -17,13 +17,13 @@ pub struct Alias {
 
 impl Alias {
     pub fn new(chain_id: u8, name: &str) -> Result<Self> {
-        if Self::is_valid(chain_id, &name) {
+        if Self::is_valid(chain_id, name) {
             let bytes = ByteWriter::new()
                 .push_byte(TYPE)
                 .push_byte(chain_id)
                 .push_bytes(&mut name.clone().to_owned().into_bytes())
                 .bytes();
-            let name = Self::replace_prefix(chain_id, &name);
+            let name = Self::replace_prefix(chain_id, name);
             let full_name = format!("{}{}:{}", PREFIX, chain_id as char, &name);
             return Ok(Self {
                 bytes,
