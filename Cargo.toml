@@ -2,6 +2,26 @@
 name = "waves-rust"
 version = "0.1.0"
 edition = "2021"
+rust-version = "1.63.0"
+#todo add additional email
+authors = ["Alexandr Devyatkin <novealx@gmail.com>"]
+description = """
+A Rust library for interacting with the Waves blockchain.
+Supports node interaction, offline transaction signing and creating addresses and keys.
+"""
+readme = "README.md"
+#todo ask about key words
+keywords = [
+    "blockchain",
+    "async",
+    "waves",
+    "cryptography",
+]
+categories = [
+    "blockchain",
+    "cryptography"
+]
+repository = "https://github.com/DiLeqL/waves-rust"
 
 [dependencies]
 # crypto
