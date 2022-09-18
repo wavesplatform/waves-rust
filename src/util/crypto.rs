@@ -1,6 +1,6 @@
 use crate::constants::{ADDRESS_LENGTH, ADDRESS_VERSION, SIGNATURE_LENGTH};
 use crate::error::Result;
-use crate::util::{Bytes, Hash};
+use crate::util::{Bytes, Hash, WORDS};
 use curve25519_dalek::constants;
 use curve25519_dalek::scalar::Scalar;
 use rand::Rng;
@@ -10,6 +10,16 @@ use sha2::Sha512;
 pub struct Crypto;
 
 impl Crypto {
+    pub fn get_random_seed_phrase(words_count: u8) -> String {
+        let mut rng = rand::thread_rng();
+        let results = rand::seq::index::sample(&mut rng, 2048, words_count as usize).into_vec();
+        let mut seed_phrase_array: Vec<&str> = vec![];
+        for result in results {
+            seed_phrase_array.push(WORDS[result])
+        }
+        seed_phrase_array.join(" ")
+    }
+
     pub fn get_account_seed(seed_phrase: &[u8], nonce: u8) -> Result<Vec<u8>> {
         Hash::secure_hash(&Bytes::concat(vec![
             Bytes::from_nonce(nonce),
@@ -90,6 +100,7 @@ impl Crypto {
 
 #[cfg(test)]
 mod tests {
+
     use crate::error::Result;
     use crate::model::ChainId;
     use crate::util::{Base58, Crypto};
@@ -152,6 +163,12 @@ mod tests {
         let encoded_address = Base58::encode(&address, false);
 
         assert_eq!(encoded_address, expected_address)
+    }
+
+    #[test]
+    fn test_get_random_seed_phrase() {
+        let rng_seed_phrase = Crypto::get_random_seed_phrase(12);
+        assert_eq!(12, rng_seed_phrase.split(' ').into_iter().count())
     }
 
     fn private_key(seed_phrase: &str, nonce: u8) -> Result<[u8; 32]> {

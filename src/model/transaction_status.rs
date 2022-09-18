@@ -95,11 +95,8 @@ pub enum Status {
 #[cfg(test)]
 mod tests {
     use crate::error::Result;
-    use crate::model::{
-        Address, ApplicationStatus, ByteString, GenesisTransaction, GenesisTransactionInfo,
-        SignedTransaction, Status, TransactionInfoResponse, TransactionStatus, Validation,
-    };
-    use crate::waves_proto::GenesisTransactionData;
+    use crate::model::{ApplicationStatus, ByteString, Status, TransactionStatus};
+
     use serde_json::Value;
     use std::borrow::Borrow;
     use std::fs;

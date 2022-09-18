@@ -588,7 +588,7 @@ mod tests {
         } else {
             panic!("expected dapp public key hash")
         };
-        assert_eq!(proto_d_app, invoke_script.dapp.public_key_hash());
+        assert_eq!(proto_d_app, invoke_script.dapp().public_key_hash());
 
         assert_eq!(
             proto.payments[0].amount as u64,
