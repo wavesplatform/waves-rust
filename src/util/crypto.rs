@@ -100,12 +100,10 @@ impl Crypto {
 
 #[cfg(test)]
 mod tests {
-    use crate::api::{Node, Profile};
+
     use crate::error::Result;
-    use crate::model::{
-        Amount, Base58String, ChainId, PrivateKey, PublicKey, TransactionData, TransferTransaction,
-    };
-    use crate::util::{get_current_epoch_millis, Base58, Crypto, WORDS};
+    use crate::model::ChainId;
+    use crate::util::{Base58, Crypto};
 
     #[test]
     fn test_get_private_key() {
@@ -170,7 +168,7 @@ mod tests {
     #[test]
     fn test_get_random_seed_phrase() {
         let rng_seed_phrase = Crypto::get_random_seed_phrase(12);
-        assert_eq!(12, rng_seed_phrase.split(" ").into_iter().count())
+        assert_eq!(12, rng_seed_phrase.split(' ').into_iter().count())
     }
 
     fn private_key(seed_phrase: &str, nonce: u8) -> Result<[u8; 32]> {

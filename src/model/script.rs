@@ -177,12 +177,8 @@ impl ArgMeta {
 #[cfg(test)]
 mod tests {
     use crate::error::Result;
-    use crate::model::{
-        Address, ApplicationStatus, ArgMeta, ByteString, GenesisTransaction,
-        GenesisTransactionInfo, ScriptInfo, ScriptMeta, SignedTransaction, Status,
-        TransactionInfoResponse, TransactionStatus, Validation,
-    };
-    use crate::waves_proto::GenesisTransactionData;
+    use crate::model::{ByteString, ScriptInfo, ScriptMeta};
+
     use serde_json::Value;
     use std::borrow::Borrow;
     use std::fs;

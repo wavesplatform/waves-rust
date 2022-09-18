@@ -3,7 +3,7 @@ use waves_rust::model::{
     Amount, AssetId, ByteString, ChainId, ExchangeTransaction, Order, OrderType, PrivateKey,
     Transaction, TransactionData,
 };
-use waves_rust::util::{get_current_epoch_millis, Crypto};
+use waves_rust::util::get_current_epoch_millis;
 
 const SEED_PHRASE: &str = "dwarf chimney miss category orchard organ neck income prevent \
 trigger used census";
