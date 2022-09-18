@@ -70,12 +70,12 @@ TransactionData::SetScript(SetScriptTransaction::new(compiled_script.script()));
 
 let timestamp = get_current_epoch_millis();
 let signed_tx = Transaction::new(
-transaction_data,
-Amount::new(100000, None),
-timestamp,
-private_key.public_key(),
-3,
-ChainId::TESTNET.byte(),
+    transaction_data,
+    Amount::new(100000, None),
+    timestamp,
+    private_key.public_key(),
+    3,
+    ChainId::TESTNET.byte(),
 )
 .sign(&private_key)
 .unwrap();
