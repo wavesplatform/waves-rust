@@ -21,7 +21,7 @@ impl Alias {
             let bytes = ByteWriter::new()
                 .push_byte(TYPE)
                 .push_byte(chain_id)
-                .push_bytes(&mut name.clone().to_owned().into_bytes())
+                .push_bytes(&mut name.to_owned().into_bytes())
                 .bytes();
             let name = Self::replace_prefix(chain_id, name);
             let full_name = format!("{}{}:{}", PREFIX, chain_id as char, &name);
