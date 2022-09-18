@@ -16,12 +16,12 @@ pub struct Alias {
 }
 
 impl Alias {
-    pub fn new(chain_id: u8, name: String) -> Result<Self> {
+    pub fn new(chain_id: u8, name: &str) -> Result<Self> {
         if Self::is_valid(chain_id, &name) {
             let bytes = ByteWriter::new()
                 .push_byte(TYPE)
                 .push_byte(chain_id)
-                .push_bytes(&mut name.clone().into_bytes())
+                .push_bytes(&mut name.clone().to_owned().into_bytes())
                 .bytes();
             let name = Self::replace_prefix(chain_id, &name);
             let full_name = format!("{}{}:{}", PREFIX, chain_id as char, &name);
@@ -114,7 +114,7 @@ mod tests {
 
     #[test]
     fn test_create_alias() {
-        let result = Alias::new(ChainId::TESTNET.byte(), "alias1662650000377".to_owned());
+        let result = Alias::new(ChainId::TESTNET.byte(), "alias1662650000377");
         match result {
             Ok(alias) => {
                 assert_eq!(alias.name(), "alias1662650000377");
