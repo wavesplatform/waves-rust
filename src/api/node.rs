@@ -701,7 +701,7 @@ impl Node {
     /// #[tokio::main]
     /// async fn main() {
     ///     let node = Node::from_profile(Profile::TESTNET);
-    ///     let current_height = node.get_height();
+    ///     let current_height = node.get_height().await.unwrap();
     ///     let rewards = node.get_blockchain_rewards_at_height(current_height - 10).await.unwrap();
     ///     println!("{:?}", rewards);
     /// }
@@ -987,7 +987,7 @@ impl Node {
     /// async fn main() {
     ///     let node = Node::from_profile(Profile::TESTNET);
     ///     let generator = Address::from_string("3Mxv6Dpa1qRuyQBRFg3GwUaf3rcjHqWwNmC").unwrap();
-    ///     let to_height = node.get_height();
+    ///     let to_height = node.get_height().await.unwrap();
     ///     let from_height = to_height.clone() - 5;
     ///     let blocks = node.get_blocks_by_generator(&generator, from_height, to_height).await.unwrap();
     ///     println!("{:?}", blocks);
@@ -1014,13 +1014,37 @@ impl Node {
     }
 
     // NODE
+    /// Get Waves node version
+    /// ```no_run
+    /// use waves_rust::api::{Node, Profile};
+    ///
+    /// #[tokio::main]
+    /// async fn main() {
+    ///     let node = Node::from_profile(Profile::TESTNET);
+    ///     let version = node.get_version().await.unwrap();
+    ///     println!("{:?}", version);
+    /// }
+    /// ```
     pub async fn get_version(&self) -> Result<String> {
-        let get_version_url = format!("{}node/version", self.url().as_str(),);
+        let get_version_url = format!("{}node/version", self.url().as_str());
         let rs = &self.get(&get_version_url).await?;
         JsonDeserializer::safe_to_string_from_field(rs, "version")
     }
 
     // DEBUG
+    /// Get history of the regular balance at a given address
+    /// ```no_run
+    /// use waves_rust::api::{Node, Profile};
+    /// use waves_rust::model::Address;
+    ///
+    /// #[tokio::main]
+    /// async fn main() {
+    ///     let node = Node::from_profile(Profile::TESTNET);
+    ///     let address = Address::from_string("3Mxv6Dpa1qRuyQBRFg3GwUaf3rcjHqWwNmC").unwrap();
+    ///     let history = node.get_balance_history(&address).await.unwrap();
+    ///     println!("{:?}", history);
+    /// }
+    /// ```
     pub async fn get_balance_history(&self, address: &Address) -> Result<Vec<HistoryBalance>> {
         let get_balance_history_url = format!(
             "{}debug/balances/history/{}",
@@ -1034,6 +1058,34 @@ impl Node {
             .collect()
     }
 
+    /// Validates a transaction and measures time spent in milliseconds
+    /// ```no_run
+    /// use waves_rust::api::{Node, Profile};
+    /// use waves_rust::model::{Address,Amount, Base58String, ChainId, Transaction, TransactionData,
+    /// TransferTransaction, PrivateKey};
+    /// use waves_rust::util::{Crypto, get_current_epoch_millis};
+    ///
+    /// #[tokio::main]
+    /// async fn main() {
+    ///     let node = Node::from_profile(Profile::TESTNET);
+    ///     let  private_key = PrivateKey::from_seed(&Crypto::get_random_seed_phrase(12), 0).unwrap();
+    ///     let signed_tx = Transaction::new(
+    ///         TransactionData::Transfer(TransferTransaction::new(
+    ///             Address::from_string("3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q")?,
+    ///             Amount::new(100, None),
+    ///             Base58String::empty(),
+    ///         )),
+    ///         Amount::new(100000, None),
+    ///         get_current_epoch_millis(),
+    ///         private_key.public_key(),
+    ///         3,
+    ///         ChainId::TESTNET.byte(),
+    ///     )
+    ///     .sign(&private_key).unwrap();
+    ///     let validation = node.validate_transaction(&signed_tx).await.unwrap();
+    ///     println!("{:?}", validation);
+    /// }
+    /// ```
     pub async fn validate_transaction(&self, signed_tx: &SignedTransaction) -> Result<Validation> {
         let validate_url = format!("{}debug/validate", self.url().as_str());
         let rs = &self.post(&validate_url, &signed_tx.to_json()?).await?;
@@ -1042,6 +1094,19 @@ impl Node {
 
     // LEASING
 
+    /// Get all active leases involving a given address
+    /// ```no_run
+    /// use waves_rust::api::{Node, Profile};
+    /// use waves_rust::model::Address;
+    ///
+    /// #[tokio::main]
+    /// async fn main() {
+    ///     let node = Node::from_profile(Profile::TESTNET);
+    ///     let address = Address::from_string("3Mxv6Dpa1qRuyQBRFg3GwUaf3rcjHqWwNmC").unwrap();
+    ///     let active_leases = node.get_active_leases(&address).await.unwrap();
+    ///     println!("{:?}", active_leases);
+    /// }
+    /// ```
     pub async fn get_active_leases(&self, address: &Address) -> Result<Vec<LeaseInfo>> {
         let get_active_leases_url = format!(
             "{}leasing/active/{}",
@@ -1055,6 +1120,19 @@ impl Node {
             .collect()
     }
 
+    /// Get lease parameters by lease ID
+    /// ```no_run
+    /// use waves_rust::api::{Node, Profile};
+    /// use waves_rust::model::{Address, Id};
+    ///
+    /// #[tokio::main]
+    /// async fn main() {
+    ///     let node = Node::from_profile(Profile::TESTNET);
+    ///     let lease_id = Id::from_string("BiJR8gCxR7crGEdy31jLkYpjpLy98kq3NuxPE8Z2Uk3b").unwrap();
+    ///     let lease_info = node.get_lease_info(&lease_id).await.unwrap();
+    ///     println!("{:?}", lease_info);
+    /// }
+    /// ```
     pub async fn get_lease_info(&self, lease_id: &Id) -> Result<LeaseInfo> {
         let get_lease_info_url =
             format!("{}leasing/info/{}", self.url().as_str(), lease_id.encoded());
@@ -1062,6 +1140,19 @@ impl Node {
         rs.try_into()
     }
 
+    /// Get lease parameters by lease IDs
+    /// ```no_run
+    /// use waves_rust::api::{Node, Profile};
+    /// use waves_rust::model::{Address, Id};
+    ///
+    /// #[tokio::main]
+    /// async fn main() {
+    ///     let node = Node::from_profile(Profile::TESTNET);
+    ///     let lease_id = Id::from_string("BiJR8gCxR7crGEdy31jLkYpjpLy98kq3NuxPE8Z2Uk3b").unwrap();
+    ///     let leases_info = node.get_leases_info(&[lease_id]).await.unwrap();
+    ///     println!("{:?}", leases_info);
+    /// }
+    /// ```
     pub async fn get_leases_info(&self, lease_ids: &[Id]) -> Result<Vec<LeaseInfo>> {
         let get_leases_info_url = format!("{}leasing/info", self.url().as_str());
         let mut ids: Map<String, Value> = Map::new();
@@ -1083,6 +1174,34 @@ impl Node {
 
     // TRANSACTIONS
 
+    /// Get the minimum fee for a given transaction
+    /// ```no_run
+    /// use waves_rust::api::{Node, Profile};
+    /// use waves_rust::model::{Address,Amount, Base58String, ChainId, Transaction, TransactionData,
+    /// TransferTransaction, PrivateKey};
+    /// use waves_rust::util::{Crypto, get_current_epoch_millis};
+    ///
+    /// #[tokio::main]
+    /// async fn main() {
+    ///     let node = Node::from_profile(Profile::TESTNET);
+    ///     let private_key = PrivateKey::from_seed(&Crypto::get_random_seed_phrase(12), 0).unwrap();
+    ///     let signed_tx = Transaction::new(
+    ///         TransactionData::Transfer(TransferTransaction::new(
+    ///             Address::from_string("3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q")?,
+    ///             Amount::new(100, None),
+    ///             Base58String::empty(),
+    ///         )),
+    ///         Amount::new(100000, None),
+    ///         get_current_epoch_millis(),
+    ///         private_key.public_key(),
+    ///         3,
+    ///         ChainId::TESTNET.byte(),
+    ///     )
+    ///     .sign(&private_key).unwrap();
+    ///     let fee = node.calculate_transaction_fee(&signed_tx).await.unwrap();
+    ///     println!("{:?}", fee);
+    /// }
+    /// ```
     pub async fn calculate_transaction_fee(
         &self,
         transaction: &SignedTransaction,
@@ -1097,12 +1216,52 @@ impl Node {
         ))
     }
 
+    /// Broadcast a signed transaction.
+    /// ```no_run
+    /// use waves_rust::api::{Node, Profile};
+    /// use waves_rust::model::{Address,Amount, Base58String, ChainId, Transaction, TransactionData,
+    /// TransferTransaction, PrivateKey};
+    /// use waves_rust::util::{Crypto, get_current_epoch_millis};
+    ///
+    /// #[tokio::main]
+    /// async fn main() {
+    ///     let node = Node::from_profile(Profile::TESTNET);
+    ///     let private_key = PrivateKey::from_seed(&Crypto::get_random_seed_phrase(12), 0).unwrap();
+    ///     let signed_tx = Transaction::new(
+    ///         TransactionData::Transfer(TransferTransaction::new(
+    ///             Address::from_string("3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q")?,
+    ///             Amount::new(100, None),
+    ///             Base58String::empty(),
+    ///         )),
+    ///         Amount::new(100000, None),
+    ///         get_current_epoch_millis(),
+    ///         private_key.public_key(),
+    ///         3,
+    ///         ChainId::TESTNET.byte(),
+    ///     )
+    ///     .sign(&private_key).unwrap();
+    ///     node.broadcast(&signed_tx).await.unwrap();
+    /// }
+    /// ```
     pub async fn broadcast(&self, signed_tx: &SignedTransaction) -> Result<SignedTransaction> {
         let broadcast_tx_url = format!("{}transactions/broadcast", self.url().as_str());
         let rs = &self.post(&broadcast_tx_url, &signed_tx.to_json()?).await?;
         rs.try_into()
     }
 
+    /// Get a transaction by its ID
+    /// ```no_run
+    /// use waves_rust::api::{Node, Profile};
+    /// use waves_rust::model::{Address, Id};
+    ///
+    /// #[tokio::main]
+    /// async fn main() {
+    ///     let node = Node::from_profile(Profile::TESTNET);
+    ///     let tx_id = Id::from_string("3kuZKAeyjcqavmezy86sWCAeXrgt3HBKa4HA8CZdT8nH").unwrap();
+    ///     let tx_info = node.get_transaction_info(&tx_id).await.unwrap();
+    ///     println!("{:?}", tx_info);
+    /// }
+    /// ```
     pub async fn get_transaction_info(
         &self,
         transaction_id: &Id,
@@ -1116,6 +1275,23 @@ impl Node {
         rs.try_into()
     }
 
+    /// Get a list of the latest transactions involving a given address.
+    /// For pagination, use the parameter {after_tx_id}
+    /// ```no_run
+    /// use waves_rust::api::{Node, Profile};
+    /// use waves_rust::model::{Address, Id};
+    ///
+    /// #[tokio::main]
+    /// async fn main() {
+    ///     let node = Node::from_profile(Profile::TESTNET);
+    ///     let address = Address::from_string("3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q").unwrap();
+    ///     let after_id = Some(Id::from_string(
+    ///         "3p6ffM2uyseFWPRQUcXMpr3gBKkKgt7jVQ8iDGQhVpRa",
+    ///     ).unwrap());
+    ///     let txs_info = node.get_transactions_by_address(&address, 10, after_id).await.unwrap();
+    ///     println!("{:?}", txs_info);
+    /// }
+    /// ```
     pub async fn get_transactions_by_address(
         &self,
         address: &Address,
@@ -1142,6 +1318,19 @@ impl Node {
             .collect()
     }
 
+    /// Get transaction status by its ID
+    /// ```no_run
+    /// use waves_rust::api::{Node, Profile};
+    /// use waves_rust::model::Id;
+    ///
+    /// #[tokio::main]
+    /// async fn main() {
+    ///     let node = Node::from_profile(Profile::TESTNET);
+    ///     let id = Id::from_string("3p6ffM2uyseFWPRQUcXMpr3gBKkKgt7jVQ8iDGQhVpRa").unwrap();
+    ///     let tx_status = node.get_transaction_status(&id).await.unwrap();
+    ///     println!("{:?}", tx_status);
+    /// }
+    /// ```
     pub async fn get_transaction_status(&self, transaction_id: &Id) -> Result<TransactionStatus> {
         let get_tx_status_url = format!(
             "{}transactions/status?id={}",
@@ -1152,6 +1341,19 @@ impl Node {
         JsonDeserializer::safe_to_array(rs)?[0].borrow().try_into()
     }
 
+    /// Get transaction statuses by their ID
+    /// ```no_run
+    /// use waves_rust::api::{Node, Profile};
+    /// use waves_rust::model::Id;
+    ///
+    /// #[tokio::main]
+    /// async fn main() {
+    ///     let node = Node::from_profile(Profile::TESTNET);
+    ///     let id = Id::from_string("3p6ffM2uyseFWPRQUcXMpr3gBKkKgt7jVQ8iDGQhVpRa").unwrap();
+    ///     let txs_statuses = node.get_transactions_statuses(&[id]).await.unwrap();
+    ///     println!("{:?}", txs_statuses);
+    /// }
+    /// ```
     pub async fn get_transactions_statuses(
         &self,
         transaction_ids: &[Id],
@@ -1174,6 +1376,19 @@ impl Node {
             .collect()
     }
 
+    /// Get an unconfirmed transaction by its ID
+    /// ```no_run
+    /// use waves_rust::api::{Node, Profile};
+    /// use waves_rust::model::Id;
+    ///
+    /// #[tokio::main]
+    /// async fn main() {
+    ///     let node = Node::from_profile(Profile::TESTNET);
+    ///     let id = Id::from_string("3p6ffM2uyseFWPRQUcXMpr3gBKkKgt7jVQ8iDGQhVpRa").unwrap();
+    ///     let unconfirmed_tx = node.get_unconfirmed_transaction(&id).await.unwrap();
+    ///     println!("{:?}", unconfirmed_tx);
+    /// }
+    /// ```
     pub async fn get_unconfirmed_transaction(
         &self,
         transaction_id: &Id,
@@ -1187,6 +1402,17 @@ impl Node {
         rs.try_into()
     }
 
+    /// Get a list of transactions in node's UTX pool
+    /// ```no_run
+    /// use waves_rust::api::{Node, Profile};
+    ///
+    /// #[tokio::main]
+    /// async fn main() {
+    ///     let node = Node::from_profile(Profile::TESTNET);
+    ///     let unconfirmed_txs = node.get_unconfirmed_transactions().await.unwrap();
+    ///     println!("{:?}", unconfirmed_txs);
+    /// }
+    /// ```
     pub async fn get_unconfirmed_transactions(&self) -> Result<Vec<SignedTransaction>> {
         let get_unconfirmed_txs_url = format!("{}transactions/unconfirmed", self.url().as_str());
         let rs = &self.get(&get_unconfirmed_txs_url).await?;
@@ -1196,6 +1422,17 @@ impl Node {
             .collect()
     }
 
+    /// Get the number of transactions in the UTX pool
+    /// ```no_run
+    /// use waves_rust::api::{Node, Profile};
+    ///
+    /// #[tokio::main]
+    /// async fn main() {
+    ///     let node = Node::from_profile(Profile::TESTNET);
+    ///     let utx_size = node.get_utx_size().await.unwrap();
+    ///     println!("{:?}", utx_size);
+    /// }
+    /// ```
     pub async fn get_utx_size(&self) -> Result<u32> {
         let get_utx_size_url = format!("{}transactions/unconfirmed/size", self.url().as_str());
         let rs = &self.get(&get_utx_size_url).await?;
@@ -1204,6 +1441,18 @@ impl Node {
 
     // UTILS
 
+    /// Compiles string code to base64 script representation
+    /// ```no_run
+    /// use waves_rust::api::{Node, Profile};
+    ///
+    /// #[tokio::main]
+    /// async fn main() {
+    ///     let node = Node::from_profile(Profile::TESTNET);
+    ///     let script = "{-# CONTENT_TYPE EXPRESSION #-} sigVerify(tx.bodyBytes, tx.proofs[0], tx.senderPublicKey)";
+    ///     let compiled_script = node.compile_script(script, true).await.unwrap();
+    ///     println!("{:?}", compiled_script);
+    /// }
+    /// ```
     pub async fn compile_script(
         &self,
         source: &str,

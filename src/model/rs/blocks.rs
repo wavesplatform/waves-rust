@@ -137,7 +137,7 @@ impl TryFrom<&Value> for BlockHeaders {
         let timestamp = JsonDeserializer::safe_to_int_from_field(value, "timestamp")?;
         let reference = JsonDeserializer::safe_to_string_from_field(value, "reference")?;
         let transactions_root = match value["transactionsRoot"].as_str() {
-            Some(val) => Base58String::from_string(val.to_owned())?,
+            Some(val) => Base58String::from_string(val)?,
             None => Base58String::empty(),
         };
         let id = JsonDeserializer::safe_to_string_from_field(value, "id")?;
@@ -164,20 +164,20 @@ impl TryFrom<&Value> for BlockHeaders {
         Ok(BlockHeaders {
             version: version as u8,
             timestamp: timestamp as u64,
-            reference: Base58String::from_string(reference)?,
+            reference: Base58String::from_string(&reference)?,
             nxt_consensus: value["nxt-consensus"].borrow().try_into()?,
             transactions_root,
-            id: Base58String::from_string(id)?,
+            id: Base58String::from_string(&id)?,
             features,
             desired_reward,
             generator: Address::from_string(&generator)?,
-            signature: Base58String::from_string(signature)?,
+            signature: Base58String::from_string(&signature)?,
             blocksize: blocksize as u32,
             transaction_count: transaction_count as u32,
             height: height as u32,
             total_fee: total_fee as u64,
             reward: reward as u64,
-            vrf: Base58String::from_string(vrf.to_owned())?,
+            vrf: Base58String::from_string(&vrf.to_owned())?,
         })
     }
 }
@@ -215,7 +215,7 @@ impl TryFrom<&Value> for NxtConsensus {
 
         Ok(NxtConsensus {
             base_target: base_target as u32,
-            generation_signature: Base58String::from_string(generation_signature)?,
+            generation_signature: Base58String::from_string(&generation_signature)?,
         })
     }
 }

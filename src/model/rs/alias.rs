@@ -34,7 +34,7 @@ impl TryFrom<&Value> for AliasesByAddressResponse {
             let chain_id = Alias::chain_id(vec[0].as_str().to_owned());
             let aliases = vec
                 .iter()
-                .map(|alias| Alias::new(chain_id, alias.clone()))
+                .map(|alias| Alias::new(chain_id, &alias))
                 .collect::<Result<Vec<Alias>>>()?;
             Ok(AliasesByAddressResponse { aliases })
         };
