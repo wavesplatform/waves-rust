@@ -6,6 +6,10 @@ Supports node interaction, offline transaction signing and creating addresses an
 ## Using waves-rust in your project
 Use the code below to add waves-rust as a dependency for your project.
 
+##### Requirements:
+- edition "2021"
+- rust-version "1.56" or above
+
 ##### Cargo:
 ```cargo
 waves-rust = "0.1.0"
