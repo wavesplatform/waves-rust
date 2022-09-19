@@ -15,8 +15,7 @@ async fn get_height_test() -> Result<()> {
 #[tokio::test]
 async fn get_block_height_by_id_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
-    let block_id =
-        Base58String::from_string("oReBHRjMcUKqZxH6iVhthxQ72QndBFtfLHngV8aGW9y".to_owned())?;
+    let block_id = Base58String::from_string("oReBHRjMcUKqZxH6iVhthxQ72QndBFtfLHngV8aGW9y")?;
     let height = node.get_block_height_by_id(&block_id).await?;
     println!("{}", height);
     Ok(())
@@ -36,8 +35,7 @@ async fn get_block_height_by_timestamp_test() -> Result<()> {
 #[tokio::test]
 async fn get_blocks_delay_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
-    let block_id =
-        Base58String::from_string("oReBHRjMcUKqZxH6iVhthxQ72QndBFtfLHngV8aGW9y".to_owned())?;
+    let block_id = Base58String::from_string("oReBHRjMcUKqZxH6iVhthxQ72QndBFtfLHngV8aGW9y")?;
     let delay = node.get_blocks_delay(&block_id, 3).await?;
     println!("{}", delay);
     Ok(())
@@ -56,8 +54,7 @@ async fn get_block_headers_at_height_test() -> Result<()> {
 #[tokio::test]
 async fn get_block_headers_by_id_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
-    let block_id =
-        Base58String::from_string("oReBHRjMcUKqZxH6iVhthxQ72QndBFtfLHngV8aGW9y".to_owned())?;
+    let block_id = Base58String::from_string("oReBHRjMcUKqZxH6iVhthxQ72QndBFtfLHngV8aGW9y")?;
     let headers = node.get_block_headers_by_id(&block_id).await?;
     println!("{:#?}", headers);
     Ok(())
@@ -95,8 +92,7 @@ async fn get_block_at_height_test() -> Result<()> {
 #[tokio::test]
 async fn get_block_by_id_test() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
-    let block_id =
-        Base58String::from_string("E6uQ1HKHU6eTzHddBTr4Xdif1v6FGr2agxEr7qCgwREY".to_owned())?;
+    let block_id = Base58String::from_string("E6uQ1HKHU6eTzHddBTr4Xdif1v6FGr2agxEr7qCgwREY")?;
     let block = node.get_block_by_id(&block_id).await?;
     println!("{:#?}", block);
     Ok(())

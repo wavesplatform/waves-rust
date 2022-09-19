@@ -20,8 +20,8 @@ async fn get_aliases_by_address_test() {
 #[tokio::test]
 async fn get_address_by_alias_test() {
     let node = Node::from_profile(Profile::TESTNET);
-    let alias = Alias::new(ChainId::TESTNET.byte(), "alias1662650000377".to_owned())
-        .expect("invalid alias name");
+    let alias =
+        Alias::new(ChainId::TESTNET.byte(), "alias1662650000377").expect("invalid alias name");
     let address = node.get_address_by_alias(&alias).await;
 
     match address {

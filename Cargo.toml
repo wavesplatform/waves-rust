@@ -2,6 +2,28 @@
 name = "waves-rust"
 version = "0.1.0"
 edition = "2021"
+rust-version = "1.63.0"
+#todo add additional email
+authors = ["Alexandr Devyatkin <novealx@gmail.com>"]
+description = """
+A Rust library for interacting with the Waves blockchain.
+Supports node interaction, offline transaction signing and creating addresses and keys.
+"""
+readme = "README.md"
+#todo ask about key words
+keywords = [
+    "blockchain",
+    "async",
+    "waves",
+    "cryptography",
+]
+categories = [
+    "blockchain",
+    "cryptography"
+]
+repository = "https://github.com/DiLeqL/waves-rust"
+#todo which licence to use?
+#license = "MIT"
 
 [dependencies]
 # crypto
@@ -12,7 +34,9 @@ sha2 = "0.10.2"
 curve25519-dalek = "4.0.0-pre.2"
 ed25519-dalek = "1.0.1"
 base64 = "0.13.0"
+hex = "0.4.3"
 
+# network
 reqwest = { version = "0.11.11", features = ["json"] }
 tokio = { version = "1.12.0", features = ["full"] }
 serde_json = "1.0.82"
@@ -20,15 +44,17 @@ regex = "1.6.0"
 urlencoding = "2.1.0"
 url = "2.2.2"
 
+# protobuf
 prost = "0.11.0"
 tonic = "0.8.0"
+
+# util
 thiserror = "1.0.32"
-
 rand = "0.8.5"
-
-hex = "0.4.3"
-
 anyhow = "1.0.64"
+
+[lib]
+doctest = false
 
 [build-dependencies]
 tonic-build = "0.8"

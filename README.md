@@ -25,6 +25,9 @@ let address = public_key.address(ChainId::TESTNET.byte()).unwrap();
 
 Create a Node and learn a few things about blockchain:
 ```rust
+use waves_rust::api::{Node, Profile};
+use waves_rust::model::Address;
+
 #[tokio::main]
 async fn get_node_info() {
     let node = Node::from_profile(Profile::TESTNET);
@@ -36,12 +39,16 @@ async fn get_node_info() {
 
 Send some money to a buddy:
 ```rust
+use waves_rust::api::{Node, Profile};
+use waves_rust::model::{Address, Amount, Base58String, ChainId, PrivateKey, Transaction, TransactionData, TransferTransaction};
+use waves_rust::util::get_current_epoch_millis;
+
 let buddy = Address::from_string("3N2yqTEKArWS3ySs2f6t8fpXdjX6cpPuhG8").unwrap();
 
 let transaction_data = TransactionData::Transfer(TransferTransaction::new(
     buddy,
     Amount::new(1_00_000_000, None), // None is WAVES asset
-    Base58String::from_string("thisisattachment".to_owned()).unwrap(),
+    Base58String::from_string("thisisattachment").unwrap(),
 ));
 
 let timestamp = get_current_epoch_millis();
@@ -61,6 +68,10 @@ node.broadcast(&signed_tx).await.unwrap();
 
 Set a script on an account. Be careful with the script you pass here, as it may lock the account forever!
 ```rust
+use waves_rust::api::{Node, Profile};
+use waves_rust::model::{Address, Amount, ChainId, PrivateKey, SetScriptTransaction, Transaction, TransactionData};
+use waves_rust::util::get_current_epoch_millis;
+
 let script =
 "{-# CONTENT_TYPE EXPRESSION #-} sigVerify(tx.bodyBytes, tx.proofs[0], tx.senderPublicKey)";
 
@@ -70,12 +81,12 @@ TransactionData::SetScript(SetScriptTransaction::new(compiled_script.script()));
 
 let timestamp = get_current_epoch_millis();
 let signed_tx = Transaction::new(
-transaction_data,
-Amount::new(100000, None),
-timestamp,
-private_key.public_key(),
-3,
-ChainId::TESTNET.byte(),
+    transaction_data,
+    Amount::new(100000, None),
+    timestamp,
+    private_key.public_key(),
+    3,
+    ChainId::TESTNET.byte(),
 )
 .sign(&private_key)
 .unwrap();
@@ -87,6 +98,9 @@ node.broadcast(&signed_tx).await.unwrap();
 [Same transaction from REST API](https://nodes-stagenet.wavesnodes.com/transactions/info/CWuFY42te67sLmc5gwt4NxwHmFjVfJdHkKuLyshTwEct)
 
 ```rust
+use waves_rust::api::{Node, Profile};
+use waves_rust::model::{Address, ByteString, ChainId, Id, TransactionDataInfo};
+
 let node = Node::from_profile(Profile::STAGENET);
 
 let id = Id::from_string("CWuFY42te67sLmc5gwt4NxwHmFjVfJdHkKuLyshTwEct").unwrap();
@@ -116,11 +130,18 @@ println!("{:?}", eth_tx.payload());
 ### Broadcasting transactions
 #### Creating accounts (see Getting started for more info about account creation)
 ```rust
-let bob = PrivateKey::from_seed(&Crypto::get_random_seed_phrase(12), 0);
-let alice = PrivateKey::from_seed(&Crypto::get_random_seed_phrase(12), 0);
+use waves_rust::model::PrivateKey;
+use waves_rust::util::Crypto;
+
+let bob = PrivateKey::from_seed(&Crypto::get_random_seed_phrase(12), 0).unwrap();
+let alice = PrivateKey::from_seed(&Crypto::get_random_seed_phrase(12), 0).unwrap();
 ```
 #### Broadcasting exchange transaction
 ```rust
+use waves_rust::api::{Node, Profile};
+use waves_rust::model::{Amount, AssetId, ChainId, ExchangeTransaction, Order, OrderType, PrivateKey, Transaction, TransactionData};
+use waves_rust::util::{get_current_epoch_millis, Crypto};
+
 let price = Amount::new(1000, None);
 let amount = Amount::new(
     100,
@@ -186,11 +207,18 @@ let tx_info = node.broadcast(&signed_tx).await.unwrap();
 ### Working with dApp
 #### Creating accounts (see Getting started for more info about account creation)
 ```rust
+use waves_rust::model::PrivateKey;
+use waves_rust::util::Crypto;
+
 let bob = PrivateKey::from_seed(&Crypto::get_random_seed_phrase(12), 0);
 let alice = PrivateKey::from_seed(&Crypto::get_random_seed_phrase(12), 0);
 ```
 #### Broadcasting issue transaction
 ```rust
+use waves_rust::api::{Node, Profile};
+use waves_rust::model::{Amount, ChainId, IssueTransaction, PrivateKey, Transaction, TransactionData};
+use waves_rust::util::{Crypto, get_current_epoch_millis};
+
 let transaction_data = TransactionData::Issue(IssueTransaction::new(
         "Asset".to_owned(),
         "this is test asset".to_owned(),
@@ -217,6 +245,10 @@ node.broadcast(&signed_tx).await.unwrap();
 
 #### Compiling and broadcasting RIDE script
 ```rust
+use waves_rust::api::{Node, Profile};
+use waves_rust::model::{Amount, ChainId, PrivateKey, SetScriptTransaction, Transaction, TransactionData};
+use waves_rust::util::{get_current_epoch_millis, Crypto};
+
 let script = r#"
         {-# STDLIB_VERSION 5 #-}
         {-# CONTENT_TYPE DAPP #-}
@@ -268,6 +300,11 @@ node.broadcast(&signed_tx).await.unwrap();
 
 #### Calling dApp
 ```rust
+use waves_rust::api::{Node, Profile};
+use waves_rust::model::{Address, Amount, Base64String, ByteString, ChainId, Function, InvokeScriptTransaction, PrivateKey, Transaction, TransactionData};
+use waves_rust::model::Arg::{Binary, Boolean, Integer, List, String};
+use waves_rust::util::{get_current_epoch_millis, Crypto};
+
 let alice_address =
 Address::from_public_key(ChainId::TESTNET.byte(), &alice.public_key()).unwrap();
 let transaction_data = TransactionData::InvokeScript(InvokeScriptTransaction::new(

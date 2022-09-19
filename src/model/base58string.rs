@@ -24,7 +24,7 @@ impl Base58String {
         Base58String { bytes }
     }
 
-    pub fn from_string(encoded: String) -> Result<Base58String> {
+    pub fn from_string(encoded: &str) -> Result<Base58String> {
         let bytes: Vec<u8> = bs58::decode(encoded).into_vec()?;
         Ok(Base58String { bytes })
     }
@@ -62,7 +62,7 @@ mod tests {
     #[test]
     fn test_base58string_from_string() {
         let base58string =
-            Base58String::from_string("7LBopaBdBzQbgqrnwgmgCDhcSTb32MYhE96SnSHcqZC2".to_string())
+            Base58String::from_string("7LBopaBdBzQbgqrnwgmgCDhcSTb32MYhE96SnSHcqZC2")
                 .expect("failed to get base58string from string");
 
         assert_eq!(
@@ -100,11 +100,11 @@ mod tests {
         let base58string1 = Base58String::from_bytes(bytes);
 
         let base58string2 =
-            Base58String::from_string("7LBopaBdBzQbgqrnwgmgCDhcSTb32MYhE96SnSHcqZC2".to_string())
+            Base58String::from_string("7LBopaBdBzQbgqrnwgmgCDhcSTb32MYhE96SnSHcqZC2")
                 .expect("failed to get base58string from string");
 
         let base58string3 =
-            Base58String::from_string("8LBopaBdBzQbgqrnwgmgCDhcSTb32MYhE96SnSHcqZC2".to_string())
+            Base58String::from_string("8LBopaBdBzQbgqrnwgmgCDhcSTb32MYhE96SnSHcqZC2")
                 .expect("failed to get base58string from string");
 
         assert_eq!(base58string1 == base58string2, true);
@@ -114,7 +114,7 @@ mod tests {
     #[test]
     fn test_pretty_print() {
         let base58string =
-            Base58String::from_string("7LBopaBdBzQbgqrnwgmgCDhcSTb32MYhE96SnSHcqZC2".to_string())
+            Base58String::from_string("7LBopaBdBzQbgqrnwgmgCDhcSTb32MYhE96SnSHcqZC2")
                 .expect("failed to get base58string from string");
         let formatted_string = format!("{}", base58string);
         assert_eq!(

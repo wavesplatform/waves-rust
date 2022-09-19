@@ -128,7 +128,7 @@ impl TryFrom<&Value> for MassTransferTransaction {
             .map(|transfer| transfer.try_into())
             .collect::<Result<Vec<Transfer>>>()?;
 
-        let attachment = Base58String::from_string(JsonDeserializer::safe_to_string_from_field(
+        let attachment = Base58String::from_string(&JsonDeserializer::safe_to_string_from_field(
             value,
             "attachment",
         )?)?;
