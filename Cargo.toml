@@ -1,16 +1,14 @@
 [package]
 name = "waves-rust"
 version = "0.1.0"
-edition = "2021"
-rust-version = "1.63.0"
-#todo add additional email
+edition = "2018"
+rust-version = "1.49"
 authors = ["Alexandr Devyatkin <novealx@gmail.com>"]
 description = """
 A Rust library for interacting with the Waves blockchain.
 Supports node interaction, offline transaction signing and creating addresses and keys.
 """
 readme = "README.md"
-#todo ask about key words
 keywords = [
     "blockchain",
     "async",
