@@ -3,7 +3,7 @@ name = "waves-rust"
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.56"
-authors = ["Alexandr Devyatkin <novealx@gmail.com>"]
+authors = ["Waves Labs <admin@waveslabs.com>", "Alexandr Devyatkin <novealx@gmail.com>"]
 description = """
 A Rust library for interacting with the Waves blockchain.
 Supports node interaction, offline transaction signing and creating addresses and keys.
