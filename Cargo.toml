@@ -21,9 +21,8 @@ categories = [
     "blockchain",
     "cryptography"
 ]
-repository = "https://github.com/DiLeqL/waves-rust"
-#todo which licence to use?
-#license = "MIT"
+repository = "https://github.com/wavesplatform/waves-rust"
+license = "MIT"
 
 [dependencies]
 # crypto
