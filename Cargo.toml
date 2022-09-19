@@ -1,8 +1,8 @@
 [package]
 name = "waves-rust"
 version = "0.1.0"
-edition = "2018"
-rust-version = "1.49"
+edition = "2021"
+rust-version = "1.56"
 authors = ["Alexandr Devyatkin <novealx@gmail.com>"]
 description = """
 A Rust library for interacting with the Waves blockchain.
