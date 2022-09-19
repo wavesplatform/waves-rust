@@ -48,7 +48,7 @@ let buddy = Address::from_string("3N2yqTEKArWS3ySs2f6t8fpXdjX6cpPuhG8").unwrap()
 let transaction_data = TransactionData::Transfer(TransferTransaction::new(
     buddy,
     Amount::new(1_00_000_000, None), // None is WAVES asset
-    Base58String::from_string("thisisattachment".to_owned()).unwrap(),
+    Base58String::from_string("thisisattachment").unwrap(),
 ));
 
 let timestamp = get_current_epoch_millis();
