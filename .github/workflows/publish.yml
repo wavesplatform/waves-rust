@@ -1,0 +1,19 @@
+name: Publish waves-rust to crate.io
+
+on:
+  push:
+    tags:
+      - v[0-9].[0-9]+.[0-9]+
+
+jobs:
+  publish:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - uses: katyo/publish-crates@v1
+        with:
+          registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
