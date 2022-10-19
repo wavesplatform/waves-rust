@@ -8,6 +8,7 @@ use crate::error::{Error, Result};
 use reqwest::{Client, Url};
 use serde_json::Value::Array;
 use serde_json::{Map, Value};
+use tokio::time;
 
 use crate::model::account::{Address, Balance, BalanceDetails};
 use crate::model::asset::asset_details::AssetDetails;
@@ -1467,6 +1468,32 @@ impl Node {
             .post_plain_text(&compile_script_url, source.to_owned())
             .await?;
         rs.try_into()
+    }
+
+    // WAITING
+    pub async fn wait_for_transaction(
+        &self,
+        id: Id,
+        polling_interval: Duration,
+        timeout: Duration
+    ) -> Result<()> {
+        let mut interval = time::interval(polling_interval);
+        let mut time_spent = Duration::from_millis(0);
+
+        let mut last_error: Error = Error::NodeError {
+            error: 0,
+            message: "undefined".to_string()
+        };
+
+        while time_spent < timeout {
+            match self.get_transaction_info(&id).await {
+                Ok(_) => return Ok(()),
+                Err(err) => last_error = err
+            }
+            interval.tick().await;
+            time_spent += polling_interval;
+        }
+        Err(last_error)
     }
 
     async fn get(&self, url: &str) -> Result<Value> {
