@@ -1475,20 +1475,20 @@ impl Node {
         &self,
         id: Id,
         polling_interval: Duration,
-        timeout: Duration
+        timeout: Duration,
     ) -> Result<()> {
         let mut interval = time::interval(polling_interval);
         let mut time_spent = Duration::from_millis(0);
 
         let mut last_error: Error = Error::NodeError {
             error: 0,
-            message: "undefined".to_string()
+            message: "undefined".to_string(),
         };
 
         while time_spent < timeout {
             match self.get_transaction_info(&id).await {
                 Ok(_) => return Ok(()),
-                Err(err) => last_error = err
+                Err(err) => last_error = err,
             }
             interval.tick().await;
             time_spent += polling_interval;

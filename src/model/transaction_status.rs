@@ -7,7 +7,7 @@ use serde_json::Value;
 pub struct TransactionStatus {
     id: Id,
     status: Status,
-    app_status: ApplicationStatus,
+    app_status: Option<ApplicationStatus>,
     height: u32,
     confirmation: u32,
 }
@@ -16,7 +16,7 @@ impl TransactionStatus {
     pub fn new(
         id: Id,
         status: Status,
-        app_status: ApplicationStatus,
+        app_status: Option<ApplicationStatus>,
         height: u32,
         confirmation: u32,
     ) -> Self {
@@ -37,7 +37,7 @@ impl TransactionStatus {
         self.status
     }
 
-    pub fn app_status(&self) -> ApplicationStatus {
+    pub fn app_status(&self) -> Option<ApplicationStatus> {
         self.app_status
     }
 
@@ -63,13 +63,15 @@ impl TryFrom<&Value> for TransactionStatus {
         };
 
         let id = JsonDeserializer::safe_to_string_from_field(value, "id")?;
-        let application_status =
-            match JsonDeserializer::safe_to_string_from_field(value, "applicationStatus")?.as_str()
-            {
-                "succeeded" => ApplicationStatus::Succeed,
-                "script_execution_failed" => ApplicationStatus::ScriptExecutionFailed,
-                &_ => ApplicationStatus::Unknown,
-            };
+
+        let application_status = match value["applicationStatus"].as_str() {
+            Some(status) => match status {
+                "succeeded" => Some(ApplicationStatus::Succeed),
+                "script_execution_failed" => Some(ApplicationStatus::ScriptExecutionFailed),
+                &_ => Some(ApplicationStatus::Unknown),
+            },
+            None => None,
+        };
 
         let height = JsonDeserializer::safe_to_int_from_field(value, "height")?;
         let confirmations = JsonDeserializer::safe_to_int_from_field(value, "confirmations")?;
@@ -112,7 +114,10 @@ mod tests {
         assert_eq!(transaction_status.status(), Status::Confirmed);
         assert_eq!(transaction_status.height(), 2217333);
         assert_eq!(transaction_status.confirmation(), 14051);
-        assert_eq!(transaction_status.app_status(), ApplicationStatus::Succeed);
+        assert_eq!(
+            transaction_status.app_status().unwrap(),
+            ApplicationStatus::Succeed
+        );
         assert_eq!(
             transaction_status.id().encoded(),
             "4XFVLLMBjBMPwGivgyLhw374kViANoToLAYUdEXWLsBJ"
