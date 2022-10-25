@@ -9,7 +9,7 @@ use crate::waves_proto::order::Sender::SenderPublicKey;
 use crate::waves_proto::{Amount as ProtoAmount, AssetPair, Order as ProtoOrder};
 use serde_json::{Map, Value};
 
-use self::v3::OrderInfoV3;
+use self::v3::{OrderInfoV3, OrderV3};
 use self::v4::{OrderInfoV4, OrderV4};
 
 use super::PrivateKey;
@@ -326,6 +326,42 @@ pub enum Order {
 
 // could it be done using trait?
 impl Order {
+    #[allow(clippy::too_many_arguments)]
+    pub fn v3(
+        chain_id: u8,
+        timestamp: u64,
+        sender: PublicKey,
+        fee: Amount,
+        order_type: OrderType,
+        amount: Amount,
+        price: Amount,
+        matcher: PublicKey,
+        expiration: u64,
+    ) -> Self {
+        Self::V3(OrderV3::new(
+            chain_id, timestamp, sender, fee, order_type, amount, price, matcher, expiration,
+        ))
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn v4(
+        chain_id: u8,
+        timestamp: u64,
+        sender: PublicKey,
+        fee: Amount,
+        order_type: OrderType,
+        amount: Amount,
+        price: Amount,
+        matcher: PublicKey,
+        expiration: u64,
+        price_mode: PriceMode,
+    ) -> Self {
+        Self::V4(OrderV4::new(
+            chain_id, timestamp, sender, fee, order_type, amount, price, matcher, expiration,
+            price_mode,
+        ))
+    }
+
     pub fn id(&self) -> Result<Id> {
         match self {
             Self::V3(order) => order.id(),
