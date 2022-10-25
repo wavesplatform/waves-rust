@@ -1,7 +1,7 @@
 use waves_rust::api::{Node, Profile};
 use waves_rust::model::{
-    Amount, AssetId, ByteString, ChainId, ExchangeTransaction, Order, OrderType, PrivateKey,
-    Transaction, TransactionData,
+    v3, v4, Amount, AssetId, ByteString, ChainId, ExchangeTransaction, Order, OrderType, PriceMode,
+    PrivateKey, Transaction, TransactionData,
 };
 use waves_rust::util::get_current_epoch_millis;
 
@@ -22,9 +22,8 @@ async fn broadcast_and_read_test() {
 
     let matcher_fee = 300000;
 
-    let buy = Order::new(
+    let buy = Order::V4(v4::OrderV4::new(
         ChainId::TESTNET.byte(),
-        4,
         get_current_epoch_millis(),
         alice.public_key(),
         Amount::new(300000, None),
@@ -33,13 +32,13 @@ async fn broadcast_and_read_test() {
         price.clone(),
         bob.public_key(),
         Order::default_expiration(get_current_epoch_millis()),
-    )
+        PriceMode::AssetDecimals,
+    ))
     .sign(&alice)
     .expect("failed to sign");
 
-    let sell = Order::new(
+    let sell = Order::V3(v3::OrderV3::new(
         ChainId::TESTNET.byte(),
-        4,
         get_current_epoch_millis(),
         bob.public_key(),
         Amount::new(300000, None),
@@ -48,7 +47,7 @@ async fn broadcast_and_read_test() {
         price.clone(),
         bob.public_key(),
         Order::default_expiration(get_current_epoch_millis()),
-    )
+    ))
     .sign(&bob)
     .expect("failed to sign");
 

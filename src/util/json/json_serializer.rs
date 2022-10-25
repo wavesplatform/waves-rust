@@ -5,8 +5,8 @@ use crate::model::{
     BurnTransaction, ByteString, CreateAliasTransaction, DataTransaction, EthereumTransaction,
     ExchangeTransaction, GenesisTransaction, InvokeScriptTransaction, IssueTransaction,
     LeaseCancelTransaction, LeaseTransaction, MassTransferTransaction, PaymentTransaction,
-    ReissueTransaction, SetAssetScriptTransaction, SetScriptTransaction, SignedTransaction,
-    SponsorFeeTransaction, Transaction, TransactionData, TransferTransaction,
+    ReissueTransaction, SetAssetScriptTransaction, SetScriptTransaction, SignedOrder,
+    SignedTransaction, SponsorFeeTransaction, Transaction, TransactionData, TransferTransaction,
     UpdateAssetInfoTransaction,
 };
 
@@ -19,6 +19,10 @@ impl JsonSerializer {
         let json_props_with_additional_fields =
             add_additional_fields(sign_tx.tx().data(), &mut json_props_with_default_values)?;
         Ok(json_props_with_additional_fields.into())
+    }
+
+    pub fn serialize_signed_order(signed_order: &SignedOrder) -> Result<Value> {
+        signed_order.try_into()
     }
 }
 

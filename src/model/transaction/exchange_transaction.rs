@@ -187,8 +187,8 @@ impl TryFrom<&ExchangeTransaction> for ExchangeTransactionData {
 #[cfg(test)]
 mod tests {
     use crate::model::{
-        Amount, AssetId, ByteString, ExchangeTransaction, ExchangeTransactionInfo, Order,
-        OrderType, Proof, PublicKey, SignedOrder,
+        v4, Amount, AssetId, ByteString, ExchangeTransaction, ExchangeTransactionInfo, Order,
+        OrderType, PriceMode, Proof, PublicKey, SignedOrder,
     };
 
     use crate::error::Result;
@@ -203,18 +203,18 @@ mod tests {
         let data =
             fs::read_to_string("./tests/resources/exchange_rs.json").expect("Unable to read file");
         let json: Value = serde_json::from_str(&data).expect("failed to generate json from str");
-
         let exchange_tx_from_json: ExchangeTransactionInfo = json.borrow().try_into().unwrap();
 
+        // order1
         let order_info1 = exchange_tx_from_json.order1();
         let chain_id = order_info1.chain_id();
         assert_eq!(4, order_info1.version());
         assert_eq!(
-            "BBzUjBofreRf7gPMwWKT79ayZ5zNRQqgq8R9cRKZZ8ru",
+            "3DCDNkx3iw9UBhKfQgibxrCes1uXPeMaexpgf5kQyz18",
             order_info1.id().encoded()
         );
         assert_eq!(
-            "3MxjhrvCr1nnDxvNJiCQfSC557gd8QYEhDx",
+            "3MzpbTjjF1ng9aLWSkq96JktGRs1FDVuDSk",
             order_info1
                 .sender()
                 .address(chain_id)
@@ -222,40 +222,48 @@ mod tests {
                 .encoded()
         );
         assert_eq!(
-            "9oRf59sSHE2inwF6wraJDPQNsx7ktMKxaKvyFFL8GDrh",
+            "BDSyopLzAjMYvQSm4XuMA2gtjP5TPoZMWQ1sxnzTE1Y8",
             order_info1.sender().encoded()
         );
         assert_eq!(
-            "CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt",
+            "8QUAqtTckM5B8gvcuP7mMswat9SjKUuafJMusEoSn1Gy",
             order_info1.matcher().encoded()
         );
+        assert_eq!(None, order_info1.amount().asset_id());
+        assert_eq!(660949620, order_info1.amount().value());
         assert_eq!(
-            "8bt2MZjuUCJPmfucPfaZPTXqrxmoCHCC8gVnbjZ7bhH6",
+            "25FEqEjRkqK6yCkiT7Lz6SAYz7gUFCtxfCChnrVFD5AT",
             order_info1
-                .amount()
+                .price()
                 .asset_id()
                 .expect("asset must be non empty")
                 .encoded()
         );
-        assert_eq!(100, order_info1.amount().value());
-        assert_eq!(None, order_info1.price().asset_id());
-        assert_eq!(1000, order_info1.price().value());
+        assert_eq!(15000000, order_info1.price().value());
         assert_eq!(OrderType::Buy, order_info1.order_type());
-        assert_eq!(1662500994929, order_info1.timestamp());
-        assert_eq!(1665092994929, order_info1.expiration());
-        assert_eq!(300000, order_info1.fee().value());
-        assert_eq!(None, order_info1.fee().asset_id());
-        assert_eq!("2YgYwW6o88K3NXYy39TaUu1bwVkzpbr9oQwSDehnkJskfshC6f9F5vYmY736kEExRGHiDmW4hbuyxuqE8cw8WeJ8", &order_info1.proofs()[0].encoded());
+        assert_eq!(1666571041063, order_info1.timestamp());
+        assert_eq!(1669080241063, order_info1.expiration());
+        assert_eq!(99143, order_info1.fee().value());
+        assert_eq!(
+            "25FEqEjRkqK6yCkiT7Lz6SAYz7gUFCtxfCChnrVFD5AT",
+            order_info1
+                .fee()
+                .asset_id()
+                .expect("asset must be non empty")
+                .encoded()
+        );
+        assert_eq!("3GmuCwFTs5jcJjerkZP28aEAvFV1qqJx9QTjC9dVBVrYeqJ9pqoaB1vU1ieZmZFXTcD6jSr7JLDsKbsLKZtgcBpm", &order_info1.proofs()[0].encoded());
 
+        // order2
         let order_info2 = exchange_tx_from_json.order2();
         let chain_id = order_info2.chain_id();
-        assert_eq!(4, order_info2.version());
+        assert_eq!(3, order_info2.version());
         assert_eq!(
-            "3qKPaEp8DDxRJQCV8ZKs4MZcTTZSsio57kXxoZtGLVgk",
+            "H2EaCndcFAETGaWkPifGdNBL3scaZ53Pgm4Ha4xvg9wb",
             order_info2.id().encoded()
         );
         assert_eq!(
-            "3MxtrLkrbcG28uTvmbKmhrwGrR65ooHVYvK",
+            "3My6wXYDaS6C86Zk3qToU8Lv24G4ueEXHcd",
             order_info2
                 .sender()
                 .address(chain_id)
@@ -263,43 +271,43 @@ mod tests {
                 .encoded()
         );
         assert_eq!(
-            "CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt",
+            "FarW7tFmnVJBsHUdDe9DMJcfUESh266UDmEm1vP6P2xE",
             order_info2.sender().encoded()
         );
         assert_eq!(
-            "CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt",
+            "8QUAqtTckM5B8gvcuP7mMswat9SjKUuafJMusEoSn1Gy",
             order_info2.matcher().encoded()
         );
+        assert_eq!(None, order_info1.amount().asset_id());
+        assert_eq!(660949620, order_info1.amount().value());
         assert_eq!(
-            "8bt2MZjuUCJPmfucPfaZPTXqrxmoCHCC8gVnbjZ7bhH6",
-            order_info2
-                .amount()
+            "25FEqEjRkqK6yCkiT7Lz6SAYz7gUFCtxfCChnrVFD5AT",
+            order_info1
+                .price()
                 .asset_id()
                 .expect("asset must be non empty")
                 .encoded()
         );
-        assert_eq!(100, order_info2.amount().value());
-        assert_eq!(None, order_info2.price().asset_id());
-        assert_eq!(1000, order_info2.price().value());
+        assert_eq!(15000000, order_info1.price().value());
         assert_eq!(OrderType::Sell, order_info2.order_type());
-        assert_eq!(1662500994931, order_info2.timestamp());
-        assert_eq!(1665092994931, order_info2.expiration());
-        assert_eq!(300000, order_info2.fee().value());
+        assert_eq!(1664244861345, order_info2.timestamp());
+        assert_eq!(1666750461345, order_info2.expiration());
+        assert_eq!(10000000, order_info2.fee().value());
         assert_eq!(None, order_info2.fee().asset_id());
-        assert_eq!("5Mbvg4kz1rPLBVBWoTcY2e6Zajoqxq6g38WPfvxCMiHmjxm8TPZpLpEitf9SdfGSpBHtAxas2YRe7X4UcmBugDFL", &order_info2.proofs()[0].encoded());
+        assert_eq!("38rb8vVaYR4iqfTLvHPEQ83kkhtwjcTP4f8p8A1tSquzNF41m78GEN5Qr3Lc3k8fzeGTuV1oiPTVkoAjGvrYvmpN", &order_info2.proofs()[0].encoded());
 
-        assert_eq!(100, exchange_tx_from_json.amount());
-        assert_eq!(1000, exchange_tx_from_json.price());
-        assert_eq!(300000, exchange_tx_from_json.buy_matcher_fee());
-        assert_eq!(300000, exchange_tx_from_json.sell_matcher_fee());
+        // tx
+        assert_eq!(640949620, exchange_tx_from_json.amount());
+        assert_eq!(1500000000, exchange_tx_from_json.price());
+        assert_eq!(96142, exchange_tx_from_json.buy_matcher_fee());
+        assert_eq!(640949, exchange_tx_from_json.sell_matcher_fee());
     }
 
     #[test]
     fn test_exchange_transaction_to_json() -> Result<()> {
         let buy_order = SignedOrder::new(
-            Order::new(
+            Order::V4(v4::OrderV4::new(
             84,
-            4,
             1662500994929,
             PublicKey::from_string("9oRf59sSHE2inwF6wraJDPQNsx7ktMKxaKvyFFL8GDrh")?,
             Amount::new(300000, None),
@@ -313,13 +321,13 @@ mod tests {
             Amount::new(1000, None),
             PublicKey::from_string("CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt")?,
             1665092994929,
-            ),
-            vec![Proof::from_string("2YgYwW6o88K3NXYy39TaUu1bwVkzpbr9oQwSDehnkJskfshC6f9F5vYmY736kEExRGHiDmW4hbuyxuqE8cw8WeJ8")?]
+            PriceMode::Default,
+            )),
+            vec![Proof::from_string("2YgYwW6o88K3NXYy39TaUu1bwVkzpbr9oQwSDehnkJskfshC6f9F5vYmY736kEExRGHiDmW4hbuyxuqE8cw8WeJ8")?],
         );
 
-        let sell_order = SignedOrder::new(Order::new(
+        let sell_order = SignedOrder::new(Order::V4(v4::OrderV4::new(
             84,
-            4,
             1662500994931,
             PublicKey::from_string("CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt")?,
             Amount::new(300000, None),
@@ -333,7 +341,8 @@ mod tests {
             Amount::new(1000, None),
             PublicKey::from_string("CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt")?,
             1665092994931,
-            ),
+            PriceMode::Default,
+            )),
         vec![Proof::from_string("5Mbvg4kz1rPLBVBWoTcY2e6Zajoqxq6g38WPfvxCMiHmjxm8TPZpLpEitf9SdfGSpBHtAxas2YRe7X4UcmBugDFL")?]
         );
 
@@ -363,6 +372,7 @@ mod tests {
                   "2YgYwW6o88K3NXYy39TaUu1bwVkzpbr9oQwSDehnkJskfshC6f9F5vYmY736kEExRGHiDmW4hbuyxuqE8cw8WeJ8"
                 ],
                 "matcherFeeAssetId": null,
+                "priceMode": "default"
             },
             "order2": {
               "version": 4,
@@ -384,6 +394,7 @@ mod tests {
                 "5Mbvg4kz1rPLBVBWoTcY2e6Zajoqxq6g38WPfvxCMiHmjxm8TPZpLpEitf9SdfGSpBHtAxas2YRe7X4UcmBugDFL"
               ],
               "matcherFeeAssetId": null,
+              "priceMode": "default"
             },
             "amount": 100,
             "price": 1000,
@@ -399,9 +410,8 @@ mod tests {
     #[test]
     fn test_exchange_transaction_to_proto() -> Result<()> {
         let buy_order = SignedOrder::new(
-            Order::new(
+            Order::V4(v4::OrderV4::new(
                 84,
-                4,
                 1662500994929,
                 PublicKey::from_string("9oRf59sSHE2inwF6wraJDPQNsx7ktMKxaKvyFFL8GDrh")?,
                 Amount::new(300000, None),
@@ -415,13 +425,13 @@ mod tests {
                 Amount::new(1000, None),
                 PublicKey::from_string("CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt")?,
                 1665092994929,
-            ),
+                PriceMode::Default
+            )),
             vec![Proof::from_string("2YgYwW6o88K3NXYy39TaUu1bwVkzpbr9oQwSDehnkJskfshC6f9F5vYmY736kEExRGHiDmW4hbuyxuqE8cw8WeJ8")?]
         );
 
-        let sell_order = SignedOrder::new(Order::new(
+        let sell_order = SignedOrder::new(Order::V4(v4::OrderV4::new(
             84,
-            4,
             1662500994931,
             PublicKey::from_string("CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt")?,
             Amount::new(300000, None),
@@ -435,7 +445,8 @@ mod tests {
             Amount::new(1000, None),
             PublicKey::from_string("CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt")?,
             1665092994931,
-        ),
+            PriceMode::Default
+        )),
            vec![Proof::from_string("5Mbvg4kz1rPLBVBWoTcY2e6Zajoqxq6g38WPfvxCMiHmjxm8TPZpLpEitf9SdfGSpBHtAxas2YRe7X4UcmBugDFL")?]
         );
 
@@ -517,6 +528,17 @@ mod tests {
             buy_order_proto.proofs[0]
         );
 
+        if let Order::V4(order_v4) = buy_order {
+            assert_eq!(
+                match order_v4.price_mode() {
+                    PriceMode::Default => 0,
+                    PriceMode::FixedDecimals => 1,
+                    PriceMode::AssetDecimals => 1,
+                },
+                buy_order_proto.price_mode
+            );
+        }
+
         let sell_order_proto = &proto.orders[1];
         let sell_order = &exchange_transaction.order2().order();
         assert_eq!(sell_order.chain_id(), sell_order_proto.chain_id as u8);
@@ -579,6 +601,17 @@ mod tests {
             exchange_transaction.order2.proofs()[0].bytes(),
             sell_order_proto.proofs[0]
         );
+
+        if let Order::V4(order_v4) = sell_order {
+            assert_eq!(
+                match order_v4.price_mode() {
+                    PriceMode::Default => 0,
+                    PriceMode::FixedDecimals => 1,
+                    PriceMode::AssetDecimals => 1,
+                },
+                sell_order_proto.price_mode
+            );
+        }
 
         Ok(())
     }

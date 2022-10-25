@@ -8,11 +8,13 @@ use TransactionData::{
 use crate::error::Error::UnsupportedOperation;
 use crate::error::Result;
 use crate::model::TransactionData::{Data, Exchange, InvokeScript, Issue, Transfer};
-use crate::model::{ByteString, Order, Transaction, TransactionData};
+use crate::model::{ByteString, Order, OrderType, Transaction, TransactionData};
 use crate::waves_proto::transaction::Data as ProtoData;
 use crate::waves_proto::{
     Amount as ProtoAmount, Order as ProtoOrder, Transaction as ProtoTransaction,
 };
+
+use super::ByteWriter;
 
 pub struct BinarySerializer;
 
@@ -58,15 +60,67 @@ impl BinarySerializer {
             version: transaction.version() as i32,
         };
 
-        let mut buf = vec![];
-        proto_tx.encode(&mut buf)?;
+        let buf = Message::encode_to_vec(&proto_tx);
         Ok(buf)
     }
 
     pub fn order_body_bytes(order: &Order) -> Result<Vec<u8>> {
-        let proto_order: ProtoOrder = order.try_into()?;
-        let mut buf = vec![];
-        proto_order.encode(&mut buf)?;
-        Ok(buf)
+        match order {
+            Order::V3(order) => {
+                let mut bw = ByteWriter::new();
+
+                // https://docs.waves.tech/en/blockchain/binary-format/order-binary-format#version-3
+                bw.push_byte(3);
+                bw.push_bytes(&mut order.sender().bytes());
+                bw.push_bytes(&mut order.matcher().bytes());
+                match order.amount().asset_id() {
+                    Some(asset_id) => {
+                        bw.push_byte(1);
+                        bw.push_bytes(&mut asset_id.bytes());
+                    }
+                    None => {
+                        bw.push_byte(0);
+                    }
+                }
+                match order.price().asset_id() {
+                    Some(asset_id) => {
+                        bw.push_byte(1);
+                        bw.push_bytes(&mut asset_id.bytes());
+                    }
+                    None => {
+                        bw.push_byte(0);
+                    }
+                }
+                match order.order_type() {
+                    OrderType::Buy => {
+                        bw.push_byte(0);
+                    }
+                    OrderType::Sell => {
+                        bw.push_byte(1);
+                    }
+                }
+                bw.push_bytes(&mut order.price().value().to_be_bytes().to_vec());
+                bw.push_bytes(&mut order.amount().value().to_be_bytes().to_vec());
+                bw.push_bytes(&mut order.timestamp().to_be_bytes().to_vec());
+                bw.push_bytes(&mut order.expiration().to_be_bytes().to_vec());
+                bw.push_bytes(&mut order.fee().value().to_be_bytes().to_vec());
+                match order.fee().asset_id() {
+                    Some(asset_id) => {
+                        bw.push_byte(1);
+                        bw.push_bytes(&mut asset_id.bytes());
+                    }
+                    None => {
+                        bw.push_byte(0);
+                    }
+                }
+
+                Ok(bw.bytes())
+            }
+            Order::V4(_) => {
+                let proto_order: ProtoOrder = order.try_into()?;
+                let buf = Message::encode_to_vec(&proto_order);
+                Ok(buf)
+            }
+        }
     }
 }
