@@ -144,7 +144,7 @@ let alice = PrivateKey::from_seed(&Crypto::get_random_seed_phrase(12), 0).unwrap
 #### Broadcasting exchange transaction
 ```rust
 use waves_rust::api::{Node, Profile};
-use waves_rust::model::{Amount, AssetId, ChainId, ExchangeTransaction, Order, OrderType, PrivateKey, Transaction, TransactionData};
+use waves_rust::model::{Amount, AssetId, ChainId, ExchangeTransaction, Order, OrderType, PriceMode, PrivateKey, Transaction, TransactionData};
 use waves_rust::util::{get_current_epoch_millis, Crypto};
 
 let price = Amount::new(1000, None);
@@ -155,9 +155,8 @@ let amount = Amount::new(
 
 let matcher_fee = 300000;
 
-let buy = Order::new(
+let buy = Order::v4(
     ChainId::TESTNET.byte(),
-    4,
     get_current_epoch_millis(),
     alice.public_key(),
     Amount::new(300000, None),
@@ -166,13 +165,13 @@ let buy = Order::new(
     price.clone(),
     bob.public_key(),
     Order::default_expiration(get_current_epoch_millis()),
+    PriceMode::AssetDecimals,
 )
 .sign(&alice)
 .unwrap();
 
-let sell = Order::new(
+let sell = Order::v3(
     ChainId::TESTNET.byte(),
-    4,
     get_current_epoch_millis(),
     bob.public_key(),
     Amount::new(300000, None),

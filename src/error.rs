@@ -49,6 +49,8 @@ pub enum Error {
         prefix: String,
         chain_id: char,
     },
+    #[error("unsupported order version")]
+    UnsupportedOrderVersion,
 }
 
 #[derive(Debug, thiserror::Error)]

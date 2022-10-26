@@ -232,9 +232,8 @@ dependencies = [
 
 [[package]]
 name = "curve25519-dalek"
-version = "4.0.0-pre.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "12dc3116fe595d7847c701796ac1b189bd86b81f4f593c6f775f9d80fb2e29f4"
+version = "4.0.0-pre.3"
+source = "git+https://github.com/nazar-pc/curve25519-dalek?branch=relax-zeroize#8e5a07bdbf6c0c4bc450ac42e8c7cea9cfa64934"
 dependencies = [
  "byteorder",
  "digest 0.10.3",
@@ -1705,7 +1704,7 @@ dependencies = [
  "base64",
  "blake2",
  "bs58",
- "curve25519-dalek 4.0.0-pre.2",
+ "curve25519-dalek 4.0.0-pre.3",
  "ed25519-dalek",
  "hex",
  "prost",

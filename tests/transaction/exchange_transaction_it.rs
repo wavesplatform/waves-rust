@@ -1,12 +1,9 @@
 use waves_rust::api::{Node, Profile};
 use waves_rust::model::{
-    Amount, AssetId, ByteString, ChainId, ExchangeTransaction, Order, OrderType, PrivateKey,
-    Transaction, TransactionData,
+    Amount, AssetId, ByteString, ChainId, ExchangeTransaction, Order, OrderType, PriceMode,
+    PrivateKey, Transaction, TransactionData,
 };
 use waves_rust::util::get_current_epoch_millis;
-
-const SEED_PHRASE: &str = "dwarf chimney miss category orchard organ neck income prevent \
-trigger used census";
 
 #[ignore]
 #[tokio::test]
@@ -22,9 +19,8 @@ async fn broadcast_and_read_test() {
 
     let matcher_fee = 300000;
 
-    let buy = Order::new(
+    let buy = Order::v4(
         ChainId::TESTNET.byte(),
-        4,
         get_current_epoch_millis(),
         alice.public_key(),
         Amount::new(300000, None),
@@ -33,13 +29,13 @@ async fn broadcast_and_read_test() {
         price.clone(),
         bob.public_key(),
         Order::default_expiration(get_current_epoch_millis()),
+        PriceMode::AssetDecimals,
     )
     .sign(&alice)
     .expect("failed to sign");
 
-    let sell = Order::new(
+    let sell = Order::v3(
         ChainId::TESTNET.byte(),
-        4,
         get_current_epoch_millis(),
         bob.public_key(),
         Amount::new(300000, None),
