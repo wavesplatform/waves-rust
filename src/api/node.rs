@@ -1473,7 +1473,7 @@ impl Node {
     // WAITING
     pub async fn wait_for_transaction(
         &self,
-        id: Id,
+        id: &Id,
         polling_interval: Duration,
         timeout: Duration,
     ) -> Result<()> {
