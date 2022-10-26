@@ -1473,7 +1473,7 @@ impl Node {
     // WAITING
     pub async fn wait_for_transaction(
         &self,
-        id: Id,
+        id: &Id,
         polling_interval: Duration,
         timeout: Duration,
     ) -> Result<()> {
@@ -1486,7 +1486,7 @@ impl Node {
         };
 
         while time_spent < timeout {
-            match self.get_transaction_info(&id).await {
+            match self.get_transaction_info(id).await {
                 Ok(_) => return Ok(()),
                 Err(err) => last_error = err,
             }
