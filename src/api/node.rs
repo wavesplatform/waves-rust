@@ -1486,7 +1486,7 @@ impl Node {
         };
 
         while time_spent < timeout {
-            match self.get_transaction_info(&id).await {
+            match self.get_transaction_info(id).await {
                 Ok(_) => return Ok(()),
                 Err(err) => last_error = err,
             }
