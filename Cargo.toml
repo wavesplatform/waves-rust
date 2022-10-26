@@ -29,7 +29,7 @@ blake2 = "0.10.4"
 sha3 = "0.10.2"
 sha2 = "0.10.2"
 # todo: use root crate when its dependencies will be resolved
-curve25519-dalek = { git = "https://github.com/nazar-pc/curve25519-dalek", branch="relax-zeroize"}
+curve25519-dalek = { git = "https://github.com/nazar-pc/curve25519-dalek", branch="relax-zeroize", version = "4.0.0-pre.2"}
 ed25519-dalek = "1.0.1"
 base64 = "0.13.0"
 hex = "0.4.3"
