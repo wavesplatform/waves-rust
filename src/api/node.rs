@@ -17,8 +17,9 @@ use crate::model::asset::balance::AssetsBalanceResponse;
 use crate::model::data_entry::DataEntry;
 use crate::model::{
     Alias, AliasesByAddressResponse, Amount, AssetId, Base58String, Block, BlockHeaders,
-    BlockchainRewards, ByteString, ChainId, HistoryBalance, Id, LeaseInfo, ScriptInfo, ScriptMeta,
-    SignedTransaction, TransactionInfoResponse, TransactionStatus, Validation,
+    BlockchainRewards, ByteString, ChainId, EvaluateScriptResponse, HistoryBalance, Id, LeaseInfo,
+    ScriptInfo, ScriptMeta, SignedTransaction, TransactionInfoResponse, TransactionStatus,
+    Validation,
 };
 use crate::util::JsonDeserializer;
 
@@ -1467,6 +1468,25 @@ impl Node {
         let rs = &self
             .post_plain_text(&compile_script_url, source.to_owned())
             .await?;
+        rs.try_into()
+    }
+
+    /// Evaluate script with given expression and get result
+    pub async fn evaluate_script(
+        &self,
+        address: &Address,
+        expr: &str,
+    ) -> Result<EvaluateScriptResponse> {
+        let evaluate_script_url = format!(
+            "{}utils/script/evaluate/{}",
+            self.url().as_str(),
+            address.encoded()
+        );
+
+        let body: Map<String, Value> =
+            Map::from_iter(vec![("expr".to_owned(), Value::String(expr.to_owned()))]);
+
+        let rs = &self.post(&evaluate_script_url, &body.into()).await?;
         rs.try_into()
     }
 
