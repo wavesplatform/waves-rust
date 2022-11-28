@@ -1,3 +1,4 @@
+use crate::model::TransactionData;
 use base64::DecodeError;
 use blake2::digest::{InvalidBufferSize, InvalidOutputSize};
 use ed25519_dalek::SignatureError;
@@ -51,6 +52,15 @@ pub enum Error {
     },
     #[error("unsupported order version")]
     UnsupportedOrderVersion,
+    #[error(
+        "Unsupported transaction version {actual_version:?} for {tx_type:?} transaction. \
+    Use version {supported_version:?} or above"
+    )]
+    UnsupportedTransactionVersion {
+        actual_version: u8,
+        supported_version: u8,
+        tx_type: TransactionData,
+    },
 }
 
 #[derive(Debug, thiserror::Error)]
