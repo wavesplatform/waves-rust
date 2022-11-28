@@ -1,10 +1,10 @@
-use std::collections::HashMap;
+
 
 use crate::error::Error::UnsupportedTransactionVersion;
 use crate::error::Result;
 use crate::model::account::PrivateKey;
 use crate::model::{
-    ExchangeTransaction, Order, Proof, SignedOrder, SignedTransaction, Transaction, TransactionData,
+    Order, Proof, SignedOrder, SignedTransaction, Transaction,
 };
 use crate::util::BinarySerializer;
 

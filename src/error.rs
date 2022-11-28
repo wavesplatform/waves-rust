@@ -10,6 +10,7 @@ use url::ParseError;
 pub type Result<T> = result::Result<T, Error>;
 
 #[derive(Debug, thiserror::Error)]
+#[allow(clippy::large_enum_variant)]
 pub enum Error {
     #[error("node return error response (error: {error:?}, message: {message:?}))")]
     NodeError { error: u32, message: String },
