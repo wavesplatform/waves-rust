@@ -1,3 +1,4 @@
+use crate::model::TransactionData;
 use base64::DecodeError;
 use blake2::digest::{InvalidBufferSize, InvalidOutputSize};
 use ed25519_dalek::SignatureError;
@@ -9,6 +10,7 @@ use url::ParseError;
 pub type Result<T> = result::Result<T, Error>;
 
 #[derive(Debug, thiserror::Error)]
+#[allow(clippy::large_enum_variant)]
 pub enum Error {
     #[error("node return error response (error: {error:?}, message: {message:?}))")]
     NodeError { error: u32, message: String },
@@ -51,6 +53,15 @@ pub enum Error {
     },
     #[error("unsupported order version")]
     UnsupportedOrderVersion,
+    #[error(
+        "Unsupported transaction version {actual_version:?} for {tx_type:?} transaction. \
+    Use version {supported_version:?} or above"
+    )]
+    UnsupportedTransactionVersion {
+        actual_version: u8,
+        supported_version: u8,
+        tx_type: TransactionData,
+    },
 }
 
 #[derive(Debug, thiserror::Error)]

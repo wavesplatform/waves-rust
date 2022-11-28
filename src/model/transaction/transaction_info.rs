@@ -336,6 +336,29 @@ impl TransactionData {
             Ethereum(_) => EthereumTransaction::tx_type(),
         }
     }
+
+    pub fn get_min_supported_version(&self) -> u8 {
+        match self {
+            Genesis(_) => 2,
+            Payment(_) => 2,
+            Transfer(_) => 3,
+            Issue(_) => 3,
+            Reissue(_) => 3,
+            Burn(_) => 3,
+            Exchange(_) => 3,
+            Lease(_) => 3,
+            LeaseCancel(_) => 3,
+            CreateAlias(_) => 3,
+            MassTransfer(_) => 2,
+            Data(_) => 2,
+            SetScript(_) => 2,
+            SponsorFee(_) => 2,
+            SetAssetScript(_) => 2,
+            InvokeScript(_) => 2,
+            UpdateAssetInfo(_) => 1,
+            Ethereum(_) => 1,
+        }
+    }
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]

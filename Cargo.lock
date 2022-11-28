@@ -1699,7 +1699,7 @@ checksum = "6598dd0bd3c7d51095ff6531a5b23e02acdc81804e30d8f07afb77b7215a140a"
 
 [[package]]
 name = "waves-rust"
-version = "0.2.0"
+version = "0.2.2"
 dependencies = [
  "base64",
  "blake2",
