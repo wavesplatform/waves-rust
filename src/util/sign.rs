@@ -1,11 +1,7 @@
-
-
 use crate::error::Error::UnsupportedTransactionVersion;
 use crate::error::Result;
 use crate::model::account::PrivateKey;
-use crate::model::{
-    Order, Proof, SignedOrder, SignedTransaction, Transaction,
-};
+use crate::model::{Order, Proof, SignedOrder, SignedTransaction, Transaction};
 use crate::util::BinarySerializer;
 
 pub fn sign_tx(transaction: &Transaction, private_key: &PrivateKey) -> Result<SignedTransaction> {
