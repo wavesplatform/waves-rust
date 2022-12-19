@@ -13,7 +13,12 @@ Use the code below to add waves-rust as a dependency for your project.
 
 ##### Cargo:
 ```cargo
-waves-rust = "0.1.0"
+[dependencies]
+waves-rust = "0.2.2"
+tokio = { version = "1.12.0", features = ["full"] }
+
+[patch.crates-io]
+curve25519-dalek = { git = "https://github.com/nazar-pc/curve25519-dalek", branch="relax-zeroize", version = "4.0.0-pre.2"}
 ```
 
 ### Getting started
