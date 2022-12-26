@@ -28,11 +28,13 @@ bs58 = "0.4.0"
 blake2 = "0.10.4"
 sha3 = "0.10.2"
 sha2 = "0.10.2"
-# todo: use root crate when its dependencies will be resolved
-curve25519-dalek = { git = "https://github.com/nazar-pc/curve25519-dalek", version = "4.0.0-pre.2", tag = "4.0.0-pre.2"}
 ed25519-dalek = "1.0.1"
 base64 = "0.13.0"
 hex = "0.4.3"
+
+# todo: use root crate when its dependencies will be resolved
+[patch.crates-io]
+curve25519-dalek = { git = "https://github.com/nazar-pc/curve25519-dalek", version = "4.0.0-pre.2", tag = "4.0.0-pre.2"}
 
 # network
 reqwest = { version = "0.11.11", features = ["json"] }
