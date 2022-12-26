@@ -14,10 +14,6 @@ jobs:
         with:
           toolchain: stable
           override: true
-      - name: Run cargo update
-        uses: actions-rs/cargo@v1
-        with:
-          command: update
       - uses: katyo/publish-crates@v1
         with:
           registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}

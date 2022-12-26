@@ -236,7 +236,7 @@ dependencies = [
 [[package]]
 name = "curve25519-dalek"
 version = "4.0.0-pre.2"
-source = "git+https://github.com/nazar-pc/curve25519-dalek?tag=4.0.0-pre.2#c3ed99bf93f4eccfe2414c8f1caa1f3042021f76"
+source = "git+https://github.com/nazar-pc/curve25519-dalek?rev=c3ed99bf93#c3ed99bf93f4eccfe2414c8f1caa1f3042021f76"
 dependencies = [
  "byteorder",
  "digest 0.10.6",
