@@ -27,7 +27,10 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-
+      - name: Run cargo update
+        uses: actions-rs/cargo@v1
+        with:
+          command: update
       - name: Run cargo test
         uses: actions-rs/cargo@v1
         with:
