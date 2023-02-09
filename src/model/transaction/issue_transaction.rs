@@ -1,5 +1,5 @@
 use crate::error::{Error, Result};
-use crate::model::{AssetId, Base64String, ByteString};
+use crate::model::{Amount, AssetId, Base64String, ByteString};
 use crate::util::JsonDeserializer;
 use crate::waves_proto::IssueTransactionData;
 use serde_json::{Map, Value};
@@ -148,6 +148,19 @@ impl IssueTransaction {
     pub fn script(&self) -> Option<Base64String> {
         self.script.clone()
     }
+
+    pub fn min_fee(&self) -> Amount {
+        let value = if self.is_nft_issue() {
+            100_000
+        } else {
+            100_000_000
+        };
+        Amount::new(value, None)
+    }
+
+    pub fn is_nft_issue(&self) -> bool {
+        self.quantity == 1 && self.decimals == 0 && !self.is_reissuable
+    }
 }
 
 impl TryFrom<&IssueTransaction> for IssueTransactionData {
@@ -291,5 +304,31 @@ mod tests {
         });
         assert_eq!(expected_json, json);
         Ok(())
+    }
+
+    #[test]
+    fn test_min_fee_for_issue_transaction() {
+        let issue_transaction = IssueTransaction::new(
+            "name".into(),
+            "description".into(),
+            123,
+            8,
+            true,
+            None,
+        );
+
+        let nft_issue_transaction = IssueTransaction::new(
+            "nft".into(),
+            "description".into(),
+            1,
+            0,
+            false,
+            None,
+        );
+
+        assert_eq!(issue_transaction.min_fee().value(), 1_00_000_000);
+
+        assert!(nft_issue_transaction.is_nft_issue());
+        assert_eq!(nft_issue_transaction.min_fee().value(), 100_000);
     }
 }

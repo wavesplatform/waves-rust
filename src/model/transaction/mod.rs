@@ -18,6 +18,7 @@ mod sponsor_fee_transaction;
 mod transaction_info;
 mod transfer_transaction;
 mod update_asset_info_transaction;
+mod transaction_builder;
 
 pub use action::*;
 pub use burn_transaction::*;
@@ -39,3 +40,4 @@ pub use sponsor_fee_transaction::*;
 pub use transaction_info::*;
 pub use transfer_transaction::*;
 pub use update_asset_info_transaction::*;
+pub use transaction_builder::*;

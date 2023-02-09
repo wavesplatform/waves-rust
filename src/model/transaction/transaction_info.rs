@@ -359,6 +359,30 @@ impl TransactionData {
             Ethereum(_) => 1,
         }
     }
+
+    pub fn get_min_fee(&self) -> Result<Amount> {
+        let value = match self {
+            Genesis(_) => 0,
+            Payment(_) => 1,
+            Transfer(_) => 100_000,
+            Issue(tx) => tx.min_fee().value,
+            Reissue(_) => 100_000,
+            Burn(_) => 100_000,
+            Exchange(_) => 300_000,
+            Lease(_) => 100_000,
+            LeaseCancel(_) => 100_000,
+            CreateAlias(_) => 100_000,
+            MassTransfer(_) => 100_000,
+            Data(_) => 100_000,
+            SetScript(_) => 1_000_000,
+            SponsorFee(_) => 100_000,
+            SetAssetScript(_) => 100_000_000,
+            InvokeScript(_) => 500_000,
+            UpdateAssetInfo(_) => 100_000,
+            Ethereum(_) => Err(UnsupportedOperation("Min fee for Ethereum transaction is undefined".into()))?,
+        };
+        Ok(Amount::new(value, None))
+    }
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]
@@ -532,11 +556,11 @@ impl TryFrom<&Value> for Transaction {
                 value,
                 "recipient",
             )?)?
-            .chain_id(),
+                .chain_id(),
             _ => Address::from_string(&JsonDeserializer::safe_to_string_from_field(
                 value, "sender",
             )?)?
-            .chain_id(),
+                .chain_id(),
         };
 
         let version = match tx_type {
