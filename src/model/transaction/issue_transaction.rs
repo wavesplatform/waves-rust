@@ -308,25 +308,13 @@ mod tests {
 
     #[test]
     fn test_min_fee_for_issue_transaction() {
-        let issue_transaction = IssueTransaction::new(
-            "name".into(),
-            "description".into(),
-            123,
-            8,
-            true,
-            None,
-        );
+        let issue_transaction =
+            IssueTransaction::new("name".into(), "description".into(), 123, 8, true, None);
 
-        let nft_issue_transaction = IssueTransaction::new(
-            "nft".into(),
-            "description".into(),
-            1,
-            0,
-            false,
-            None,
-        );
+        let nft_issue_transaction =
+            IssueTransaction::new("nft".into(), "description".into(), 1, 0, false, None);
 
-        assert_eq!(issue_transaction.min_fee().value(), 1_00_000_000);
+        assert_eq!(issue_transaction.min_fee().value(), 100_000_000);
 
         assert!(nft_issue_transaction.is_nft_issue());
         assert_eq!(nft_issue_transaction.min_fee().value(), 100_000);

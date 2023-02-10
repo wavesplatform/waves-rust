@@ -11,7 +11,19 @@ use crate::model::TransactionData::{
     Burn, CreateAlias, Data, Ethereum, Exchange, Genesis, InvokeScript, Issue, Lease, LeaseCancel,
     MassTransfer, Payment, Reissue, SetAssetScript, SetScript, SponsorFee, UpdateAssetInfo,
 };
-use crate::model::{Address, AssetId, BurnTransaction, BurnTransactionInfo, ByteString, CreateAliasTransaction, CreateAliasTransactionInfo, DataTransactionInfo, EthereumTransaction, EthereumTransactionInfo, ExchangeTransaction, ExchangeTransactionInfo, GenesisTransaction, GenesisTransactionInfo, Id, InvokeScriptTransaction, InvokeScriptTransactionInfo, IssueTransaction, IssueTransactionInfo, LeaseCancelTransaction, LeaseCancelTransactionInfo, LeaseTransaction, LeaseTransactionInfo, MassTransferTransaction, MassTransferTransactionInfo, PaymentTransaction, PaymentTransactionInfo, Proof, ReissueTransaction, ReissueTransactionInfo, SetAssetScriptTransaction, SetAssetScriptTransactionInfo, SetScriptTransaction, SetScriptTransactionInfo, SignedTransactionBuilder, SponsorFeeTransaction, SponsorFeeTransactionInfo, TransferTransactionInfo, UpdateAssetInfoTransaction, UpdateAssetInfoTransactionInfo};
+use crate::model::{
+    Address, AssetId, BurnTransaction, BurnTransactionInfo, ByteString, CreateAliasTransaction,
+    CreateAliasTransactionInfo, DataTransactionInfo, EthereumTransaction, EthereumTransactionInfo,
+    ExchangeTransaction, ExchangeTransactionInfo, GenesisTransaction, GenesisTransactionInfo, Id,
+    InvokeScriptTransaction, InvokeScriptTransactionInfo, IssueTransaction, IssueTransactionInfo,
+    LeaseCancelTransaction, LeaseCancelTransactionInfo, LeaseTransaction, LeaseTransactionInfo,
+    MassTransferTransaction, MassTransferTransactionInfo, PaymentTransaction,
+    PaymentTransactionInfo, Proof, ReissueTransaction, ReissueTransactionInfo,
+    SetAssetScriptTransaction, SetAssetScriptTransactionInfo, SetScriptTransaction,
+    SetScriptTransactionInfo, SignedTransactionBuilder, SponsorFeeTransaction,
+    SponsorFeeTransactionInfo, TransferTransactionInfo, UpdateAssetInfoTransaction,
+    UpdateAssetInfoTransactionInfo,
+};
 use crate::util::{sign_tx, Base58, BinarySerializer, Hash, JsonDeserializer, JsonSerializer};
 
 #[derive(Clone, Eq, PartialEq, Debug)]
@@ -162,7 +174,7 @@ impl Transaction {
             chain_id,
         }
     }
-    
+
     pub fn with_defaults(tx_data: TransactionData, chain_id: u8) -> SignedTransactionBuilder {
         SignedTransactionBuilder::new(tx_data, chain_id)
     }
@@ -372,7 +384,9 @@ impl TransactionData {
             SetAssetScript(_) => 100_000_000,
             InvokeScript(_) => 500_000,
             UpdateAssetInfo(_) => 100_000,
-            Ethereum(_) => Err(UnsupportedOperation("Min fee for Ethereum transaction is undefined".into()))?,
+            Ethereum(_) => Err(UnsupportedOperation(
+                "Min fee for Ethereum transaction is undefined".into(),
+            ))?,
         };
         Ok(Amount::new(value, None))
     }
@@ -553,11 +567,11 @@ impl TryFrom<&Value> for Transaction {
                 value,
                 "recipient",
             )?)?
-                .chain_id(),
+            .chain_id(),
             _ => Address::from_string(&JsonDeserializer::safe_to_string_from_field(
                 value, "sender",
             )?)?
-                .chain_id(),
+            .chain_id(),
         };
 
         let version = match tx_type {

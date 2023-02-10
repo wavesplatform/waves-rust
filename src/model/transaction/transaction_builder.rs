@@ -1,5 +1,7 @@
-use crate::model::{Amount, ChainId, PrivateKey, PublicKey, SignedTransaction, Transaction, TransactionData};
 use crate::error::Result;
+use crate::model::{
+    Amount, PrivateKey, PublicKey, SignedTransaction, Transaction, TransactionData,
+};
 use crate::util::get_current_epoch_millis;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
@@ -48,22 +50,22 @@ impl SignedTransactionBuilder {
         let transaction_data = self.data.clone();
         let fee = match self.fee.clone() {
             Some(fee) => fee,
-            None => transaction_data.get_min_fee()?
+            None => transaction_data.get_min_fee()?,
         };
 
         let timestamp = match self.timestamp {
             Some(timestamp) => timestamp,
-            None => get_current_epoch_millis()
+            None => get_current_epoch_millis(),
         };
 
         let public_key = match self.public_key.clone() {
             Some(public_key) => public_key,
-            None => private_key.public_key()
+            None => private_key.public_key(),
         };
 
         let version = match self.version {
             Some(version) => version,
-            None => transaction_data.get_min_supported_version()
+            None => transaction_data.get_min_supported_version(),
         };
 
         Transaction::new(
@@ -73,26 +75,30 @@ impl SignedTransactionBuilder {
             public_key,
             version,
             self.chain_id,
-        ).sign(private_key)
+        )
+        .sign(private_key)
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::model::{Amount, BurnTransaction, ChainId, PrivateKey, PublicKey, SignedTransactionBuilder, TransactionData};
+    use crate::model::{
+        Amount, BurnTransaction, ChainId, PrivateKey, PublicKey, SignedTransactionBuilder,
+        TransactionData,
+    };
 
     #[test]
     fn test_builder_default_params() {
         let private_key = PrivateKey::from_seed("123", 0).unwrap();
 
-        let burn_transaction = BurnTransaction::new(
-            Amount::new(1, None)
-        );
+        let burn_transaction = BurnTransaction::new(Amount::new(1, None));
 
         let signed_tx = SignedTransactionBuilder::new(
             TransactionData::Burn(burn_transaction),
             ChainId::TESTNET.byte(),
-        ).build(&private_key).unwrap();
+        )
+        .build(&private_key)
+        .unwrap();
 
         assert_eq!(signed_tx.tx().fee().value(), 100_000);
         assert_eq!(signed_tx.tx().public_key(), private_key.public_key());
@@ -105,20 +111,18 @@ mod tests {
     fn test_builder_user_defined_params() {
         let private_key = PrivateKey::from_seed("123", 0).unwrap();
 
-        let burn_transaction = BurnTransaction::new(
-            Amount::new(1, None)
-        );
+        let burn_transaction = BurnTransaction::new(Amount::new(1, None));
         let pk = PublicKey::from_string("aaaaaaa").unwrap();
         let signed_tx = SignedTransactionBuilder::new(
             TransactionData::Burn(burn_transaction),
             ChainId::TESTNET.byte(),
         )
-            .fee(Amount::new(10, None))
-            .timestamp(100)
-            .public_key(pk.clone())
-            .version(4)
-            .build(&private_key).unwrap();
-
+        .fee(Amount::new(10, None))
+        .timestamp(100)
+        .public_key(pk.clone())
+        .version(4)
+        .build(&private_key)
+        .unwrap();
 
         assert_eq!(signed_tx.tx().fee().value(), 10);
         assert_eq!(signed_tx.tx().timestamp(), 100);

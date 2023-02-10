@@ -16,7 +16,10 @@ async fn transfer_with_defaults() -> Result<()> {
     let node = Node::from_profile(Profile::TESTNET);
 
     let private_key = PrivateKey::from_seed(SEED_PHRASE, 0)?;
-    println!("{:?}", private_key.public_key().address(ChainId::TESTNET.byte())?);
+    println!(
+        "{:?}",
+        private_key.public_key().address(ChainId::TESTNET.byte())?
+    );
 
     let transaction_data = TransferTransaction::new(
         Address::from_string("3Mq3pueXcAgLcuWvJzJ4ndRHfqYgjUZvL7q")?,
@@ -26,14 +29,13 @@ async fn transfer_with_defaults() -> Result<()> {
     let transaction = Transaction::with_defaults(
         TransactionData::Transfer(transaction_data),
         ChainId::TESTNET.byte(),
-    ).build(&private_key)?;
+    )
+    .build(&private_key)?;
 
     let tx_id = node.broadcast(&transaction).await?.tx().id()?;
-    node.wait_for_transaction(
-        &tx_id,
-        Duration::from_secs(1),
-        Duration::from_secs(60),
-    ).await.unwrap();
+    node.wait_for_transaction(&tx_id, Duration::from_secs(1), Duration::from_secs(60))
+        .await
+        .unwrap();
 
     let tx_info = node.get_transaction_info(&tx_id).await?;
 
@@ -59,7 +61,7 @@ async fn calculate_transaction_fee_test() -> Result<()> {
         3,
         ChainId::TESTNET.byte(),
     )
-        .sign(&private_key)?;
+    .sign(&private_key)?;
 
     let amount = node.calculate_transaction_fee(&signed_tx).await?;
     println!("{:#?}", amount);
