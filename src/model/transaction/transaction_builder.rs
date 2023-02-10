@@ -13,7 +13,7 @@ pub struct SignedTransactionBuilder {
 }
 
 impl SignedTransactionBuilder {
-    fn new(data: TransactionData, chain_id: u8) -> SignedTransactionBuilder {
+    pub fn new(data: TransactionData, chain_id: u8) -> SignedTransactionBuilder {
         SignedTransactionBuilder {
             data,
             fee: None,
@@ -24,27 +24,27 @@ impl SignedTransactionBuilder {
         }
     }
 
-    fn fee(&mut self, fee: Amount) -> &mut Self {
+    pub fn fee(&mut self, fee: Amount) -> &mut Self {
         self.fee = Some(fee);
         self
     }
 
-    fn timestamp(&mut self, timestamp: u64) -> &mut Self {
+    pub fn timestamp(&mut self, timestamp: u64) -> &mut Self {
         self.timestamp = Some(timestamp);
         self
     }
 
-    fn public_key(&mut self, public_key: PublicKey) -> &mut Self {
+    pub fn public_key(&mut self, public_key: PublicKey) -> &mut Self {
         self.public_key = Some(public_key);
         self
     }
 
-    fn version(&mut self, version: u8) -> &mut Self {
+    pub fn version(&mut self, version: u8) -> &mut Self {
         self.version = Some(version);
         self
     }
 
-    fn sign_with(&self, private_key: &PrivateKey) -> Result<SignedTransaction> {
+    pub fn build(&self, private_key: &PrivateKey) -> Result<SignedTransaction> {
         let transaction_data = self.data.clone();
         let fee = match self.fee.clone() {
             Some(fee) => fee,
@@ -92,7 +92,7 @@ mod tests {
         let signed_tx = SignedTransactionBuilder::new(
             TransactionData::Burn(burn_transaction),
             ChainId::TESTNET.byte(),
-        ).sign_with(&private_key).unwrap();
+        ).build(&private_key).unwrap();
 
         assert_eq!(signed_tx.tx().fee().value(), 100_000);
         assert_eq!(signed_tx.tx().public_key(), private_key.public_key());
@@ -117,7 +117,7 @@ mod tests {
             .timestamp(100)
             .public_key(pk.clone())
             .version(4)
-            .sign_with(&private_key).unwrap();
+            .build(&private_key).unwrap();
 
 
         assert_eq!(signed_tx.tx().fee().value(), 10);

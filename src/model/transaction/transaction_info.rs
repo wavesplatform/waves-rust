@@ -11,18 +11,7 @@ use crate::model::TransactionData::{
     Burn, CreateAlias, Data, Ethereum, Exchange, Genesis, InvokeScript, Issue, Lease, LeaseCancel,
     MassTransfer, Payment, Reissue, SetAssetScript, SetScript, SponsorFee, UpdateAssetInfo,
 };
-use crate::model::{
-    Address, AssetId, BurnTransaction, BurnTransactionInfo, ByteString, CreateAliasTransaction,
-    CreateAliasTransactionInfo, DataTransactionInfo, EthereumTransaction, EthereumTransactionInfo,
-    ExchangeTransaction, ExchangeTransactionInfo, GenesisTransaction, GenesisTransactionInfo, Id,
-    InvokeScriptTransaction, InvokeScriptTransactionInfo, IssueTransaction, IssueTransactionInfo,
-    LeaseCancelTransaction, LeaseCancelTransactionInfo, LeaseTransaction, LeaseTransactionInfo,
-    MassTransferTransaction, MassTransferTransactionInfo, PaymentTransaction,
-    PaymentTransactionInfo, Proof, ReissueTransaction, ReissueTransactionInfo,
-    SetAssetScriptTransaction, SetAssetScriptTransactionInfo, SetScriptTransaction,
-    SetScriptTransactionInfo, SponsorFeeTransaction, SponsorFeeTransactionInfo,
-    TransferTransactionInfo, UpdateAssetInfoTransaction, UpdateAssetInfoTransactionInfo,
-};
+use crate::model::{Address, AssetId, BurnTransaction, BurnTransactionInfo, ByteString, CreateAliasTransaction, CreateAliasTransactionInfo, DataTransactionInfo, EthereumTransaction, EthereumTransactionInfo, ExchangeTransaction, ExchangeTransactionInfo, GenesisTransaction, GenesisTransactionInfo, Id, InvokeScriptTransaction, InvokeScriptTransactionInfo, IssueTransaction, IssueTransactionInfo, LeaseCancelTransaction, LeaseCancelTransactionInfo, LeaseTransaction, LeaseTransactionInfo, MassTransferTransaction, MassTransferTransactionInfo, PaymentTransaction, PaymentTransactionInfo, Proof, ReissueTransaction, ReissueTransactionInfo, SetAssetScriptTransaction, SetAssetScriptTransactionInfo, SetScriptTransaction, SetScriptTransactionInfo, SignedTransactionBuilder, SponsorFeeTransaction, SponsorFeeTransactionInfo, TransferTransactionInfo, UpdateAssetInfoTransaction, UpdateAssetInfoTransactionInfo};
 use crate::util::{sign_tx, Base58, BinarySerializer, Hash, JsonDeserializer, JsonSerializer};
 
 #[derive(Clone, Eq, PartialEq, Debug)]
@@ -172,6 +161,10 @@ impl Transaction {
             version,
             chain_id,
         }
+    }
+    
+    pub fn with_defaults(tx_data: TransactionData, chain_id: u8) -> SignedTransactionBuilder {
+        SignedTransactionBuilder::new(tx_data, chain_id)
     }
 
     pub fn data(&self) -> &TransactionData {
@@ -397,6 +390,10 @@ impl SignedTransaction {
             transaction,
             proofs,
         }
+    }
+
+    pub fn with_defaults(tx_data: TransactionData, chain_id: u8) -> SignedTransactionBuilder {
+        SignedTransactionBuilder::new(tx_data, chain_id)
     }
 
     pub fn tx(&self) -> &Transaction {
