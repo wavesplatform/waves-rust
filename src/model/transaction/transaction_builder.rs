@@ -70,8 +70,7 @@ impl TransactionBuilder {
 #[cfg(test)]
 mod tests {
     use crate::model::{
-        Amount, BurnTransaction, ChainId, PrivateKey, PublicKey, TransactionBuilder,
-        TransactionData,
+        Amount, BurnTransaction, ChainId, PrivateKey, TransactionBuilder, TransactionData,
     };
 
     #[test]

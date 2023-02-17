@@ -31,8 +31,8 @@ async fn transfer_with_defaults() -> Result<()> {
         ChainId::TESTNET.byte(),
         &TransactionData::Transfer(transaction_data),
     )
-        .build()?
-        .sign(&private_key)?;
+    .build()?
+    .sign(&private_key)?;
 
     let tx_id = node.broadcast(&transaction).await?.tx().id()?;
     node.wait_for_transaction(&tx_id, Duration::from_secs(1), Duration::from_secs(60))
@@ -63,7 +63,7 @@ async fn calculate_transaction_fee_test() -> Result<()> {
         3,
         ChainId::TESTNET.byte(),
     )
-        .sign(&private_key)?;
+    .sign(&private_key)?;
 
     let amount = node.calculate_transaction_fee(&signed_tx).await?;
     println!("{:#?}", amount);
