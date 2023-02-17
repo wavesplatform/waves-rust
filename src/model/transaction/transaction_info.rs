@@ -175,8 +175,8 @@ impl Transaction {
         }
     }
 
-    pub fn with_defaults(tx_data: TransactionData, chain_id: u8) -> TransactionBuilder {
-        TransactionBuilder::new(tx_data, chain_id)
+    pub fn with_defaults(public_key: &PublicKey, chain_id: u8, tx_data: &TransactionData) -> TransactionBuilder {
+        TransactionBuilder::new(public_key, chain_id, tx_data)
     }
 
     pub fn data(&self) -> &TransactionData {
@@ -406,10 +406,6 @@ impl SignedTransaction {
         }
     }
 
-    pub fn with_defaults(tx_data: TransactionData, chain_id: u8) -> TransactionBuilder {
-        TransactionBuilder::new(tx_data, chain_id)
-    }
-
     pub fn tx(&self) -> &Transaction {
         &self.transaction
     }
@@ -567,11 +563,11 @@ impl TryFrom<&Value> for Transaction {
                 value,
                 "recipient",
             )?)?
-            .chain_id(),
+                .chain_id(),
             _ => Address::from_string(&JsonDeserializer::safe_to_string_from_field(
                 value, "sender",
             )?)?
-            .chain_id(),
+                .chain_id(),
         };
 
         let version = match tx_type {
