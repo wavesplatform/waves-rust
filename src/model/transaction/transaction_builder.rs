@@ -5,22 +5,22 @@ use crate::model::{
 use crate::util::get_current_epoch_millis;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub struct SignedTransactionBuilder {
+pub struct TransactionBuilder {
     data: TransactionData,
     fee: Option<Amount>,
     timestamp: Option<u64>,
-    public_key: Option<PublicKey>,
+    public_key: PublicKey,
     version: Option<u8>,
     chain_id: u8,
 }
 
-impl SignedTransactionBuilder {
-    pub fn new(data: TransactionData, chain_id: u8) -> SignedTransactionBuilder {
-        SignedTransactionBuilder {
-            data,
+impl TransactionBuilder {
+    pub fn new(public_key: &PublicKey, chain_id: u8, data: &TransactionData) -> TransactionBuilder {
+        TransactionBuilder {
+            data: data.clone(),
             fee: None,
             timestamp: None,
-            public_key: None,
+            public_key: public_key.clone(),
             version: None,
             chain_id,
         }
@@ -36,17 +36,12 @@ impl SignedTransactionBuilder {
         self
     }
 
-    pub fn public_key(&mut self, public_key: PublicKey) -> &mut Self {
-        self.public_key = Some(public_key);
-        self
-    }
-
     pub fn version(&mut self, version: u8) -> &mut Self {
         self.version = Some(version);
         self
     }
 
-    pub fn build(&self, private_key: &PrivateKey) -> Result<SignedTransaction> {
+    pub fn build(&self) -> Result<Transaction> {
         let transaction_data = self.data.clone();
         let fee = match self.fee.clone() {
             Some(fee) => fee,
@@ -58,32 +53,26 @@ impl SignedTransactionBuilder {
             None => get_current_epoch_millis(),
         };
 
-        let public_key = match self.public_key.clone() {
-            Some(public_key) => public_key,
-            None => private_key.public_key(),
-        };
-
         let version = match self.version {
             Some(version) => version,
             None => transaction_data.get_min_supported_version(),
         };
 
-        Transaction::new(
+        Ok(Transaction::new(
             transaction_data,
             fee,
             timestamp,
-            public_key,
+            self.public_key.clone(),
             version,
             self.chain_id,
-        )
-        .sign(private_key)
+        ))
     }
 }
 
 #[cfg(test)]
 mod tests {
     use crate::model::{
-        Amount, BurnTransaction, ChainId, PrivateKey, PublicKey, SignedTransactionBuilder,
+        Amount, BurnTransaction, ChainId, PrivateKey, PublicKey, TransactionBuilder,
         TransactionData,
     };
 
@@ -93,12 +82,15 @@ mod tests {
 
         let burn_transaction = BurnTransaction::new(Amount::new(1, None));
 
-        let signed_tx = SignedTransactionBuilder::new(
-            TransactionData::Burn(burn_transaction),
+        let signed_tx = TransactionBuilder::new(
+            &private_key.public_key(),
             ChainId::TESTNET.byte(),
+            &TransactionData::Burn(burn_transaction),
         )
-        .build(&private_key)
-        .unwrap();
+            .build()
+            .unwrap()
+            .sign(&private_key)
+            .unwrap();
 
         assert_eq!(signed_tx.tx().fee().value(), 100_000);
         assert_eq!(signed_tx.tx().public_key(), private_key.public_key());
@@ -113,16 +105,18 @@ mod tests {
 
         let burn_transaction = BurnTransaction::new(Amount::new(1, None));
         let pk = PublicKey::from_string("aaaaaaa").unwrap();
-        let signed_tx = SignedTransactionBuilder::new(
-            TransactionData::Burn(burn_transaction),
+        let signed_tx = TransactionBuilder::new(
+            &private_key.public_key(),
             ChainId::TESTNET.byte(),
+            &TransactionData::Burn(burn_transaction),
         )
-        .fee(Amount::new(10, None))
-        .timestamp(100)
-        .public_key(pk.clone())
-        .version(4)
-        .build(&private_key)
-        .unwrap();
+            .fee(Amount::new(10, None))
+            .timestamp(100)
+            .version(4)
+            .build()
+            .unwrap()
+            .sign(&private_key)
+            .unwrap();
 
         assert_eq!(signed_tx.tx().fee().value(), 10);
         assert_eq!(signed_tx.tx().timestamp(), 100);

@@ -20,7 +20,7 @@ use crate::model::{
     MassTransferTransaction, MassTransferTransactionInfo, PaymentTransaction,
     PaymentTransactionInfo, Proof, ReissueTransaction, ReissueTransactionInfo,
     SetAssetScriptTransaction, SetAssetScriptTransactionInfo, SetScriptTransaction,
-    SetScriptTransactionInfo, SignedTransactionBuilder, SponsorFeeTransaction,
+    SetScriptTransactionInfo, TransactionBuilder, SponsorFeeTransaction,
     SponsorFeeTransactionInfo, TransferTransactionInfo, UpdateAssetInfoTransaction,
     UpdateAssetInfoTransactionInfo,
 };
@@ -175,8 +175,8 @@ impl Transaction {
         }
     }
 
-    pub fn with_defaults(tx_data: TransactionData, chain_id: u8) -> SignedTransactionBuilder {
-        SignedTransactionBuilder::new(tx_data, chain_id)
+    pub fn with_defaults(tx_data: TransactionData, chain_id: u8) -> TransactionBuilder {
+        TransactionBuilder::new(tx_data, chain_id)
     }
 
     pub fn data(&self) -> &TransactionData {
@@ -406,8 +406,8 @@ impl SignedTransaction {
         }
     }
 
-    pub fn with_defaults(tx_data: TransactionData, chain_id: u8) -> SignedTransactionBuilder {
-        SignedTransactionBuilder::new(tx_data, chain_id)
+    pub fn with_defaults(tx_data: TransactionData, chain_id: u8) -> TransactionBuilder {
+        TransactionBuilder::new(tx_data, chain_id)
     }
 
     pub fn tx(&self) -> &Transaction {
