@@ -20,9 +20,8 @@ use crate::model::{
     MassTransferTransaction, MassTransferTransactionInfo, PaymentTransaction,
     PaymentTransactionInfo, Proof, ReissueTransaction, ReissueTransactionInfo,
     SetAssetScriptTransaction, SetAssetScriptTransactionInfo, SetScriptTransaction,
-    SetScriptTransactionInfo, TransactionBuilder, SponsorFeeTransaction,
-    SponsorFeeTransactionInfo, TransferTransactionInfo, UpdateAssetInfoTransaction,
-    UpdateAssetInfoTransactionInfo,
+    SetScriptTransactionInfo, SponsorFeeTransaction, SponsorFeeTransactionInfo, TransactionBuilder,
+    TransferTransactionInfo, UpdateAssetInfoTransaction, UpdateAssetInfoTransactionInfo,
 };
 use crate::util::{sign_tx, Base58, BinarySerializer, Hash, JsonDeserializer, JsonSerializer};
 
@@ -175,7 +174,11 @@ impl Transaction {
         }
     }
 
-    pub fn with_defaults(public_key: &PublicKey, chain_id: u8, tx_data: &TransactionData) -> TransactionBuilder {
+    pub fn with_defaults(
+        public_key: &PublicKey,
+        chain_id: u8,
+        tx_data: &TransactionData,
+    ) -> TransactionBuilder {
         TransactionBuilder::new(public_key, chain_id, tx_data)
     }
 
@@ -563,11 +566,11 @@ impl TryFrom<&Value> for Transaction {
                 value,
                 "recipient",
             )?)?
-                .chain_id(),
+            .chain_id(),
             _ => Address::from_string(&JsonDeserializer::safe_to_string_from_field(
                 value, "sender",
             )?)?
-                .chain_id(),
+            .chain_id(),
         };
 
         let version = match tx_type {

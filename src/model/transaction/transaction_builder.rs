@@ -1,7 +1,5 @@
 use crate::error::Result;
-use crate::model::{
-    Amount, PrivateKey, PublicKey, SignedTransaction, Transaction, TransactionData,
-};
+use crate::model::{Amount, PublicKey, Transaction, TransactionData};
 use crate::util::get_current_epoch_millis;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
@@ -87,10 +85,10 @@ mod tests {
             ChainId::TESTNET.byte(),
             &TransactionData::Burn(burn_transaction),
         )
-            .build()
-            .unwrap()
-            .sign(&private_key)
-            .unwrap();
+        .build()
+        .unwrap()
+        .sign(&private_key)
+        .unwrap();
 
         assert_eq!(signed_tx.tx().fee().value(), 100_000);
         assert_eq!(signed_tx.tx().public_key(), private_key.public_key());
@@ -110,13 +108,13 @@ mod tests {
             ChainId::TESTNET.byte(),
             &TransactionData::Burn(burn_transaction),
         )
-            .fee(Amount::new(10, None))
-            .timestamp(100)
-            .version(4)
-            .build()
-            .unwrap()
-            .sign(&private_key)
-            .unwrap();
+        .fee(Amount::new(10, None))
+        .timestamp(100)
+        .version(4)
+        .build()
+        .unwrap()
+        .sign(&private_key)
+        .unwrap();
 
         assert_eq!(signed_tx.tx().fee().value(), 10);
         assert_eq!(signed_tx.tx().timestamp(), 100);
