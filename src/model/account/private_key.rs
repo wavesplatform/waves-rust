@@ -6,6 +6,7 @@ use crate::util::{Base58, Crypto};
 use curve25519_dalek::montgomery::MontgomeryPoint;
 use ed25519_dalek::{PublicKey as EdPublicKey, Signature, Verifier};
 
+#[derive(Clone, Eq, PartialEq, Hash)]
 pub struct PrivateKey {
     bytes: [u8; 32],
     public_key: PublicKey,

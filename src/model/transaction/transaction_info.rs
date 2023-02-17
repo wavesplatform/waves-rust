@@ -20,7 +20,7 @@ use crate::model::{
     MassTransferTransaction, MassTransferTransactionInfo, PaymentTransaction,
     PaymentTransactionInfo, Proof, ReissueTransaction, ReissueTransactionInfo,
     SetAssetScriptTransaction, SetAssetScriptTransactionInfo, SetScriptTransaction,
-    SetScriptTransactionInfo, SponsorFeeTransaction, SponsorFeeTransactionInfo,
+    SetScriptTransactionInfo, SponsorFeeTransaction, SponsorFeeTransactionInfo, TransactionBuilder,
     TransferTransactionInfo, UpdateAssetInfoTransaction, UpdateAssetInfoTransactionInfo,
 };
 use crate::util::{sign_tx, Base58, BinarySerializer, Hash, JsonDeserializer, JsonSerializer};
@@ -172,6 +172,14 @@ impl Transaction {
             version,
             chain_id,
         }
+    }
+
+    pub fn with_defaults(
+        public_key: &PublicKey,
+        chain_id: u8,
+        tx_data: &TransactionData,
+    ) -> TransactionBuilder {
+        TransactionBuilder::new(public_key, chain_id, tx_data)
     }
 
     pub fn data(&self) -> &TransactionData {
@@ -358,6 +366,32 @@ impl TransactionData {
             UpdateAssetInfo(_) => 1,
             Ethereum(_) => 1,
         }
+    }
+
+    pub fn get_min_fee(&self) -> Result<Amount> {
+        let value = match self {
+            Genesis(_) => 0,
+            Payment(_) => 1,
+            Transfer(_) => 100_000,
+            Issue(tx) => tx.min_fee().value,
+            Reissue(_) => 100_000,
+            Burn(_) => 100_000,
+            Exchange(_) => 300_000,
+            Lease(_) => 100_000,
+            LeaseCancel(_) => 100_000,
+            CreateAlias(_) => 100_000,
+            MassTransfer(_) => 100_000,
+            Data(_) => 100_000,
+            SetScript(_) => 1_000_000,
+            SponsorFee(_) => 100_000,
+            SetAssetScript(_) => 100_000_000,
+            InvokeScript(_) => 500_000,
+            UpdateAssetInfo(_) => 100_000,
+            Ethereum(_) => Err(UnsupportedOperation(
+                "Min fee for Ethereum transaction is undefined".into(),
+            ))?,
+        };
+        Ok(Amount::new(value, None))
     }
 }
 
