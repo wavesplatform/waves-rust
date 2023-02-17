@@ -102,7 +102,6 @@ mod tests {
         let private_key = PrivateKey::from_seed("123", 0).unwrap();
 
         let burn_transaction = BurnTransaction::new(Amount::new(1, None));
-        let pk = PublicKey::from_string("aaaaaaa").unwrap();
         let signed_tx = TransactionBuilder::new(
             &private_key.public_key(),
             ChainId::TESTNET.byte(),
@@ -118,7 +117,7 @@ mod tests {
 
         assert_eq!(signed_tx.tx().fee().value(), 10);
         assert_eq!(signed_tx.tx().timestamp(), 100);
-        assert_eq!(signed_tx.tx().public_key(), pk);
+        assert_eq!(signed_tx.tx().public_key(), private_key.public_key());
         assert_eq!(signed_tx.tx().tx_type(), 6);
         assert_eq!(signed_tx.tx().version(), 4);
         assert_eq!(signed_tx.tx().chain_id(), ChainId::TESTNET.byte())
