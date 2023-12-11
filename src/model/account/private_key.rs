@@ -17,7 +17,9 @@ impl std::str::FromStr for PrivateKey {
 
     fn from_str(base58string: &str) -> Result<PrivateKey> {
         let bytes = Base58::decode(base58string)?;
-        let bytes_array: [u8; 32] = bytes.try_into().map_err(|e| Error::VectorToArrayConversionError(e))?;
+        let bytes_array: [u8; 32] = bytes
+            .try_into()
+            .map_err(|e| Error::VectorToArrayConversionError(e))?;
         PrivateKey::from_bytes(bytes_array)
     }
 }
