@@ -111,7 +111,8 @@ mod tests {
     #[test]
     fn test_address_std_from_str() {
         let expected_address = "3MtQQX9NwYH5URGGcS2e6ptEgV7wTFesaRW";
-        let address = Address::from_str(expected_address).expect("failed to get address from string");
+        let address =
+            Address::from_str(expected_address).expect("failed to get address from string");
         assert_eq!(expected_address, address.encoded())
     }
 
