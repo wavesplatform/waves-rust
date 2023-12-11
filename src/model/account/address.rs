@@ -17,6 +17,16 @@ impl fmt::Debug for Address {
     }
 }
 
+impl std::str::FromStr for Address {
+    type Err = Error;
+
+    fn from_str(base58string: &str) -> Result<Address> {
+        Ok(Address {
+            bytes: Base58::decode(base58string)?,
+        })
+    }
+}
+
 impl Address {
     pub fn from_public_key(chain_id: u8, public_key: &PublicKey) -> Result<Address> {
         Ok(Address {
@@ -72,6 +82,7 @@ mod tests {
     use crate::model::{ByteString, ChainId};
     use serde_json::Value;
     use std::borrow::Borrow;
+    use std::str::FromStr;
 
     #[test]
     fn test_address_from_public_key() {
@@ -94,6 +105,14 @@ mod tests {
         let expected_address = "3MtQQX9NwYH5URGGcS2e6ptEgV7wTFesaRW";
         let address =
             Address::from_string(expected_address).expect("failed to get address from string");
+        assert_eq!(expected_address, address.encoded())
+    }
+
+    #[test]
+    fn test_address_std_from_str() {
+        let expected_address = "3MtQQX9NwYH5URGGcS2e6ptEgV7wTFesaRW";
+        let address =
+            Address::from_str(expected_address).expect("failed to get address from string");
         assert_eq!(expected_address, address.encoded())
     }
 

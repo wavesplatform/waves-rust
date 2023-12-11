@@ -16,6 +16,15 @@ impl fmt::Debug for PublicKey {
     }
 }
 
+impl std::str::FromStr for PublicKey {
+    type Err = Error;
+
+    fn from_str(base58string: &str) -> Result<PublicKey> {
+        let bytes = Base58::decode(base58string)?;
+        Ok(PublicKey { bytes })
+    }
+}
+
 impl PublicKey {
     pub fn from_bytes(bytes: &[u8]) -> Result<PublicKey> {
         if bytes.len() != 32 {
@@ -71,6 +80,8 @@ impl TryFrom<String> for PublicKey {
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+
     use crate::error::Error::InvalidBytesLength;
     use crate::error::Result;
     use crate::model::account::{PrivateKey, PublicKey};
@@ -132,6 +143,14 @@ mod tests {
     fn test_public_key_from_string() -> Result<()> {
         let expected_string = "8cj6YzvQPhSHGvnjupNTW8zrADTT8CMAAd2xTuej84gB".to_owned();
         let public_key: PublicKey = expected_string.clone().try_into()?;
+        assert_eq!(expected_string, public_key.encoded());
+        Ok(())
+    }
+
+    #[test]
+    fn test_public_key_std_from_str() -> Result<()> {
+        let expected_string = "8cj6YzvQPhSHGvnjupNTW8zrADTT8CMAAd2xTuej84gB".to_owned();
+        let public_key = PublicKey::from_str(&expected_string)?;
         assert_eq!(expected_string, public_key.encoded());
         Ok(())
     }

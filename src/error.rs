@@ -43,6 +43,8 @@ pub enum Error {
     HexError(#[from] FromHexError),
     #[error("unsupported operation: {0}")]
     UnsupportedOperation(String),
+    #[error("failed to convert vector {0:?} to array")]
+    VectorToArrayConversionError(Vec<u8>),
     #[error("alias must be {min_length:?} to {max_length:?} length of {alphabet:?} and may have a prefix \"{max_length:?}{chain_id:?}:\"")]
     InvalidAliasName {
         min_length: u8,

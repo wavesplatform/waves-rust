@@ -12,6 +12,18 @@ pub struct PrivateKey {
     public_key: PublicKey,
 }
 
+impl std::str::FromStr for PrivateKey {
+    type Err = Error;
+
+    fn from_str(base58string: &str) -> Result<PrivateKey> {
+        let bytes = Base58::decode(base58string)?;
+        let bytes_array: [u8; 32] = bytes
+            .try_into()
+            .map_err(Error::VectorToArrayConversionError)?;
+        PrivateKey::from_bytes(bytes_array)
+    }
+}
+
 impl PrivateKey {
     pub fn from_seed(seed_phrase: &str, nonce: u8) -> Result<Self> {
         let hash_seed = Crypto::get_account_seed(seed_phrase.as_bytes(), nonce)?;
@@ -79,6 +91,8 @@ impl PrivateKey {
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+
     use crate::error::Error::InvalidBytesLength;
     use crate::error::Result;
     use crate::model::account::PrivateKey;
@@ -147,6 +161,15 @@ mod tests {
     fn test_private_key_from_bytes() -> Result<()> {
         let private_key = PrivateKey::from_bytes([0; 32])?;
         assert_eq!(private_key.bytes(), [0_u8; 32]);
+        Ok(())
+    }
+
+    #[test]
+    fn test_private_key_std_from_str() -> Result<()> {
+        let seed_phrase = "blame vacant regret company chase trip grant funny brisk innocent";
+        let private_key_from_seed = PrivateKey::from_seed(seed_phrase, 0)?;
+        let private_key_from_str = PrivateKey::from_str(&private_key_from_seed.encoded())?;
+        assert_eq!(private_key_from_seed.bytes(), private_key_from_str.bytes());
         Ok(())
     }
 }
