@@ -1,6 +1,6 @@
 [package]
 name = "waves-rust"
-version = "0.2.5"
+version = "0.2.6"
 edition = "2021"
 rust-version = "1.56"
 authors = ["Waves Labs <admin@waveslabs.com>", "Alexandr Devyatkin <novealx@gmail.com>"]
