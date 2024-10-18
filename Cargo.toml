@@ -16,7 +16,6 @@ keywords = [
     "cryptography",
 ]
 categories = [
-    "blockchain",
     "cryptography"
 ]
 repository = "https://github.com/wavesplatform/waves-rust"
