@@ -228,7 +228,7 @@ fn map_args(value: &Value) -> Result<Vec<Arg>> {
             "binary" | "ByteVector" => Arg::Binary(Base64String::from_string(
                 &JsonDeserializer::safe_to_string_from_field(&arg, "value")?,
             )?),
-            "list" | "List" => {
+            "list" | "List" | "Array" => {
                 let result = map_args(&arg["value"])?;
                 Arg::List(result)
             }
