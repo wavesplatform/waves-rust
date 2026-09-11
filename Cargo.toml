@@ -47,7 +47,7 @@ tonic = "0.8.0"
 
 # util
 thiserror = "1.0.32"
-rand = "0.8.5"
+rand = "0.8.6"
 
 [lib]
 doctest = false
