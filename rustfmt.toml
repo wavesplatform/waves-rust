@@ -1,0 +1,2 @@
+# Keep existing formatting independent of the language edition.
+style_edition = "2021"

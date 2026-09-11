@@ -71,7 +71,7 @@ impl Crypto {
 
         let mut rand = rand::thread_rng();
         let mut rndbuf: Vec<u8> = vec![0; 64];
-        (0..63).for_each(|i| rndbuf[i] = rand.gen::<u8>());
+        (0..63).for_each(|i| rndbuf[i] = rand.r#gen::<u8>());
 
         hash.update(&rndbuf);
 

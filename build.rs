@@ -1,6 +1,8 @@
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    std::env::set_var("PROTOC", protobuf_src::protoc());
-    tonic_build::configure().compile_protos(
+    let mut config = tonic_build::Config::new();
+    config.protoc_executable(protobuf_src::protoc());
+    tonic_build::configure().compile_protos_with_config(
+        config,
         &[
             "proto/waves/node/grpc/accounts_api.proto",
             "proto/waves/node/grpc/assets_api.proto",
