@@ -189,11 +189,9 @@ mod tests {
                 2,
                 ChainId::TESTNET.byte(),
             ),
-            vec![
-                Proof::new(Base58::decode(
-                    "4nDUCnVw9j9D5bTBSLfFCHR9CtvS32mSdxctccChRAohfLwz3ng3ps5ffUiy4NtRmXG7vDHRMW57ABxzkMW64tzC"
-                )?)
-            ],
+            vec![Proof::new(Base58::decode(
+                "4nDUCnVw9j9D5bTBSLfFCHR9CtvS32mSdxctccChRAohfLwz3ng3ps5ffUiy4NtRmXG7vDHRMW57ABxzkMW64tzC",
+            )?)],
         );
 
         let json = &JsonSerializer::serialize_signed_tx(&signed_transaction)?;

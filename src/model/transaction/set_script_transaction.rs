@@ -89,7 +89,7 @@ mod tests {
     use crate::error::Result;
     use crate::model::{Base64String, ByteString, SetScriptTransaction, SetScriptTransactionInfo};
     use crate::waves_proto::SetScriptTransactionData;
-    use serde_json::{json, Map, Value};
+    use serde_json::{Map, Value, json};
     use std::borrow::Borrow;
     use std::fs;
 

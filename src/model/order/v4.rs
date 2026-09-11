@@ -1,7 +1,7 @@
 use crate::error::Result;
 use crate::{
     model::{Amount, Id, PrivateKey, Proof, PublicKey},
-    util::{sign_order, BinarySerializer, Hash},
+    util::{BinarySerializer, Hash, sign_order},
 };
 
 use super::{Order, OrderType, PriceMode, SignedOrder};

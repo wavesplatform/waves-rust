@@ -1,7 +1,7 @@
 use crate::error::{Error, Result};
 
-use crate::model::data_entry::DataEntry;
 use crate::model::AssetId;
+use crate::model::data_entry::DataEntry;
 
 use serde_json::Value;
 

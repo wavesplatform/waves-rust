@@ -186,7 +186,7 @@ impl TryFrom<&Value> for ScriptDetails {
                 return Ok(ScriptDetails {
                     script: Base64String::empty(),
                     complexity: 0,
-                })
+                });
             }
         };
         let complexity = JsonDeserializer::safe_to_int_from_field(value, "scriptComplexity")?;
@@ -202,7 +202,7 @@ mod tests {
     use crate::error::Result;
     use crate::model::asset::asset_details::{AssetDetails, ScriptDetails};
     use crate::model::{Base64String, ByteString};
-    use serde_json::{json, Value};
+    use serde_json::{Value, json};
     use std::borrow::Borrow;
     use std::fs;
 

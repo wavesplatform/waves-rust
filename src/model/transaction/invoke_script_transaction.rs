@@ -3,7 +3,7 @@ use crate::error::{Error, Result};
 use crate::model::{Address, Amount, AssetId, Base64String, ByteString, StateChanges};
 use crate::util::{ByteWriter, JsonDeserializer};
 use crate::waves_proto::InvokeScriptTransactionData;
-use crate::waves_proto::{recipient, Amount as ProtoAmount, Recipient};
+use crate::waves_proto::{Amount as ProtoAmount, Recipient, recipient};
 use serde_json::{Map, Number, Value};
 use std::borrow::Borrow;
 
@@ -317,9 +317,9 @@ mod tests {
         InvokeScriptTransactionInfo, LeaseStatus,
     };
     use crate::util::ByteWriter;
-    use crate::waves_proto::recipient::Recipient;
     use crate::waves_proto::InvokeScriptTransactionData;
-    use serde_json::{json, Map, Value};
+    use crate::waves_proto::recipient::Recipient;
+    use serde_json::{Map, Value, json};
     use std::borrow::Borrow;
     use std::fs;
 

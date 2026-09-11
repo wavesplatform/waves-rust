@@ -3,14 +3,14 @@ use serde_json::Value;
 
 use crate::error::Error::{UnsupportedOperation, WrongTransactionType};
 use crate::error::{Error, Result};
-use crate::model::account::{PrivateKey, PublicKey};
-use crate::model::transaction::data_transaction::DataTransaction;
-use crate::model::transaction::TransactionData::Transfer;
-use crate::model::transaction::TransferTransaction;
 use crate::model::TransactionData::{
     Burn, CreateAlias, Data, Ethereum, Exchange, Genesis, InvokeScript, Issue, Lease, LeaseCancel,
     MassTransfer, Payment, Reissue, SetAssetScript, SetScript, SponsorFee, UpdateAssetInfo,
 };
+use crate::model::account::{PrivateKey, PublicKey};
+use crate::model::transaction::TransactionData::Transfer;
+use crate::model::transaction::TransferTransaction;
+use crate::model::transaction::data_transaction::DataTransaction;
 use crate::model::{
     Address, AssetId, BurnTransaction, BurnTransactionInfo, ByteString, CreateAliasTransaction,
     CreateAliasTransactionInfo, DataTransactionInfo, EthereumTransaction, EthereumTransactionInfo,
@@ -23,7 +23,7 @@ use crate::model::{
     SetScriptTransactionInfo, SponsorFeeTransaction, SponsorFeeTransactionInfo, TransactionBuilder,
     TransferTransactionInfo, UpdateAssetInfoTransaction, UpdateAssetInfoTransactionInfo,
 };
-use crate::util::{sign_tx, Base58, BinarySerializer, Hash, JsonDeserializer, JsonSerializer};
+use crate::util::{Base58, BinarySerializer, Hash, JsonDeserializer, JsonSerializer, sign_tx};
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct TransactionInfoResponse {

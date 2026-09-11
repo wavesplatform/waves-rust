@@ -2,7 +2,7 @@ use crate::error::Result;
 use crate::util::BinarySerializer;
 use crate::{
     model::{Amount, Id, PrivateKey, Proof, PublicKey},
-    util::{sign_order, Hash},
+    util::{Hash, sign_order},
 };
 
 use super::{Order, OrderType, SignedOrder};

@@ -1,7 +1,7 @@
 use crate::error::{Error, Result};
 use crate::model::{Address, Amount, AssetId, Base58String, ByteString};
 use crate::util::{Base58, JsonDeserializer};
-use crate::waves_proto::{recipient, Amount as ProtoAmount, Recipient, TransferTransactionData};
+use crate::waves_proto::{Amount as ProtoAmount, Recipient, TransferTransactionData, recipient};
 use serde_json::{Map, Value};
 
 const TYPE: u8 = 4;
@@ -151,9 +151,9 @@ impl TryFrom<&TransferTransaction> for Map<String, Value> {
 mod tests {
     use crate::error::Result;
     use crate::model::{Address, Amount, AssetId, Base58String, ByteString, TransferTransaction};
-    use crate::waves_proto::recipient::Recipient;
     use crate::waves_proto::TransferTransactionData;
-    use serde_json::{json, Map, Value};
+    use crate::waves_proto::recipient::Recipient;
+    use serde_json::{Map, Value, json};
     use std::borrow::Borrow;
     use std::fs;
 

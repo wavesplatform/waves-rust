@@ -1,7 +1,7 @@
 use crate::error::Error::InvalidBytesLength;
 use crate::error::{Error, Result};
-use crate::model::account::Address;
 use crate::model::ByteString;
+use crate::model::account::Address;
 use crate::util::Base58;
 use std::fmt;
 
@@ -84,8 +84,8 @@ mod tests {
 
     use crate::error::Error::InvalidBytesLength;
     use crate::error::Result;
-    use crate::model::account::{PrivateKey, PublicKey};
     use crate::model::ByteString;
+    use crate::model::account::{PrivateKey, PublicKey};
     use crate::util::{Base58, Crypto};
 
     #[test]

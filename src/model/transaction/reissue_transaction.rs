@@ -130,7 +130,7 @@ mod tests {
     use crate::error::Result;
     use crate::model::{Amount, AssetId, ByteString, ReissueTransaction, ReissueTransactionInfo};
     use crate::waves_proto::ReissueTransactionData;
-    use serde_json::{json, Map, Value};
+    use serde_json::{Map, Value, json};
     use std::borrow::Borrow;
     use std::fs;
 

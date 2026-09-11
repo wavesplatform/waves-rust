@@ -120,7 +120,7 @@ mod tests {
     use crate::error::Result;
     use crate::model::{AssetId, ByteString, SponsorFeeTransaction};
     use crate::waves_proto::SponsorFeeTransactionData;
-    use serde_json::{json, Map, Value};
+    use serde_json::{Map, Value, json};
     use std::borrow::Borrow;
     use std::fs;
 

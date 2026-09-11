@@ -102,7 +102,7 @@ mod tests {
         ByteString, Id, LeaseCancelTransaction, LeaseCancelTransactionInfo, LeaseStatus,
     };
     use crate::waves_proto::LeaseCancelTransactionData;
-    use serde_json::{json, Map, Value};
+    use serde_json::{Map, Value, json};
     use std::borrow::Borrow;
     use std::fs;
 

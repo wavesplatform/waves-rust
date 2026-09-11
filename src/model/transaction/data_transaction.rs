@@ -1,11 +1,11 @@
 use crate::error::{Error, Result};
 use crate::model::data_entry::DataEntry;
 use crate::util::{Base64, JsonDeserializer};
+use crate::waves_proto::DataTransactionData;
+use crate::waves_proto::data_transaction_data::DataEntry as ProtoDataEntry;
 use crate::waves_proto::data_transaction_data::data_entry::Value::{
     BinaryValue, BoolValue, IntValue, StringValue,
 };
-use crate::waves_proto::data_transaction_data::DataEntry as ProtoDataEntry;
-use crate::waves_proto::DataTransactionData;
 use serde_json::{Map, Number, Value};
 
 const TYPE: u8 = 12;
@@ -164,13 +164,13 @@ impl From<&DataEntry> for Value {
 #[cfg(test)]
 mod tests {
     use crate::error::Result;
-    use crate::model::data_entry::DataEntry;
     use crate::model::DataTransaction;
+    use crate::model::data_entry::DataEntry;
+    use crate::waves_proto::DataTransactionData;
     use crate::waves_proto::data_transaction_data::data_entry::Value::{
         BinaryValue, BoolValue, IntValue, StringValue,
     };
-    use crate::waves_proto::DataTransactionData;
-    use serde_json::{json, Map, Value};
+    use serde_json::{Map, Value, json};
 
     use std::borrow::Borrow;
     use std::fs;

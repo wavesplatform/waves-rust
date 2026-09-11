@@ -1,7 +1,7 @@
 use crate::error::Error::BlakeError;
 use crate::error::{InvalidSizeError, Result};
-use blake2::digest::{Update, VariableOutput};
 use blake2::Blake2bVar;
+use blake2::digest::{Update, VariableOutput};
 use sha2::Sha256;
 use sha3::{Digest, Keccak256};
 

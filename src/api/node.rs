@@ -1577,9 +1577,9 @@ impl Profile {
 
 #[cfg(test)]
 mod tests {
+    use ChainId::MAINNET;
     use std::str::FromStr;
     use url::Url;
-    use ChainId::MAINNET;
 
     use crate::api::node::{Node, Profile};
     use crate::error::Result;

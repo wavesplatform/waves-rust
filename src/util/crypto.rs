@@ -4,8 +4,8 @@ use crate::util::{Bytes, Hash, WORDS};
 use curve25519_dalek::constants;
 use curve25519_dalek::scalar::Scalar;
 use rand::Rng;
-use sha2::digest::Update;
 use sha2::Sha512;
+use sha2::digest::Update;
 
 pub struct Crypto;
 
