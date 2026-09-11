@@ -2,7 +2,7 @@
 name = "waves-rust"
 version = "0.2.6"
 edition = "2021"
-rust-version = "1.68"
+rust-version = "1.81"
 authors = ["Waves Labs <admin@waveslabs.com>", "Alexandr Devyatkin <novealx@gmail.com>"]
 description = """
 A Rust library for interacting with the Waves blockchain.
@@ -28,7 +28,7 @@ blake2 = "0.10.4"
 sha3 = "0.10.2"
 sha2 = "0.10.2"
 curve25519-dalek = { version = "4.1.3", features = ["digest"] }
-ed25519-dalek = "1.0.1"
+ed25519-dalek = "2.2.0"
 base64 = "0.13.0"
 hex = "0.4.3"
 
