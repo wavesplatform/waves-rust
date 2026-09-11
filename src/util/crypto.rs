@@ -41,7 +41,8 @@ impl Crypto {
     pub fn get_public_key(private_key: &[u8; 32]) -> Vec<u8> {
         let mut pk = [0u8; 32];
         pk.copy_from_slice(private_key);
-        let ed_pk = &Scalar::from_bits(pk) * &constants::ED25519_BASEPOINT_TABLE;
+        pk[31] &= 0x7f;
+        let ed_pk = &Scalar::from_bytes_mod_order(pk) * constants::ED25519_BASEPOINT_TABLE;
         ed_pk.to_montgomery().to_bytes().to_vec()
     }
 
@@ -75,18 +76,21 @@ impl Crypto {
         hash.update(&rndbuf);
 
         let rsc = Scalar::from_hash(hash);
-        let r = (&rsc * &constants::ED25519_BASEPOINT_TABLE)
+        let r = (&rsc * constants::ED25519_BASEPOINT_TABLE)
             .compress()
             .to_bytes();
 
-        let ed_public_key = constants::ED25519_BASEPOINT_POINT * Scalar::from_bits(*private_key);
+        let mut scalar_bytes = *private_key;
+        scalar_bytes[31] &= 0x7f;
+        let scalar = Scalar::from_bytes_mod_order(scalar_bytes);
+        let ed_public_key = constants::ED25519_BASEPOINT_POINT * scalar;
         let public_key = ed_public_key.compress().to_bytes();
 
         hash = Sha512::default();
         hash.update(&r);
         hash.update(&public_key);
         hash.update(message);
-        let s = (Scalar::from_hash(hash) * Scalar::from_bits(*private_key)) + rsc;
+        let s = (Scalar::from_hash(hash) * scalar) + rsc;
 
         let sign = public_key[31] & 0x80;
         let mut result = [0; SIGNATURE_LENGTH];
