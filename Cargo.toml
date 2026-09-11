@@ -2,7 +2,7 @@
 name = "waves-rust"
 version = "0.2.6"
 edition = "2021"
-rust-version = "1.81"
+rust-version = "1.85"
 authors = ["Waves Labs <admin@waveslabs.com>", "Alexandr Devyatkin <novealx@gmail.com>"]
 description = """
 A Rust library for interacting with the Waves blockchain.
@@ -33,7 +33,7 @@ base64 = "0.13.0"
 hex = "0.4.3"
 
 # network
-reqwest = { version = "0.11.11", features = ["json"] }
+reqwest = { version = "0.13.5", features = ["json"] }
 tokio = { version = "1.38.2", features = ["full"] }
 serde_json = "1.0.82"
 regex = "1.6.0"
