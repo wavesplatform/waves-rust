@@ -297,8 +297,12 @@ mod tests {
         );
         assert_eq!(288, block_headers.nxt_consensus().base_target());
         assert_eq!(
-            "2DzzTwTrDvNnKa5BnkQyuGJ6rAmCTxrKwQNdAEiRPPiY1WkrCy5ge5FDAWsMPh3eAk3sRQq3iVB8ZVGFkP8uJU65AfR4rkQw687yNcA3wbsDsDjsoyir1nGFCWkA34jv5cUN", 
-                   block_headers.nxt_consensus().generation_signature().encoded());
+            "2DzzTwTrDvNnKa5BnkQyuGJ6rAmCTxrKwQNdAEiRPPiY1WkrCy5ge5FDAWsMPh3eAk3sRQq3iVB8ZVGFkP8uJU65AfR4rkQw687yNcA3wbsDsDjsoyir1nGFCWkA34jv5cUN",
+            block_headers
+                .nxt_consensus()
+                .generation_signature()
+                .encoded()
+        );
 
         assert_eq!(
             "HW2HdCDGFX1cKQC9VQHPbCi5S87jzB43m8bM1yvbjxN6",
@@ -314,7 +318,10 @@ mod tests {
             "3Mxv6Dpa1qRuyQBRFg3GwUaf3rcjHqWwNmC",
             block_headers.generator().encoded()
         );
-        assert_eq!("3BCrNxGjwoxRMX2vxshN2K5ucSzt8huwvkHK54qWnp6UVQLBKx1TaidWAoxtswWPxbLTdmkWAMrCEdUVUZw4o8Zr", block_headers.signature().encoded());
+        assert_eq!(
+            "3BCrNxGjwoxRMX2vxshN2K5ucSzt8huwvkHK54qWnp6UVQLBKx1TaidWAoxtswWPxbLTdmkWAMrCEdUVUZw4o8Zr",
+            block_headers.signature().encoded()
+        );
         assert_eq!(869, block_headers.blocksize());
         assert_eq!(1, block_headers.transaction_count());
         assert_eq!(2225531, block_headers.height());
@@ -345,7 +352,11 @@ mod tests {
         assert_eq!(288, block_headers.nxt_consensus().base_target());
         assert_eq!(
             "2DzzTwTrDvNnKa5BnkQyuGJ6rAmCTxrKwQNdAEiRPPiY1WkrCy5ge5FDAWsMPh3eAk3sRQq3iVB8ZVGFkP8uJU65AfR4rkQw687yNcA3wbsDsDjsoyir1nGFCWkA34jv5cUN",
-            block_headers.nxt_consensus().generation_signature().encoded());
+            block_headers
+                .nxt_consensus()
+                .generation_signature()
+                .encoded()
+        );
 
         assert_eq!(
             "HW2HdCDGFX1cKQC9VQHPbCi5S87jzB43m8bM1yvbjxN6",
@@ -361,7 +372,10 @@ mod tests {
             "3Mxv6Dpa1qRuyQBRFg3GwUaf3rcjHqWwNmC",
             block_headers.generator().encoded()
         );
-        assert_eq!("3BCrNxGjwoxRMX2vxshN2K5ucSzt8huwvkHK54qWnp6UVQLBKx1TaidWAoxtswWPxbLTdmkWAMrCEdUVUZw4o8Zr", block_headers.signature().encoded());
+        assert_eq!(
+            "3BCrNxGjwoxRMX2vxshN2K5ucSzt8huwvkHK54qWnp6UVQLBKx1TaidWAoxtswWPxbLTdmkWAMrCEdUVUZw4o8Zr",
+            block_headers.signature().encoded()
+        );
         assert_eq!(869, block_headers.blocksize());
         assert_eq!(1, block_headers.transaction_count());
         assert_eq!(2225531, block_headers.height());
@@ -377,7 +391,7 @@ mod tests {
 
         let genesis = &block.transactions[0];
         assert_eq!(
-            "3zpi4i5SeCoaiCBn1iuTUvCc5aahvtabqXBTrCXy1Y3ujUbJo56VVv6n4HQtcwiFapvg3BKV6stb5QkxsBrudTKZ", 
+            "3zpi4i5SeCoaiCBn1iuTUvCc5aahvtabqXBTrCXy1Y3ujUbJo56VVv6n4HQtcwiFapvg3BKV6stb5QkxsBrudTKZ",
             genesis.id()?.encoded()
         );
         let payment = &block.transactions[1];

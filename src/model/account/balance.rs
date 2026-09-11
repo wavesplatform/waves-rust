@@ -106,7 +106,7 @@ mod tests {
 
     use crate::error::Result;
     use crate::model::{Address, Balance, BalanceDetails, ByteString};
-    use serde_json::{json, Value};
+    use serde_json::{Value, json};
 
     #[test]
     fn test_balance_details_from_json() -> Result<()> {

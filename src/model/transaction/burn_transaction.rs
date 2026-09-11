@@ -113,7 +113,7 @@ impl TryFrom<&BurnTransaction> for BurnTransactionData {
 mod tests {
     use crate::error::Result;
     use crate::model::{Amount, AssetId, BurnTransaction, BurnTransactionInfo, ByteString};
-    use serde_json::{json, Map, Value};
+    use serde_json::{Map, Value, json};
     use std::borrow::Borrow;
     use std::fs;
 

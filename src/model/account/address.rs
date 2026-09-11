@@ -1,6 +1,6 @@
 use crate::error::{Error, Result};
-use crate::model::account::PublicKey;
 use crate::model::ByteString;
+use crate::model::account::PublicKey;
 use crate::util::{Base58, Crypto, JsonDeserializer};
 use serde_json::Value;
 use std::fmt;

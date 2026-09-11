@@ -1,8 +1,8 @@
 [package]
 name = "waves-rust"
 version = "0.2.6"
-edition = "2021"
-rust-version = "1.56"
+edition = "2024"
+rust-version = "1.85"
 authors = ["Waves Labs <admin@waveslabs.com>", "Alexandr Devyatkin <novealx@gmail.com>"]
 description = """
 A Rust library for interacting with the Waves blockchain.
@@ -27,33 +27,32 @@ bs58 = "0.4.0"
 blake2 = "0.10.4"
 sha3 = "0.10.2"
 sha2 = "0.10.2"
-# todo: use root crate when its dependencies will be resolved
-curve25519-dalek = { git = "https://github.com/nazar-pc/curve25519-dalek", version = "=4.0.0-pre.2", tag = "4.0.0-pre.2"}
-ed25519-dalek = "1.0.1"
+curve25519-dalek = { version = "4.1.3", features = ["digest"] }
+ed25519-dalek = "2.2.0"
 base64 = "0.13.0"
 hex = "0.4.3"
 
 # network
-reqwest = { version = "0.11.11", features = ["json"] }
-tokio = { version = "1.12.0", features = ["full"] }
+reqwest = { version = "0.13.5", features = ["json"] }
+tokio = { version = "1.38.2", features = ["full"] }
 serde_json = "1.0.82"
 regex = "1.6.0"
 urlencoding = "2.1.0"
-url = "2.2.2"
+url = "2.5.8"
 
 # protobuf
-prost = "0.11.0"
-tonic = "0.8.0"
+prost = "0.13.5"
+tonic = "0.12.3"
 
 # util
 thiserror = "1.0.32"
-rand = "0.8.5"
+rand = "0.8.6"
 
 [lib]
 doctest = false
 
 [build-dependencies]
-tonic-build = "0.8"
+tonic-build = "0.12.3"
 protobuf-src = "1.0.5+3.19.3"
 
 

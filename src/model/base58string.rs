@@ -56,8 +56,8 @@ impl Display for Base58String {
 
 #[cfg(test)]
 mod tests {
-    use crate::model::base58string::ByteString;
     use crate::model::Base58String;
+    use crate::model::base58string::ByteString;
 
     #[test]
     fn test_base58string_from_string() {

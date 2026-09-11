@@ -84,7 +84,7 @@ mod tests {
     use crate::error::Result;
     use crate::model::{CreateAliasTransaction, CreateAliasTransactionInfo};
     use crate::waves_proto::CreateAliasTransactionData;
-    use serde_json::{json, Map, Value};
+    use serde_json::{Map, Value, json};
     use std::borrow::Borrow;
     use std::fs;
 

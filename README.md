@@ -7,8 +7,8 @@ Supports node interaction, offline transaction signing and creating addresses an
 Use the code below to add waves-rust as a dependency for your project.
 
 ##### Requirements:
-- edition "2021"
-- rust-version "1.56" or above
+- edition "2024"
+- rust-version "1.85" or above
 - tokio runtime to interact with node REST-API
 
 ##### Cargo:

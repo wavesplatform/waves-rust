@@ -187,14 +187,14 @@ impl TryFrom<&ExchangeTransaction> for ExchangeTransactionData {
 #[cfg(test)]
 mod tests {
     use crate::model::{
-        v4, Amount, AssetId, ByteString, ExchangeTransaction, ExchangeTransactionInfo, Order,
-        OrderType, PriceMode, Proof, PublicKey, SignedOrder,
+        Amount, AssetId, ByteString, ExchangeTransaction, ExchangeTransactionInfo, Order,
+        OrderType, PriceMode, Proof, PublicKey, SignedOrder, v4,
     };
 
     use crate::error::Result;
-    use crate::waves_proto::order::Sender;
     use crate::waves_proto::ExchangeTransactionData;
-    use serde_json::{json, Map, Value};
+    use crate::waves_proto::order::Sender;
+    use serde_json::{Map, Value, json};
     use std::borrow::Borrow;
     use std::fs;
 
@@ -252,7 +252,10 @@ mod tests {
                 .expect("asset must be non empty")
                 .encoded()
         );
-        assert_eq!("3GmuCwFTs5jcJjerkZP28aEAvFV1qqJx9QTjC9dVBVrYeqJ9pqoaB1vU1ieZmZFXTcD6jSr7JLDsKbsLKZtgcBpm", &order_info1.proofs()[0].encoded());
+        assert_eq!(
+            "3GmuCwFTs5jcJjerkZP28aEAvFV1qqJx9QTjC9dVBVrYeqJ9pqoaB1vU1ieZmZFXTcD6jSr7JLDsKbsLKZtgcBpm",
+            &order_info1.proofs()[0].encoded()
+        );
 
         // order2
         let order_info2 = exchange_tx_from_json.order2();
@@ -294,7 +297,10 @@ mod tests {
         assert_eq!(1666750461345, order_info2.expiration());
         assert_eq!(10000000, order_info2.fee().value());
         assert_eq!(None, order_info2.fee().asset_id());
-        assert_eq!("38rb8vVaYR4iqfTLvHPEQ83kkhtwjcTP4f8p8A1tSquzNF41m78GEN5Qr3Lc3k8fzeGTuV1oiPTVkoAjGvrYvmpN", &order_info2.proofs()[0].encoded());
+        assert_eq!(
+            "38rb8vVaYR4iqfTLvHPEQ83kkhtwjcTP4f8p8A1tSquzNF41m78GEN5Qr3Lc3k8fzeGTuV1oiPTVkoAjGvrYvmpN",
+            &order_info2.proofs()[0].encoded()
+        );
 
         // tx
         assert_eq!(640949620, exchange_tx_from_json.amount());
@@ -307,43 +313,48 @@ mod tests {
     fn test_exchange_transaction_to_json() -> Result<()> {
         let buy_order = SignedOrder::new(
             Order::V4(v4::OrderV4::new(
-            84,
-            1662500994929,
-            PublicKey::from_string("9oRf59sSHE2inwF6wraJDPQNsx7ktMKxaKvyFFL8GDrh")?,
-            Amount::new(300000, None),
-            OrderType::Buy,
-            Amount::new(
-                100,
-                Some(AssetId::from_string(
-                    "8bt2MZjuUCJPmfucPfaZPTXqrxmoCHCC8gVnbjZ7bhH6",
-                )?),
-            ),
-            Amount::new(1000, None),
-            PublicKey::from_string("CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt")?,
-            1665092994929,
-            PriceMode::Default,
+                84,
+                1662500994929,
+                PublicKey::from_string("9oRf59sSHE2inwF6wraJDPQNsx7ktMKxaKvyFFL8GDrh")?,
+                Amount::new(300000, None),
+                OrderType::Buy,
+                Amount::new(
+                    100,
+                    Some(AssetId::from_string(
+                        "8bt2MZjuUCJPmfucPfaZPTXqrxmoCHCC8gVnbjZ7bhH6",
+                    )?),
+                ),
+                Amount::new(1000, None),
+                PublicKey::from_string("CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt")?,
+                1665092994929,
+                PriceMode::Default,
             )),
-            vec![Proof::from_string("2YgYwW6o88K3NXYy39TaUu1bwVkzpbr9oQwSDehnkJskfshC6f9F5vYmY736kEExRGHiDmW4hbuyxuqE8cw8WeJ8")?],
+            vec![Proof::from_string(
+                "2YgYwW6o88K3NXYy39TaUu1bwVkzpbr9oQwSDehnkJskfshC6f9F5vYmY736kEExRGHiDmW4hbuyxuqE8cw8WeJ8",
+            )?],
         );
 
-        let sell_order = SignedOrder::new(Order::V4(v4::OrderV4::new(
-            84,
-            1662500994931,
-            PublicKey::from_string("CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt")?,
-            Amount::new(300000, None),
-            OrderType::Sell,
-            Amount::new(
-                100,
-                Some(AssetId::from_string(
-                    "8bt2MZjuUCJPmfucPfaZPTXqrxmoCHCC8gVnbjZ7bhH6",
-                )?),
-            ),
-            Amount::new(1000, None),
-            PublicKey::from_string("CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt")?,
-            1665092994931,
-            PriceMode::Default,
+        let sell_order = SignedOrder::new(
+            Order::V4(v4::OrderV4::new(
+                84,
+                1662500994931,
+                PublicKey::from_string("CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt")?,
+                Amount::new(300000, None),
+                OrderType::Sell,
+                Amount::new(
+                    100,
+                    Some(AssetId::from_string(
+                        "8bt2MZjuUCJPmfucPfaZPTXqrxmoCHCC8gVnbjZ7bhH6",
+                    )?),
+                ),
+                Amount::new(1000, None),
+                PublicKey::from_string("CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt")?,
+                1665092994931,
+                PriceMode::Default,
             )),
-        vec![Proof::from_string("5Mbvg4kz1rPLBVBWoTcY2e6Zajoqxq6g38WPfvxCMiHmjxm8TPZpLpEitf9SdfGSpBHtAxas2YRe7X4UcmBugDFL")?]
+            vec![Proof::from_string(
+                "5Mbvg4kz1rPLBVBWoTcY2e6Zajoqxq6g38WPfvxCMiHmjxm8TPZpLpEitf9SdfGSpBHtAxas2YRe7X4UcmBugDFL",
+            )?],
         );
 
         let exchange_transaction =
@@ -425,29 +436,34 @@ mod tests {
                 Amount::new(1000, None),
                 PublicKey::from_string("CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt")?,
                 1665092994929,
-                PriceMode::Default
+                PriceMode::Default,
             )),
-            vec![Proof::from_string("2YgYwW6o88K3NXYy39TaUu1bwVkzpbr9oQwSDehnkJskfshC6f9F5vYmY736kEExRGHiDmW4hbuyxuqE8cw8WeJ8")?]
+            vec![Proof::from_string(
+                "2YgYwW6o88K3NXYy39TaUu1bwVkzpbr9oQwSDehnkJskfshC6f9F5vYmY736kEExRGHiDmW4hbuyxuqE8cw8WeJ8",
+            )?],
         );
 
-        let sell_order = SignedOrder::new(Order::V4(v4::OrderV4::new(
-            84,
-            1662500994931,
-            PublicKey::from_string("CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt")?,
-            Amount::new(300000, None),
-            OrderType::Sell,
-            Amount::new(
-                100,
-                Some(AssetId::from_string(
-                    "8bt2MZjuUCJPmfucPfaZPTXqrxmoCHCC8gVnbjZ7bhH6",
-                )?),
-            ),
-            Amount::new(1000, None),
-            PublicKey::from_string("CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt")?,
-            1665092994931,
-            PriceMode::Default
-        )),
-           vec![Proof::from_string("5Mbvg4kz1rPLBVBWoTcY2e6Zajoqxq6g38WPfvxCMiHmjxm8TPZpLpEitf9SdfGSpBHtAxas2YRe7X4UcmBugDFL")?]
+        let sell_order = SignedOrder::new(
+            Order::V4(v4::OrderV4::new(
+                84,
+                1662500994931,
+                PublicKey::from_string("CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt")?,
+                Amount::new(300000, None),
+                OrderType::Sell,
+                Amount::new(
+                    100,
+                    Some(AssetId::from_string(
+                        "8bt2MZjuUCJPmfucPfaZPTXqrxmoCHCC8gVnbjZ7bhH6",
+                    )?),
+                ),
+                Amount::new(1000, None),
+                PublicKey::from_string("CJJu3U5UL35Dhq5KGRZw2rdundAv2pPgB7GF21G3y4vt")?,
+                1665092994931,
+                PriceMode::Default,
+            )),
+            vec![Proof::from_string(
+                "5Mbvg4kz1rPLBVBWoTcY2e6Zajoqxq6g38WPfvxCMiHmjxm8TPZpLpEitf9SdfGSpBHtAxas2YRe7X4UcmBugDFL",
+            )?],
         );
 
         let exchange_transaction =

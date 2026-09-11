@@ -1,10 +1,10 @@
 use crate::constants::SIGNATURE_LENGTH;
 use crate::error::{Error, Result};
-use crate::model::account::PublicKey;
 use crate::model::ByteString;
+use crate::model::account::PublicKey;
 use crate::util::{Base58, Crypto};
 use curve25519_dalek::montgomery::MontgomeryPoint;
-use ed25519_dalek::{PublicKey as EdPublicKey, Signature, Verifier};
+use ed25519_dalek::{Signature, Verifier, VerifyingKey as EdPublicKey};
 
 #[derive(Clone, Eq, PartialEq, Hash)]
 pub struct PrivateKey {
@@ -84,7 +84,7 @@ impl PrivateKey {
         ed_public_key[31] |= sign;
 
         Ok(EdPublicKey::from_bytes(&ed_public_key)?
-            .verify(message, &Signature::from_bytes(&sig)?)
+            .verify(message, &Signature::from_bytes(&sig))
             .is_ok())
     }
 }
@@ -95,8 +95,8 @@ mod tests {
 
     use crate::error::Error::InvalidBytesLength;
     use crate::error::Result;
-    use crate::model::account::PrivateKey;
     use crate::model::ByteString;
+    use crate::model::account::PrivateKey;
 
     #[test]
     fn test_private_key_from_seed() -> Result<()> {

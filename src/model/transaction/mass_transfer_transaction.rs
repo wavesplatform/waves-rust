@@ -1,8 +1,8 @@
 use crate::error::{Error, Result};
 use crate::model::{AssetId, Base58String, ByteString, Transfer};
 use crate::util::JsonDeserializer;
-use crate::waves_proto::mass_transfer_transaction_data::Transfer as ProtoTransfer;
 use crate::waves_proto::MassTransferTransactionData;
+use crate::waves_proto::mass_transfer_transaction_data::Transfer as ProtoTransfer;
 use serde_json::{Map, Value};
 
 const TYPE: u8 = 11;
@@ -195,9 +195,9 @@ mod tests {
         Address, AssetId, Base58String, ByteString, MassTransferTransaction,
         MassTransferTransactionInfo, Transfer,
     };
-    use crate::waves_proto::recipient::Recipient;
     use crate::waves_proto::MassTransferTransactionData;
-    use serde_json::{json, Map, Value};
+    use crate::waves_proto::recipient::Recipient;
+    use serde_json::{Map, Value, json};
     use std::borrow::Borrow;
     use std::fs;
 
